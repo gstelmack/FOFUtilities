@@ -28,6 +28,7 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(GamePlanAnalyzerForm));
 			this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
 			this.tabControlResults = new System.Windows.Forms.TabControl();
 			this.tabPageLeaguePassingOffense = new System.Windows.Forms.TabPage();
@@ -40,6 +41,8 @@
 			this.webBrowserTeamDefense = new System.Windows.Forms.WebBrowser();
 			this.tabPageOffensivePlaycalling = new System.Windows.Forms.TabPage();
 			this.webBrowserOffensivePlaycalling = new System.Windows.Forms.WebBrowser();
+			this.tabPageMiscellaneous = new System.Windows.Forms.TabPage();
+			this.webBrowserMiscellaneous = new System.Windows.Forms.WebBrowser();
 			this.panel1 = new System.Windows.Forms.Panel();
 			this.checkBoxAnalyzePostseason = new System.Windows.Forms.CheckBox();
 			this.checkBoxAnalyzePreseason = new System.Windows.Forms.CheckBox();
@@ -51,8 +54,6 @@
 			this.buttonAnalyze = new System.Windows.Forms.Button();
 			this.comboBoxTeams = new System.Windows.Forms.ComboBox();
 			this.comboBoxLeagues = new System.Windows.Forms.ComboBox();
-			this.tabPageMiscellaneous = new System.Windows.Forms.TabPage();
-			this.webBrowserMiscellaneous = new System.Windows.Forms.WebBrowser();
 			this.tableLayoutPanel1.SuspendLayout();
 			this.tabControlResults.SuspendLayout();
 			this.tabPageLeaguePassingOffense.SuspendLayout();
@@ -60,8 +61,8 @@
 			this.tabPageTeamOffense.SuspendLayout();
 			this.tabPageTeamDefense.SuspendLayout();
 			this.tabPageOffensivePlaycalling.SuspendLayout();
-			this.panel1.SuspendLayout();
 			this.tabPageMiscellaneous.SuspendLayout();
+			this.panel1.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// tableLayoutPanel1
@@ -199,6 +200,25 @@
 			this.webBrowserOffensivePlaycalling.Size = new System.Drawing.Size(970, 530);
 			this.webBrowserOffensivePlaycalling.TabIndex = 0;
 			// 
+			// tabPageMiscellaneous
+			// 
+			this.tabPageMiscellaneous.Controls.Add(this.webBrowserMiscellaneous);
+			this.tabPageMiscellaneous.Location = new System.Drawing.Point(4, 22);
+			this.tabPageMiscellaneous.Name = "tabPageMiscellaneous";
+			this.tabPageMiscellaneous.Size = new System.Drawing.Size(970, 530);
+			this.tabPageMiscellaneous.TabIndex = 5;
+			this.tabPageMiscellaneous.Text = "Miscellaneous";
+			this.tabPageMiscellaneous.UseVisualStyleBackColor = true;
+			// 
+			// webBrowserMiscellaneous
+			// 
+			this.webBrowserMiscellaneous.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.webBrowserMiscellaneous.Location = new System.Drawing.Point(0, 0);
+			this.webBrowserMiscellaneous.MinimumSize = new System.Drawing.Size(20, 20);
+			this.webBrowserMiscellaneous.Name = "webBrowserMiscellaneous";
+			this.webBrowserMiscellaneous.Size = new System.Drawing.Size(970, 530);
+			this.webBrowserMiscellaneous.TabIndex = 1;
+			// 
 			// panel1
 			// 
 			this.panel1.Controls.Add(this.checkBoxAnalyzePostseason);
@@ -308,31 +328,13 @@
 			this.comboBoxLeagues.TabIndex = 12;
 			this.comboBoxLeagues.SelectedIndexChanged += new System.EventHandler(this.comboBoxLeagues_SelectedIndexChanged);
 			// 
-			// tabPageMiscellaneous
-			// 
-			this.tabPageMiscellaneous.Controls.Add(this.webBrowserMiscellaneous);
-			this.tabPageMiscellaneous.Location = new System.Drawing.Point(4, 22);
-			this.tabPageMiscellaneous.Name = "tabPageMiscellaneous";
-			this.tabPageMiscellaneous.Size = new System.Drawing.Size(970, 530);
-			this.tabPageMiscellaneous.TabIndex = 5;
-			this.tabPageMiscellaneous.Text = "Miscellaneous";
-			this.tabPageMiscellaneous.UseVisualStyleBackColor = true;
-			// 
-			// webBrowserMiscellaneous
-			// 
-			this.webBrowserMiscellaneous.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.webBrowserMiscellaneous.Location = new System.Drawing.Point(0, 0);
-			this.webBrowserMiscellaneous.MinimumSize = new System.Drawing.Size(20, 20);
-			this.webBrowserMiscellaneous.Name = "webBrowserMiscellaneous";
-			this.webBrowserMiscellaneous.Size = new System.Drawing.Size(970, 530);
-			this.webBrowserMiscellaneous.TabIndex = 1;
-			// 
 			// GamePlanAnalyzerForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(984, 662);
 			this.Controls.Add(this.tableLayoutPanel1);
+			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.Name = "GamePlanAnalyzerForm";
 			this.Text = "Gameplan Analyzer";
 			this.tableLayoutPanel1.ResumeLayout(false);
@@ -342,9 +344,9 @@
 			this.tabPageTeamOffense.ResumeLayout(false);
 			this.tabPageTeamDefense.ResumeLayout(false);
 			this.tabPageOffensivePlaycalling.ResumeLayout(false);
+			this.tabPageMiscellaneous.ResumeLayout(false);
 			this.panel1.ResumeLayout(false);
 			this.panel1.PerformLayout();
-			this.tabPageMiscellaneous.ResumeLayout(false);
 			this.ResumeLayout(false);
 
 		}

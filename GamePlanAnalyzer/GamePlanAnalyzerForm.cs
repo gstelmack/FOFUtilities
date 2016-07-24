@@ -26,8 +26,14 @@ namespace GamePlanAnalyzer
 		{
 			InitializeComponent();
 
-			Assembly a = typeof(GamePlanAnalyzerForm).Assembly;
-			Text += " v" + a.GetName().Version;
+			try
+			{
+				Text += " v" + System.Deployment.Application.ApplicationDeployment.CurrentDeployment.CurrentVersion;
+			}
+			catch
+			{
+				Text += " DEBUG";
+			}
 
 			mUniverseData = new UniverseData();
 
@@ -114,9 +120,9 @@ namespace GamePlanAnalyzer
 				Cursor = oldCusor;
 
 				comboBoxTeams.Items.Clear();
-				for (int i = 0; i < mUniverseData.TeamRecords.Length; ++i)
+				for (int i = 0; i < mLeagueData.TeamInformationRecords.Length; ++i)
 				{
-					comboBoxTeams.Items.Add(mUniverseData.TeamCityName(i));
+					comboBoxTeams.Items.Add(mLeagueData.TeamInformationRecords[i].CityName);
 				}
 				comboBoxTeams.Items.Add("ALL TEAMS");
 
@@ -374,6 +380,21 @@ namespace GamePlanAnalyzer
 		private InjuryStats mNormalPlayInjuries;
 		private InjuryStats[] mInjuriesInWeather;
 
+		private class IntTDStats
+		{
+			public ulong Plays = 0;
+			public ulong Ints = 0;
+			public ulong IntTDs = 0;
+
+			public void AddToMe(IntTDStats stats)
+			{
+				Plays += stats.Plays;
+				Ints += stats.Ints;
+				IntTDs += stats.IntTDs;
+			}
+		}
+		private IntTDStats[] mIntTDsAtDistance;
+
 		private int mPrecipitation;
 
 		private void AnalyzeStats()
@@ -611,6 +632,7 @@ namespace GamePlanAnalyzer
 		{
 			PassingStats playStats = new PassingStats();
 			playStats.DropBacks += 1;
+			IntTDStats intTDStats = new IntTDStats();
 
 			LeagueData.PassDistance passDistance = (LeagueData.PassDistance)gamePlay.TypeSpecificData[(int)LeagueData.PassPlayFields.PassDistance];
 			bool isShortPass = ((int)passDistance <= (int)LeagueData.PassDistance.P5To8) && passDistance != LeagueData.PassDistance.Count;
@@ -637,9 +659,11 @@ namespace GamePlanAnalyzer
 			else
 			{
 				playStats.Attempts += 1;
+				intTDStats.Plays += 1;
 				if (gamePlay.TypeSpecificData[(int)LeagueData.PassPlayFields.IsInterception] != 0)
 				{
 					playStats.Interceptions += 1;
+					intTDStats.Ints += 1;
 				}
 				if (gamePlay.TypeSpecificData[(int)LeagueData.PassPlayFields.IsTouchdown] != 0)
 				{
@@ -665,6 +689,10 @@ namespace GamePlanAnalyzer
 							playStats.SuccessfulLongPasses += 1;
 						}
 					}
+				}
+				if (gamePlay.TypeSpecificData[(int)LeagueData.PassPlayFields.IsInterceptedForTD] != 0)
+				{
+					intTDStats.IntTDs += 1;
 				}
 			}
 
@@ -718,6 +746,7 @@ namespace GamePlanAnalyzer
 			mPassingStatsFromOffensiveFormationVsPlayCall[(int)offFormation, (int)defPlayCall].AddToMe(playStats);
 			mPassingStatsAtDistanceFromFormation[(int)passDistance, (int)offFormation].AddToMe(playStats);
 			mPassingStatsAtDistanceFromFormationVsCoverage[(int)passDistance, (int)offFormation, (int)defCoverage].AddToMe(playStats);
+			mIntTDsAtDistance[(int)passDistance].AddToMe(intTDStats);
 
 			if (mGameInvolvesSelectedTeam)
 			{
@@ -1697,6 +1726,22 @@ namespace GamePlanAnalyzer
 			outFile.WriteLine();
 		}
 
+		private void WriteIntTDLine(System.IO.StreamWriter outFile, string caption, IntTDStats stats)
+		{
+			double pick6Pct = stats.Plays > 0 ? ((double)stats.IntTDs / (double)stats.Plays) : 0.0;
+			double intPct = stats.Plays > 0 ? ((double)stats.Ints / (double)stats.Plays) : 0.0;
+			double pick6IntPct = stats.Ints > 0 ? ((double)stats.IntTDs / (double)stats.Ints) : 0.0;
+
+			outFile.Write("\t\t\t<TR><TD class=\"highlight\">" + caption);
+			outFile.Write("<TD align=\"right\" class=\"normal\">" + stats.Plays.ToString("N0"));
+			outFile.Write("<TD align=\"right\" class=\"normal\">" + stats.Ints.ToString("N0"));
+			outFile.Write("<TD align=\"right\" class=\"highlight\">" + intPct.ToString("0.00%"));
+			outFile.Write("<TD align=\"right\" class=\"normal\">" + stats.IntTDs.ToString("N0"));
+			outFile.Write("<TD align=\"right\" class=\"highlight\">" + pick6Pct.ToString("0.00%"));
+			outFile.Write("<TD align=\"right\" class=\"highlight\">" + pick6IntPct.ToString("0.00%"));
+			outFile.WriteLine();
+		}
+
 		private void WriteMiscellaneousStats()
 		{
 			string outFileName = System.IO.Path.Combine(WindowsUtilities.OutputLocation.Get(), "MiscellaneousStats.html");
@@ -1730,6 +1775,26 @@ namespace GamePlanAnalyzer
 				WriteInjuryStatsLine(outFile, mUniverseData.PrecipMap[i], mInjuriesInWeather[i]);
 			}
 			WriteInjuryStatsLine(outFile, "All", mAllInjuries);
+
+			outFile.WriteLine("\t\t</TABLE>");
+			outFile.WriteLine("\t\t<TABLE border=\"1\" summary=\"This table shows Pick6 statistics\">");
+			outFile.WriteLine("\t\t\t<CAPTION><EM>League Interceptions for TDs</EM></CAPTION>");
+
+			outFile.Write("\t\t\t<TR>");
+			outFile.Write("<TH>");
+			outFile.Write("<TH>Plays");
+			outFile.Write("<TH>Ints");
+			outFile.Write("<TH>Pct");
+			outFile.Write("<TH>Pick6");
+			outFile.Write("<TH>PctOfAll");
+			outFile.Write("<TH>PctOfInts");
+			outFile.WriteLine();
+
+			foreach (LeagueData.PassDistance passDist in Enum.GetValues(typeof(LeagueData.PassDistance)))
+			{
+				if (passDist != LeagueData.PassDistance.Count && passDist != LeagueData.PassDistance.Spike)
+				WriteIntTDLine(outFile, passDist.ToString(), mIntTDsAtDistance[(int)passDist]);
+			}
 
 			outFile.WriteLine("\t\t</TABLE>");
 
@@ -1916,9 +1981,11 @@ namespace GamePlanAnalyzer
 			}
 
 			mOffensePassesByDistance = new OffenseStats[(int)LeagueData.PassDistance.Count];
+			mIntTDsAtDistance = new IntTDStats[(int)LeagueData.PassDistance.Count];
 			for (i = 0; i < (int)LeagueData.PassDistance.Count; ++i)
 			{
 				mOffensePassesByDistance[i] = new OffenseStats();
+				mIntTDsAtDistance[i] = new IntTDStats();
 			}
 
 			mAllDefensivePlays = new OffenseStats();

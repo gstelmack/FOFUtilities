@@ -82,6 +82,12 @@ namespace DraftAnalyzer
 			this.label10 = new System.Windows.Forms.Label();
 			this.buttonCopyToGroup = new System.Windows.Forms.Button();
 			this.groupBoxGlobal = new System.Windows.Forms.GroupBox();
+			this.numericUpDownCombineThreshold = new System.Windows.Forms.NumericUpDown();
+			this.label20 = new System.Windows.Forms.Label();
+			this.numericUpDownDevWt = new System.Windows.Forms.NumericUpDown();
+			this.numericUpDownAvgDev = new System.Windows.Forms.NumericUpDown();
+			this.label18 = new System.Windows.Forms.Label();
+			this.label19 = new System.Windows.Forms.Label();
 			this.label17 = new System.Windows.Forms.Label();
 			this.label16 = new System.Windows.Forms.Label();
 			this.numericUpDownNoCombineCombine = new System.Windows.Forms.NumericUpDown();
@@ -101,8 +107,8 @@ namespace DraftAnalyzer
 			this.label11 = new System.Windows.Forms.Label();
 			this.groupBox1 = new System.Windows.Forms.GroupBox();
 			this.radioButtonAttributesUseMax = new System.Windows.Forms.RadioButton();
-			this.radioButtonAttributesUseAverage = new System.Windows.Forms.RadioButton();
 			this.radioButtonAttributesUseMin = new System.Windows.Forms.RadioButton();
+			this.radioButtonAttributesUseAverage = new System.Windows.Forms.RadioButton();
 			this.buttonSaveAs = new System.Windows.Forms.Button();
 			this.buttonLoad = new System.Windows.Forms.Button();
 			this.buttonFOFDefaults = new System.Windows.Forms.Button();
@@ -129,6 +135,9 @@ namespace DraftAnalyzer
 			((System.ComponentModel.ISupportInitialize)(this.trackBarAttribute15)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.trackBarAttribute12)).BeginInit();
 			this.groupBoxGlobal.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.numericUpDownCombineThreshold)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.numericUpDownDevWt)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.numericUpDownAvgDev)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.numericUpDownNoCombineCombine)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.numericUpDownNoCombineAttributes)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.numericUpDownScoutImpression)).BeginInit();
@@ -180,7 +189,7 @@ namespace DraftAnalyzer
 			// comboBoxPosition
 			// 
 			this.comboBoxPosition.FormattingEnabled = true;
-			this.comboBoxPosition.Location = new System.Drawing.Point(16, 12);
+			this.comboBoxPosition.Location = new System.Drawing.Point(12, 8);
 			this.comboBoxPosition.Name = "comboBoxPosition";
 			this.comboBoxPosition.Size = new System.Drawing.Size(82, 21);
 			this.comboBoxPosition.TabIndex = 139;
@@ -608,7 +617,7 @@ namespace DraftAnalyzer
 			// 
 			// textBoxPositionWeight
 			// 
-			this.textBoxPositionWeight.Location = new System.Drawing.Point(189, 13);
+			this.textBoxPositionWeight.Location = new System.Drawing.Point(185, 11);
 			this.textBoxPositionWeight.Name = "textBoxPositionWeight";
 			this.textBoxPositionWeight.Size = new System.Drawing.Size(65, 20);
 			this.textBoxPositionWeight.TabIndex = 182;
@@ -617,7 +626,7 @@ namespace DraftAnalyzer
 			// 
 			this.labelWeight.AutoSize = true;
 			this.labelWeight.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.labelWeight.Location = new System.Drawing.Point(104, 16);
+			this.labelWeight.Location = new System.Drawing.Point(100, 12);
 			this.labelWeight.Name = "labelWeight";
 			this.labelWeight.Size = new System.Drawing.Size(79, 15);
 			this.labelWeight.TabIndex = 183;
@@ -636,7 +645,7 @@ namespace DraftAnalyzer
 			// label8
 			// 
 			this.label8.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.label8.Location = new System.Drawing.Point(9, 160);
+			this.label8.Location = new System.Drawing.Point(9, 217);
 			this.label8.Name = "label8";
 			this.label8.Size = new System.Drawing.Size(82, 22);
 			this.label8.TabIndex = 187;
@@ -646,7 +655,7 @@ namespace DraftAnalyzer
 			// label9
 			// 
 			this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.label9.Location = new System.Drawing.Point(97, 160);
+			this.label9.Location = new System.Drawing.Point(97, 217);
 			this.label9.Name = "label9";
 			this.label9.Size = new System.Drawing.Size(82, 22);
 			this.label9.TabIndex = 189;
@@ -656,7 +665,7 @@ namespace DraftAnalyzer
 			// label10
 			// 
 			this.label10.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.label10.Location = new System.Drawing.Point(97, 264);
+			this.label10.Location = new System.Drawing.Point(97, 321);
 			this.label10.Name = "label10";
 			this.label10.Size = new System.Drawing.Size(82, 22);
 			this.label10.TabIndex = 191;
@@ -676,6 +685,12 @@ namespace DraftAnalyzer
 			// 
 			// groupBoxGlobal
 			// 
+			this.groupBoxGlobal.Controls.Add(this.numericUpDownCombineThreshold);
+			this.groupBoxGlobal.Controls.Add(this.label20);
+			this.groupBoxGlobal.Controls.Add(this.numericUpDownDevWt);
+			this.groupBoxGlobal.Controls.Add(this.numericUpDownAvgDev);
+			this.groupBoxGlobal.Controls.Add(this.label18);
+			this.groupBoxGlobal.Controls.Add(this.label19);
 			this.groupBoxGlobal.Controls.Add(this.label17);
 			this.groupBoxGlobal.Controls.Add(this.label16);
 			this.groupBoxGlobal.Controls.Add(this.numericUpDownNoCombineCombine);
@@ -700,10 +715,71 @@ namespace DraftAnalyzer
 			this.groupBoxGlobal.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.groupBoxGlobal.Location = new System.Drawing.Point(12, 39);
 			this.groupBoxGlobal.Name = "groupBoxGlobal";
-			this.groupBoxGlobal.Size = new System.Drawing.Size(192, 328);
+			this.groupBoxGlobal.Size = new System.Drawing.Size(192, 450);
 			this.groupBoxGlobal.TabIndex = 193;
 			this.groupBoxGlobal.TabStop = false;
 			this.groupBoxGlobal.Text = "All Positions";
+			// 
+			// numericUpDownCombineThreshold
+			// 
+			this.numericUpDownCombineThreshold.Location = new System.Drawing.Point(54, 185);
+			this.numericUpDownCombineThreshold.Maximum = new decimal(new int[] {
+            0,
+            0,
+            0,
+            0});
+			this.numericUpDownCombineThreshold.Minimum = new decimal(new int[] {
+            200,
+            0,
+            0,
+            -2147483648});
+			this.numericUpDownCombineThreshold.Name = "numericUpDownCombineThreshold";
+			this.numericUpDownCombineThreshold.Size = new System.Drawing.Size(72, 24);
+			this.numericUpDownCombineThreshold.TabIndex = 221;
+			// 
+			// label20
+			// 
+			this.label20.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.label20.Location = new System.Drawing.Point(0, 160);
+			this.label20.Name = "label20";
+			this.label20.Size = new System.Drawing.Size(192, 22);
+			this.label20.TabIndex = 220;
+			this.label20.Text = "Combine Threshold Penalty";
+			this.label20.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+			// 
+			// numericUpDownDevWt
+			// 
+			this.numericUpDownDevWt.Location = new System.Drawing.Point(115, 398);
+			this.numericUpDownDevWt.Name = "numericUpDownDevWt";
+			this.numericUpDownDevWt.Size = new System.Drawing.Size(47, 24);
+			this.numericUpDownDevWt.TabIndex = 219;
+			// 
+			// numericUpDownAvgDev
+			// 
+			this.numericUpDownAvgDev.Location = new System.Drawing.Point(27, 398);
+			this.numericUpDownAvgDev.Name = "numericUpDownAvgDev";
+			this.numericUpDownAvgDev.Size = new System.Drawing.Size(47, 24);
+			this.numericUpDownAvgDev.TabIndex = 218;
+			// 
+			// label18
+			// 
+			this.label18.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.label18.Location = new System.Drawing.Point(9, 373);
+			this.label18.Name = "label18";
+			this.label18.Size = new System.Drawing.Size(82, 22);
+			this.label18.TabIndex = 217;
+			this.label18.Text = "Avg %Dev";
+			this.label18.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+			// 
+			// label19
+			// 
+			this.label19.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.label19.Location = new System.Drawing.Point(97, 373);
+			this.label19.Name = "label19";
+			this.label19.Size = new System.Drawing.Size(82, 22);
+			this.label19.TabIndex = 216;
+			this.label19.Text = "%Dev Wt";
+			this.label19.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
 			// 
 			// label17
 			// 
@@ -728,6 +804,11 @@ namespace DraftAnalyzer
 			// numericUpDownNoCombineCombine
 			// 
 			this.numericUpDownNoCombineCombine.Location = new System.Drawing.Point(115, 133);
+			this.numericUpDownNoCombineCombine.Maximum = new decimal(new int[] {
+            200,
+            0,
+            0,
+            0});
 			this.numericUpDownNoCombineCombine.Name = "numericUpDownNoCombineCombine";
 			this.numericUpDownNoCombineCombine.Size = new System.Drawing.Size(47, 24);
 			this.numericUpDownNoCombineCombine.TabIndex = 213;
@@ -735,6 +816,11 @@ namespace DraftAnalyzer
 			// numericUpDownNoCombineAttributes
 			// 
 			this.numericUpDownNoCombineAttributes.Location = new System.Drawing.Point(27, 133);
+			this.numericUpDownNoCombineAttributes.Maximum = new decimal(new int[] {
+            200,
+            0,
+            0,
+            0});
 			this.numericUpDownNoCombineAttributes.Name = "numericUpDownNoCombineAttributes";
 			this.numericUpDownNoCombineAttributes.Size = new System.Drawing.Size(47, 24);
 			this.numericUpDownNoCombineAttributes.TabIndex = 212;
@@ -751,14 +837,14 @@ namespace DraftAnalyzer
 			// 
 			// numericUpDownScoutImpression
 			// 
-			this.numericUpDownScoutImpression.Location = new System.Drawing.Point(115, 289);
+			this.numericUpDownScoutImpression.Location = new System.Drawing.Point(115, 346);
 			this.numericUpDownScoutImpression.Name = "numericUpDownScoutImpression";
 			this.numericUpDownScoutImpression.Size = new System.Drawing.Size(47, 24);
 			this.numericUpDownScoutImpression.TabIndex = 209;
 			// 
 			// numericUpDownRedFlag
 			// 
-			this.numericUpDownRedFlag.Location = new System.Drawing.Point(27, 289);
+			this.numericUpDownRedFlag.Location = new System.Drawing.Point(27, 346);
 			this.numericUpDownRedFlag.Name = "numericUpDownRedFlag";
 			this.numericUpDownRedFlag.Size = new System.Drawing.Size(47, 24);
 			this.numericUpDownRedFlag.TabIndex = 208;
@@ -766,7 +852,7 @@ namespace DraftAnalyzer
 			// label14
 			// 
 			this.label14.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.label14.Location = new System.Drawing.Point(9, 264);
+			this.label14.Location = new System.Drawing.Point(9, 321);
 			this.label14.Name = "label14";
 			this.label14.Size = new System.Drawing.Size(82, 22);
 			this.label14.TabIndex = 207;
@@ -775,14 +861,14 @@ namespace DraftAnalyzer
 			// 
 			// numericUpDownConflict
 			// 
-			this.numericUpDownConflict.Location = new System.Drawing.Point(115, 237);
+			this.numericUpDownConflict.Location = new System.Drawing.Point(115, 294);
 			this.numericUpDownConflict.Name = "numericUpDownConflict";
 			this.numericUpDownConflict.Size = new System.Drawing.Size(47, 24);
 			this.numericUpDownConflict.TabIndex = 206;
 			// 
 			// numericUpDownAffinity
 			// 
-			this.numericUpDownAffinity.Location = new System.Drawing.Point(27, 237);
+			this.numericUpDownAffinity.Location = new System.Drawing.Point(27, 294);
 			this.numericUpDownAffinity.Name = "numericUpDownAffinity";
 			this.numericUpDownAffinity.Size = new System.Drawing.Size(47, 24);
 			this.numericUpDownAffinity.TabIndex = 205;
@@ -790,7 +876,7 @@ namespace DraftAnalyzer
 			// label12
 			// 
 			this.label12.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.label12.Location = new System.Drawing.Point(97, 212);
+			this.label12.Location = new System.Drawing.Point(97, 269);
 			this.label12.Name = "label12";
 			this.label12.Size = new System.Drawing.Size(82, 22);
 			this.label12.TabIndex = 204;
@@ -799,14 +885,14 @@ namespace DraftAnalyzer
 			// 
 			// numericUpDownWeight
 			// 
-			this.numericUpDownWeight.Location = new System.Drawing.Point(115, 185);
+			this.numericUpDownWeight.Location = new System.Drawing.Point(115, 242);
 			this.numericUpDownWeight.Name = "numericUpDownWeight";
 			this.numericUpDownWeight.Size = new System.Drawing.Size(47, 24);
 			this.numericUpDownWeight.TabIndex = 203;
 			// 
 			// numericUpDownHeight
 			// 
-			this.numericUpDownHeight.Location = new System.Drawing.Point(27, 185);
+			this.numericUpDownHeight.Location = new System.Drawing.Point(27, 242);
 			this.numericUpDownHeight.Name = "numericUpDownHeight";
 			this.numericUpDownHeight.Size = new System.Drawing.Size(47, 24);
 			this.numericUpDownHeight.TabIndex = 202;
@@ -814,6 +900,11 @@ namespace DraftAnalyzer
 			// numericUpDownCombine
 			// 
 			this.numericUpDownCombine.Location = new System.Drawing.Point(115, 51);
+			this.numericUpDownCombine.Maximum = new decimal(new int[] {
+            200,
+            0,
+            0,
+            0});
 			this.numericUpDownCombine.Name = "numericUpDownCombine";
 			this.numericUpDownCombine.Size = new System.Drawing.Size(47, 24);
 			this.numericUpDownCombine.TabIndex = 201;
@@ -821,6 +912,11 @@ namespace DraftAnalyzer
 			// numericUpDownAttributes
 			// 
 			this.numericUpDownAttributes.Location = new System.Drawing.Point(27, 51);
+			this.numericUpDownAttributes.Maximum = new decimal(new int[] {
+            200,
+            0,
+            0,
+            0});
 			this.numericUpDownAttributes.Name = "numericUpDownAttributes";
 			this.numericUpDownAttributes.Size = new System.Drawing.Size(47, 24);
 			this.numericUpDownAttributes.TabIndex = 200;
@@ -828,7 +924,7 @@ namespace DraftAnalyzer
 			// label13
 			// 
 			this.label13.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.label13.Location = new System.Drawing.Point(9, 212);
+			this.label13.Location = new System.Drawing.Point(9, 269);
 			this.label13.Name = "label13";
 			this.label13.Size = new System.Drawing.Size(82, 22);
 			this.label13.TabIndex = 199;
@@ -848,12 +944,12 @@ namespace DraftAnalyzer
 			// groupBox1
 			// 
 			this.groupBox1.Controls.Add(this.radioButtonAttributesUseMax);
-			this.groupBox1.Controls.Add(this.radioButtonAttributesUseAverage);
 			this.groupBox1.Controls.Add(this.radioButtonAttributesUseMin);
+			this.groupBox1.Controls.Add(this.radioButtonAttributesUseAverage);
 			this.groupBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.groupBox1.Location = new System.Drawing.Point(41, 373);
+			this.groupBox1.Location = new System.Drawing.Point(213, 59);
 			this.groupBox1.Name = "groupBox1";
-			this.groupBox1.Size = new System.Drawing.Size(134, 107);
+			this.groupBox1.Size = new System.Drawing.Size(123, 96);
 			this.groupBox1.TabIndex = 194;
 			this.groupBox1.TabStop = false;
 			this.groupBox1.Text = "Attribute Calc";
@@ -861,7 +957,7 @@ namespace DraftAnalyzer
 			// radioButtonAttributesUseMax
 			// 
 			this.radioButtonAttributesUseMax.AutoSize = true;
-			this.radioButtonAttributesUseMax.Location = new System.Drawing.Point(7, 74);
+			this.radioButtonAttributesUseMax.Location = new System.Drawing.Point(6, 70);
 			this.radioButtonAttributesUseMax.Name = "radioButtonAttributesUseMax";
 			this.radioButtonAttributesUseMax.Size = new System.Drawing.Size(81, 19);
 			this.radioButtonAttributesUseMax.TabIndex = 2;
@@ -869,27 +965,27 @@ namespace DraftAnalyzer
 			this.radioButtonAttributesUseMax.Text = "Use Max";
 			this.radioButtonAttributesUseMax.UseVisualStyleBackColor = true;
 			// 
-			// radioButtonAttributesUseAverage
-			// 
-			this.radioButtonAttributesUseAverage.AutoSize = true;
-			this.radioButtonAttributesUseAverage.Location = new System.Drawing.Point(7, 49);
-			this.radioButtonAttributesUseAverage.Name = "radioButtonAttributesUseAverage";
-			this.radioButtonAttributesUseAverage.Size = new System.Drawing.Size(105, 19);
-			this.radioButtonAttributesUseAverage.TabIndex = 1;
-			this.radioButtonAttributesUseAverage.TabStop = true;
-			this.radioButtonAttributesUseAverage.Text = "Use Average";
-			this.radioButtonAttributesUseAverage.UseVisualStyleBackColor = true;
-			// 
 			// radioButtonAttributesUseMin
 			// 
 			this.radioButtonAttributesUseMin.AutoSize = true;
-			this.radioButtonAttributesUseMin.Location = new System.Drawing.Point(7, 23);
+			this.radioButtonAttributesUseMin.Location = new System.Drawing.Point(6, 20);
 			this.radioButtonAttributesUseMin.Name = "radioButtonAttributesUseMin";
 			this.radioButtonAttributesUseMin.Size = new System.Drawing.Size(78, 19);
 			this.radioButtonAttributesUseMin.TabIndex = 0;
 			this.radioButtonAttributesUseMin.TabStop = true;
 			this.radioButtonAttributesUseMin.Text = "Use Min";
 			this.radioButtonAttributesUseMin.UseVisualStyleBackColor = true;
+			// 
+			// radioButtonAttributesUseAverage
+			// 
+			this.radioButtonAttributesUseAverage.AutoSize = true;
+			this.radioButtonAttributesUseAverage.Location = new System.Drawing.Point(6, 45);
+			this.radioButtonAttributesUseAverage.Name = "radioButtonAttributesUseAverage";
+			this.radioButtonAttributesUseAverage.Size = new System.Drawing.Size(105, 19);
+			this.radioButtonAttributesUseAverage.TabIndex = 1;
+			this.radioButtonAttributesUseAverage.TabStop = true;
+			this.radioButtonAttributesUseAverage.Text = "Use Average";
+			this.radioButtonAttributesUseAverage.UseVisualStyleBackColor = true;
 			// 
 			// buttonSaveAs
 			// 
@@ -916,7 +1012,7 @@ namespace DraftAnalyzer
 			// buttonFOFDefaults
 			// 
 			this.buttonFOFDefaults.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.buttonFOFDefaults.Location = new System.Drawing.Point(261, 12);
+			this.buttonFOFDefaults.Location = new System.Drawing.Point(256, 4);
 			this.buttonFOFDefaults.Name = "buttonFOFDefaults";
 			this.buttonFOFDefaults.Size = new System.Drawing.Size(75, 23);
 			this.buttonFOFDefaults.TabIndex = 197;
@@ -927,7 +1023,7 @@ namespace DraftAnalyzer
 			// buttonAllOnes
 			// 
 			this.buttonAllOnes.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.buttonAllOnes.Location = new System.Drawing.Point(261, 39);
+			this.buttonAllOnes.Location = new System.Drawing.Point(256, 30);
 			this.buttonAllOnes.Name = "buttonAllOnes";
 			this.buttonAllOnes.Size = new System.Drawing.Size(75, 23);
 			this.buttonAllOnes.TabIndex = 198;
@@ -984,7 +1080,6 @@ namespace DraftAnalyzer
 			this.Controls.Add(this.labelAttribute4);
 			this.Controls.Add(this.labelAttribute3);
 			this.Controls.Add(this.labelAttribute2);
-			this.Controls.Add(this.labelAttribute1);
 			this.Controls.Add(this.label6);
 			this.Controls.Add(this.label5);
 			this.Controls.Add(this.label4);
@@ -996,6 +1091,7 @@ namespace DraftAnalyzer
 			this.Controls.Add(this.buttonCancel);
 			this.Controls.Add(this.buttonOK);
 			this.Controls.Add(this.groupBoxGlobal);
+			this.Controls.Add(this.labelAttribute1);
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
@@ -1025,6 +1121,9 @@ namespace DraftAnalyzer
 			((System.ComponentModel.ISupportInitialize)(this.trackBarAttribute15)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.trackBarAttribute12)).EndInit();
 			this.groupBoxGlobal.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)(this.numericUpDownCombineThreshold)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.numericUpDownDevWt)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.numericUpDownAvgDev)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.numericUpDownNoCombineCombine)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.numericUpDownNoCombineAttributes)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.numericUpDownScoutImpression)).EndInit();
@@ -1123,5 +1222,11 @@ namespace DraftAnalyzer
 		private System.Windows.Forms.Label label16;
 		private System.Windows.Forms.Button buttonFOFDefaults;
 		private System.Windows.Forms.Button buttonAllOnes;
+		private System.Windows.Forms.NumericUpDown numericUpDownDevWt;
+		private System.Windows.Forms.NumericUpDown numericUpDownAvgDev;
+		private System.Windows.Forms.Label label18;
+		private System.Windows.Forms.Label label19;
+		private System.Windows.Forms.NumericUpDown numericUpDownCombineThreshold;
+		private System.Windows.Forms.Label label20;
 	}
 }

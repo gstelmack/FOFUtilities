@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Stelmacksoft")]
 [assembly: AssemblyProduct("FOFUtilitySuite")]
-[assembly: AssemblyCopyright("Copyright © Stelmacksoft 2006-2012")]
+[assembly: AssemblyCopyright("Copyright © Stelmacksoft 2006-2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

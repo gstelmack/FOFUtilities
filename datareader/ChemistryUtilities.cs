@@ -34,7 +34,7 @@ namespace DataReader
 			Affinity
 		}
 
-		private enum AstrologicalSign
+		public enum AstrologicalSign
 		{
 			Aries,
 			Taurus,
@@ -51,7 +51,7 @@ namespace DataReader
 			Error
 		}
 
-		private static AstrologicalSign GetSign(Birthday testDay)
+		public static AstrologicalSign GetSign(Birthday testDay)
 		{
 			switch (testDay.Month)
 			{

@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources name="Dutch Base">
-	<entry name="Service Years">
-		<substitution fofid="323" pkgid="101"/>
-		<substitution fofid="325" pkgid="102"/>
-	</entry>
-</resources>

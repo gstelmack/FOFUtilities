@@ -66,6 +66,13 @@ namespace DraftAnalyzer
 			public double ScoutImpressionScore;
 			public double ChemistryScore;
 			public double OverallScore;
+			public double DevelopmentScore;
+			public double SolecismicRating;
+			public double FortyRating;
+			public double AgilityRating;
+			public double BenchRating;
+			public double BroadJumpRating;
+			public double PositionDrillRating;
 		}
 
 		private class PlayerData
@@ -75,17 +82,8 @@ namespace DraftAnalyzer
 			public string mPositionGroup;
 			public string mCollege;
 			public string mBirthDate;
-			public string mHomeTown;
-			public string mAgent;
 			public int mHeight;
 			public int mWeight;
-			public int mVolatility;
-			public int mLoyalty;
-			public int mPlayForWinner;
-			public int mLeadership;
-			public int mIntelligence;
-			public int mPersonality;
-			public int mPopularity;
 			public int mSolecismic;
 			public double m40Time;
 			public int mBench;
@@ -93,14 +91,13 @@ namespace DraftAnalyzer
 			public int mBroadJump;
 			public int mPositionDrill;
 			public int mPercentDeveloped;
+			public double mGrade;
 			public string mInterviewed;
-			public string mImpression;
 			public string mConflicts;
 			public string mAffinities;
-			public string mCharacter;
 			public int mFormations;
 			public int[] mAttributes = new int[kMaxAttributeCounts*2];
-            public int[] mCombinePrediction = new int[kMaxAttributeCounts];
+			public int[] mCombinePrediction = new int[kMaxAttributeCounts];
 			public int mOriginalOrder;
 			public int mDesiredOrder;
 			public bool mDrafted;
@@ -112,6 +109,9 @@ namespace DraftAnalyzer
 			public string mRatedPosition;
 			public double mCombineSum;
 			public double mRating;
+			public double mDevelopmentRating;
+			public double mChemistryRating;
+			public double mScoutImpressionRating;
 
 			public double mSolecismicRating;
 			public double mFortyRating;
@@ -123,6 +123,8 @@ namespace DraftAnalyzer
 			public double mAffinitiesFactor = 1.0;
 			public double mConflictsFactor = 1.0;
 
+			public ChemistryUtilities.AstrologicalSign mAstrologicalSign;
+
 			public List<PositionRating> mPositionRatings = new List<PositionRating>();
 		}
 
@@ -130,28 +132,22 @@ namespace DraftAnalyzer
 		{
 			public double mSolecismicAverage;
 			public double mSolecismicStdDev;
-			public double mSolecismicMin;
-			public double mSolecismicMax;
+			public double mSolecismicThreshold;
 			public double m40YardAverage;
 			public double m40YardStdDev;
-			public double m40YardMin;
-			public double m40YardMax;
+			public double m40YardThreshold;
 			public double mBenchAverage;
 			public double mBenchStdDev;
-			public double mBenchMin;
-			public double mBenchMax;
+			public double mBenchThreshold;
 			public double mAgilityAverage;
 			public double mAgilityStdDev;
-			public double mAgilityMin;
-			public double mAgilityMax;
+			public double mAgilityThreshold;
 			public double mBroadJumpAverage;
 			public double mBroadJumpStdDev;
-			public double mBroadJumpMin;
-			public double mBroadJumpMax;
+			public double mBroadJumpThreshold;
 			public double mPositionDrillAverage;
 			public double mPositionDrillStdDev;
-			public double mPositionDrillMin;
-			public double mPositionDrillMax;
+			public double mPositionDrillThreshold;
 		}
 
 		private class PositionSizeRanges
@@ -174,12 +170,14 @@ namespace DraftAnalyzer
 		private System.Collections.Generic.SortedList<int, int> mDraftOrderList = null;	// Draft order is key, player data index is value.
 		private System.Collections.Generic.Dictionary<string, string> mPositionToPositionGroupMap = null;
 		private System.Collections.Generic.Dictionary<string, PositionSizeRanges> mPositionSizeRangesMap = null;
+		private Dictionary<string, double> m_PositionWeightsDefaultMap = new Dictionary<string, double>();
 
 		private System.Collections.ArrayList mPlayerData = null;
 
-        private WindowsUtilities.XMLSettings mSettings;
-        private const string kSettingsRoot = "DraftAnalyzer";
-        private const string kSortDraftedToBottom = "SortDraftedToBottom";
+		private WindowsUtilities.XMLSettings mSettings;
+		private const string kSettingsRoot = "DraftAnalyzer";
+		private const string kSortDraftedToBottom = "SortDraftedToBottom";
+		private const string kColorChemistryGroups = "ColorChemistryGroups";
 
 		public DraftAnalyzerForm()
 		{
@@ -193,8 +191,14 @@ namespace DraftAnalyzer
 			showCombineScoresToolStripMenuItem.Checked = false;
 			showCombineValuesToolStripMenuItem.Checked = true;
 
-			Assembly a = typeof(DraftAnalyzerForm).Assembly;
-			Text += " v" + a.GetName().Version;
+			try
+			{
+				Text += " v" + System.Deployment.Application.ApplicationDeployment.CurrentDeployment.CurrentVersion;
+			}
+			catch
+			{
+				Text += " DEBUG";
+			}
 
 			InitializeMaps();
 			InitializeSorters();
@@ -209,12 +213,13 @@ namespace DraftAnalyzer
 				sortByToolStripMenuItem.DropDownItems.Add(newMenuItem);
 			}
 
-			mWeightsForm = new WeightsForm(mPositionGroupAttributeNames,mPositionToPositionGroupMap);
+			mWeightsForm = new WeightsForm(mPositionGroupAttributeNames);
 			mChemistryForm = new ChemistryForm();
 
-            string settingsPath = System.IO.Path.Combine(WindowsUtilities.OutputLocation.Get(), "DraftAnalyzer.ini");
-            mSettings = new WindowsUtilities.XMLSettings(settingsPath);
-            sortDraftedToBottomToolStripMenuItem.Checked = mSettings.ReadXMLbool(kSettingsRoot, kSortDraftedToBottom, false);
+			string settingsPath = System.IO.Path.Combine(WindowsUtilities.OutputLocation.Get(), "DraftAnalyzer.ini");
+			mSettings = new WindowsUtilities.XMLSettings(settingsPath);
+			sortDraftedToBottomToolStripMenuItem.Checked = mSettings.ReadXMLbool(kSettingsRoot, kSortDraftedToBottom, false);
+			colorChemistryGroupsToolStripMenuItem.Checked = mSettings.ReadXMLbool(kSettingsRoot, kColorChemistryGroups, true);
 
 			DisplayPlayerDetails(null);
 		}
@@ -244,13 +249,16 @@ namespace DraftAnalyzer
 
 		private void loadExtractorOutputToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			OpenFileDialog dlg = new OpenFileDialog();
-			dlg.Filter = "Extractor files (*.csv)|*.csv|All files (*.*)|*.*";
-			dlg.FilterIndex = 0;
+			FolderBrowserDialog dlg = new FolderBrowserDialog();
+			dlg.ShowNewFolderButton = false;
+			dlg.Description = "Select the League";
+			string appData = System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData);
+			dlg.RootFolder = Environment.SpecialFolder.ApplicationData;
+			dlg.SelectedPath = System.IO.Path.Combine(appData, "Solecismic Software", "Front Office Football Seven", "leaguedata");
 			if (dlg.ShowDialog() == DialogResult.OK)
 			{
 				UnselectPlayer();
-				LoadExtractorFile(dlg.FileName);
+				LoadExportedDraftees(dlg.SelectedPath);
 				DisplayPlayerData();
 				saveDraftListToolStripMenuItem.Enabled = true;
 			}
@@ -290,34 +298,24 @@ namespace DraftAnalyzer
 			{
 				using (System.IO.StreamWriter outFile = new System.IO.StreamWriter(dlg.FileName))
 				{
-					outFile.WriteLine("Name,Position,PositionGroup,College,BirthDate,HomeTown,Agent,Height,Weight," +
+					outFile.WriteLine("Name,Position,PositionGroup,College,Birthdate,Height,Weight," +
 						"HeightBand,WeightBand,"+
-						"Volatility,Loyalty,PlayForWinner,Leadership,Intelligence,Personality,Solecismic," +
-							"40Time,Bench,Agility,BroadJump,PosDrill,Developed,Interviewed,Impression,Conflicts," +
-								"Affinities,Character,Formations,OrgOrder,DesiredOrder,Drafted,DraftedOrder,Marked,DraftPosition," +
-									"RatedPosition,CombineSum,Rating");
+						"Solecismic,40Time,Bench,Agility,BroadJump,PosDrill,Developed,Grade,Interviewed,Conflicts," +
+						"Affinities,Formations,OrgOrder,DesiredOrder,Drafted,DraftedOrder,Marked,DraftPosition," +
+						"RatedPosition,CombineSum,Rating");
 					foreach(PlayerData curData in mPlayerData)
 					{
 						SizeBands heightBand = GetHeightBandIndex(curData.mPosition, curData.mHeight);
 						SizeBands weightBand = GetWeightBandIndex(curData.mPosition, curData.mWeight);
-
 						outFile.Write("\"" + curData.mName + "\",");
 						outFile.Write("\"" + curData.mPosition + "\",");
 						outFile.Write("\"" + curData.mPositionGroup + "\",");
 						outFile.Write("\"" + curData.mCollege + "\",");
 						outFile.Write("\"" + curData.mBirthDate + "\",");
-						outFile.Write("\"" + curData.mHomeTown + "\",");
-						outFile.Write("\"" + curData.mAgent + "\",");
 						outFile.Write(curData.mHeight + ",");
 						outFile.Write(curData.mWeight + ",");
 						outFile.Write("\"" + kHeightBands[(int)heightBand] + "\",");
 						outFile.Write("\"" + kWeightBands[(int)weightBand] + "\",");
-						outFile.Write(curData.mVolatility + ",");
-						outFile.Write(curData.mLoyalty + ",");
-						outFile.Write(curData.mPlayForWinner + ",");
-						outFile.Write(curData.mLeadership + ",");
-						outFile.Write(curData.mIntelligence + ",");
-						outFile.Write(curData.mPersonality + ",");
 						outFile.Write(curData.mSolecismic + ",");
 						outFile.Write(curData.m40Time.ToString("F2") + ",");
 						outFile.Write(curData.mBench + ",");
@@ -325,11 +323,10 @@ namespace DraftAnalyzer
 						outFile.Write(curData.mBroadJump + ",");
 						outFile.Write(curData.mPositionDrill + ",");
 						outFile.Write(curData.mPercentDeveloped + ",");
+						outFile.Write(curData.mGrade.ToString("F1") + ",");
 						outFile.Write("\"" + curData.mInterviewed + "\",");
-						outFile.Write("\"" + curData.mImpression + "\",");
 						outFile.Write("\"" + curData.mConflicts + "\",");
 						outFile.Write("\"" + curData.mAffinities + "\",");
-						outFile.Write("\"" + curData.mCharacter + "\",");
 						outFile.Write(curData.mFormations + ",");
 						outFile.Write(curData.mOriginalOrder + ",");
 						outFile.Write(curData.mDesiredOrder + ",");
@@ -385,11 +382,12 @@ namespace DraftAnalyzer
 			}
 		}
 
-		private void ColorCombineRating(ListViewItem.ListViewSubItem subItem, double score, double avg, double stdDev)
+		private void ColorCombineRating(ListViewItem.ListViewSubItem subItem, double score, double avg, double stdDev, double threshold)
 		{
 			if (score == 0.0)
 			{
 				subItem.BackColor = Color.Orange;
+				subItem.ForeColor = Color.Black;
 			}
 			else
 			{
@@ -420,316 +418,391 @@ namespace DraftAnalyzer
 					subItem.BackColor = Color.ForestGreen;
 					subItem.ForeColor = Color.White;
 				}
+				else
+				{
+					subItem.BackColor = Color.White;
+					subItem.ForeColor = Color.Black;
+				}
 				if (mCombineDisplayType == CombineDisplayType.DisplayStdDevs)
 				{
 					subItem.Text = stdDevs.ToString("F2");
+				}
+				if (mWeightsForm.GlobalWeights.CombineThresholdPenalty != 0 && threshold != 0)
+				{
+					if ((stdDev < 0 && score > threshold) || (stdDev > 0 && score < threshold))
+					{
+						subItem.BackColor = Color.Red;
+						subItem.ForeColor = Color.Black;
+					}
 				}
 			}
 		}
 
 		private void DisplayPlayerData(int i)
 		{
+			string stage = "";
 			PlayerData data = (PlayerData)mPlayerData[i];
-			CalculatePlayerData(data);
-			ListViewItem item = data.mItem;
-			Color foreColor = SystemColors.ControlText;
-			Color backColor = listViewDraftees.BackColor;
-            item.Checked = false;
-			if (data.mDrafted)
-			{
-				foreColor = Color.Black;
-				backColor = Color.Red;
-                item.Checked = true;
-			}
-			else if (data.mMarked)
-			{
-				foreColor = Color.Black;
-				backColor = Color.Yellow;
-			}
-			else if (item.Selected)
-			{
-				foreColor = SystemColors.HighlightText;
-				backColor = SystemColors.Highlight;
-			}
-			else if (data.mConflicts.Length > 0 || data.mCharacter.Length > 0)
-			{
-				foreColor = Color.Red;
-			}
-			else if (data.mAffinities.Length > 0)
-			{
-				foreColor = Color.Green;
-			}
 
-			item.SubItems.Clear();
-			item.Text = data.mName;
-			PositionGroupCombineData combineData = (PositionGroupCombineData)mPositionGroupCombineMap[data.mPositionGroup];
-			item.BackColor = backColor;
-			item.ForeColor = foreColor;
-			item.UseItemStyleForSubItems = false;
-			ListViewItem.ListViewSubItem subItem = item.SubItems.Add(data.mPosition);
-			subItem.BackColor = backColor;
-			subItem.ForeColor = foreColor;
-			subItem.Tag = mPositionGroupOrderMap[data.mPositionGroup];
-			subItem = item.SubItems.Add(data.mRatedPosition);
-			subItem.BackColor = backColor;
-			subItem.ForeColor = foreColor;
-			subItem.Tag = mPositionGroupOrderMap[mPositionToPositionGroupMap[data.mRatedPosition]];
-			subItem = item.SubItems.Add(data.mVolatility.ToString());
-			subItem.BackColor = backColor;
-			subItem.ForeColor = foreColor;
-			if (mCombineDisplayType == CombineDisplayType.DisplayValues)
+			try
 			{
-				subItem = item.SubItems.Add(data.mSolecismic.ToString());
-			}
-			else
-			{
-				subItem = item.SubItems.Add(data.mSolecismicRating.ToString("F2"));
-			}
-			subItem.BackColor = backColor;
-			subItem.ForeColor = foreColor;
-			ColorCombineRating(subItem, (double)data.mSolecismic, combineData.mSolecismicAverage, combineData.mSolecismicStdDev);
-			if (mCombineDisplayType == CombineDisplayType.DisplayValues)
-			{
-				subItem = item.SubItems.Add(data.m40Time.ToString("F2"));
-			}
-			else
-			{
-				subItem = item.SubItems.Add(data.mFortyRating.ToString("F2"));
-			}
-			subItem.BackColor = backColor;
-			subItem.ForeColor = foreColor;
-			ColorCombineRating(subItem, (double)data.m40Time, combineData.m40YardAverage, combineData.m40YardStdDev);
-			if (mCombineDisplayType == CombineDisplayType.DisplayValues)
-			{
-				subItem = item.SubItems.Add(data.mBench.ToString());
-			}
-			else
-			{
-				subItem = item.SubItems.Add(data.mBenchRating.ToString("F2"));
-			}
-			subItem.BackColor = backColor;
-			subItem.ForeColor = foreColor;
-			ColorCombineRating(subItem, (double)data.mBench, combineData.mBenchAverage, combineData.mBenchStdDev);
-			if (mCombineDisplayType == CombineDisplayType.DisplayValues)
-			{
-				subItem = item.SubItems.Add(data.mAgility.ToString("F2"));
-			}
-			else
-			{
-				subItem = item.SubItems.Add(data.mAgilityRating.ToString("F2"));
-			}
-			subItem.BackColor = backColor;
-			subItem.ForeColor = foreColor;
-			ColorCombineRating(subItem, (double)data.mAgility, combineData.mAgilityAverage, combineData.mAgilityStdDev);
-			if (mCombineDisplayType == CombineDisplayType.DisplayValues)
-			{
-				subItem = item.SubItems.Add(data.mBroadJump.ToString());
-			}
-			else
-			{
-				subItem = item.SubItems.Add(data.mBroadJumpRating.ToString("F2"));
-			}
-			subItem.BackColor = backColor;
-			subItem.ForeColor = foreColor;
-			ColorCombineRating(subItem, (double)data.mBroadJump, combineData.mBroadJumpAverage, combineData.mBroadJumpStdDev);
-			if (mCombineDisplayType == CombineDisplayType.DisplayValues)
-			{
-				subItem = item.SubItems.Add(data.mPositionDrill.ToString());
-			}
-			else
-			{
-				subItem = item.SubItems.Add(data.mPositionDrillRating.ToString("F2"));
-			}
-			subItem.BackColor = backColor;
-			subItem.ForeColor = foreColor;
-			ColorCombineRating(subItem, (double)data.mPositionDrill, combineData.mPositionDrillAverage, combineData.mPositionDrillStdDev);
-			subItem = item.SubItems.Add(data.mPercentDeveloped.ToString());
-			subItem.BackColor = backColor;
-			subItem.ForeColor = foreColor;
-			subItem = item.SubItems.Add(data.mPositionRatings[0].AttributeScore.ToString("F1"));
-			subItem.BackColor = backColor;
-			subItem.ForeColor = foreColor;
-			subItem = item.SubItems.Add(data.mInterviewed);
-			subItem.BackColor = backColor;
-			subItem.ForeColor = foreColor;
-			subItem = item.SubItems.Add(data.mImpression);
-			subItem.BackColor = backColor;
-			subItem.ForeColor = foreColor;
-			subItem = item.SubItems.Add(data.mCombineSum.ToString("F2"));
-			subItem.BackColor = backColor;
-			subItem.ForeColor = foreColor;
-			ColorCombineSum(subItem, data.mCombineSum);
-			subItem = item.SubItems.Add(data.mRating.ToString("F1"));
-			subItem.BackColor = backColor;
-			subItem.ForeColor = foreColor;
-			subItem = item.SubItems.Add(data.mOriginalOrder.ToString());
-			subItem.BackColor = backColor;
-			subItem.ForeColor = foreColor;
-			subItem = item.SubItems.Add(data.mDesiredOrder.ToString());
-			subItem.BackColor = backColor;
-			subItem.ForeColor = foreColor;
-			subItem = item.SubItems.Add(mDraftRoundNameMap[(int)data.mDraftPosition]);
-			subItem.BackColor = backColor;
-			subItem.ForeColor = foreColor;
+				stage = "CalculatePlayerData";
+				CalculatePlayerData(data);
+				ListViewItem item = data.mItem;
+				Color foreColor = SystemColors.ControlText;
+				Color backColor = listViewDraftees.BackColor;
+				item.Checked = false;
+				if (data.mDrafted)
+				{
+					foreColor = Color.Black;
+					backColor = Color.Red;
+					item.Checked = true;
+				}
+				else if (data.mMarked)
+				{
+					foreColor = Color.Black;
+					backColor = Color.Yellow;
+				}
+				else if (item.Selected)
+				{
+					foreColor = SystemColors.HighlightText;
+					backColor = SystemColors.Highlight;
+				}
+				else if (data.mConflicts.Length > 0)
+				{
+					foreColor = Color.Red;
+				}
+				else if (data.mAffinities.Length > 0)
+				{
+					foreColor = Color.Green;
+				}
+				else if (colorChemistryGroupsToolStripMenuItem.Checked)
+				{
+					foreColor = Color.Black;
+					switch (data.mAstrologicalSign)
+					{
+						case ChemistryUtilities.AstrologicalSign.Aquarius:
+						case ChemistryUtilities.AstrologicalSign.Libra:
+						case ChemistryUtilities.AstrologicalSign.Capricorn:
+							backColor = Color.FromArgb(255, 170, 170);
+							break;
 
-			subItem = item.SubItems.Add("0");
+						case ChemistryUtilities.AstrologicalSign.Pisces:
+						case ChemistryUtilities.AstrologicalSign.Taurus:
+						case ChemistryUtilities.AstrologicalSign.Cancer:
+							backColor = Color.FromArgb(255, 255, 170);
+							break;
 
-			item.Tag = data;
+						case ChemistryUtilities.AstrologicalSign.Aries:
+						case ChemistryUtilities.AstrologicalSign.Gemini:
+						case ChemistryUtilities.AstrologicalSign.Scorpio:
+							backColor = Color.FromArgb(170, 170, 255);
+							break;
+
+						case ChemistryUtilities.AstrologicalSign.Leo:
+						case ChemistryUtilities.AstrologicalSign.Virgo:
+						case ChemistryUtilities.AstrologicalSign.Sagittarius:
+							backColor = Color.FromArgb(170, 255, 170);
+							break;
+					}
+				}
+				item.SubItems.Clear();
+				item.Text = data.mName;
+				stage = "CombineData Retrieval";
+				PositionGroupCombineData combineData = (PositionGroupCombineData)mPositionGroupCombineMap[data.mPositionGroup];
+				item.BackColor = backColor;
+				item.ForeColor = foreColor;
+				item.UseItemStyleForSubItems = false;
+				stage = "Add Position";
+				ListViewItem.ListViewSubItem subItem = item.SubItems.Add(data.mPosition);
+				subItem.BackColor = backColor;
+				subItem.ForeColor = foreColor;
+				stage = "Add PositionGroup";
+				subItem.Tag = mPositionGroupOrderMap[data.mPositionGroup];
+				subItem = item.SubItems.Add(data.mGrade.ToString("F1"));
+				subItem.BackColor = backColor;
+				subItem.ForeColor = foreColor;
+				stage = "Solecismic Rating";
+				if (mCombineDisplayType == CombineDisplayType.DisplayValues)
+				{
+					subItem = item.SubItems.Add(data.mSolecismic.ToString());
+				}
+				else
+				{
+					subItem = item.SubItems.Add(data.mSolecismicRating.ToString("F2"));
+				}
+				subItem.BackColor = backColor;
+				subItem.ForeColor = foreColor;
+				stage = "Color Solecismic Rating";
+				ColorCombineRating(subItem, (double)data.mSolecismic, combineData.mSolecismicAverage, combineData.mSolecismicStdDev, combineData.mSolecismicThreshold);
+				stage = "40 Time";
+				if (mCombineDisplayType == CombineDisplayType.DisplayValues)
+				{
+					subItem = item.SubItems.Add(data.m40Time.ToString("F2"));
+				}
+				else
+				{
+					subItem = item.SubItems.Add(data.mFortyRating.ToString("F2"));
+				}
+				subItem.BackColor = backColor;
+				subItem.ForeColor = foreColor;
+				stage = "Color 40 Time";
+				ColorCombineRating(subItem, (double)data.m40Time, combineData.m40YardAverage, combineData.m40YardStdDev, combineData.m40YardThreshold);
+				stage = "Bench";
+				if (mCombineDisplayType == CombineDisplayType.DisplayValues)
+				{
+					subItem = item.SubItems.Add(data.mBench.ToString());
+				}
+				else
+				{
+					subItem = item.SubItems.Add(data.mBenchRating.ToString("F2"));
+				}
+				subItem.BackColor = backColor;
+				subItem.ForeColor = foreColor;
+				stage = "Color Bench";
+				ColorCombineRating(subItem, (double)data.mBench, combineData.mBenchAverage, combineData.mBenchStdDev, combineData.mBenchThreshold);
+				stage = "Agility";
+				if (mCombineDisplayType == CombineDisplayType.DisplayValues)
+				{
+					subItem = item.SubItems.Add(data.mAgility.ToString("F2"));
+				}
+				else
+				{
+					subItem = item.SubItems.Add(data.mAgilityRating.ToString("F2"));
+				}
+				subItem.BackColor = backColor;
+				subItem.ForeColor = foreColor;
+				stage = "Color Agility";
+				ColorCombineRating(subItem, (double)data.mAgility, combineData.mAgilityAverage, combineData.mAgilityStdDev, combineData.mAgilityThreshold);
+				stage = "Broad Jump";
+				if (mCombineDisplayType == CombineDisplayType.DisplayValues)
+				{
+					subItem = item.SubItems.Add(data.mBroadJump.ToString());
+				}
+				else
+				{
+					subItem = item.SubItems.Add(data.mBroadJumpRating.ToString("F2"));
+				}
+				subItem.BackColor = backColor;
+				subItem.ForeColor = foreColor;
+				stage = "Color Broad Jump";
+				ColorCombineRating(subItem, (double)data.mBroadJump, combineData.mBroadJumpAverage, combineData.mBroadJumpStdDev, combineData.mBroadJumpThreshold);
+				stage = "Position Drill";
+				if (mCombineDisplayType == CombineDisplayType.DisplayValues)
+				{
+					subItem = item.SubItems.Add(data.mPositionDrill.ToString());
+				}
+				else
+				{
+					subItem = item.SubItems.Add(data.mPositionDrillRating.ToString("F2"));
+				}
+				subItem.BackColor = backColor;
+				subItem.ForeColor = foreColor;
+				stage = "Color Position Drill";
+				ColorCombineRating(subItem, (double)data.mPositionDrill, combineData.mPositionDrillAverage, combineData.mPositionDrillStdDev, combineData.mPositionDrillThreshold);
+				stage = "Percent Developed";
+				subItem = item.SubItems.Add(data.mPercentDeveloped.ToString());
+				subItem.BackColor = backColor;
+				subItem.ForeColor = foreColor;
+				stage = "Attribute Score";
+				subItem = item.SubItems.Add(data.mPositionRatings[0].AttributeScore.ToString("F1"));
+				subItem.BackColor = backColor;
+				subItem.ForeColor = foreColor;
+				stage = "Combine Sum";
+				subItem = item.SubItems.Add(data.mCombineSum.ToString("F2"));
+				subItem.BackColor = backColor;
+				subItem.ForeColor = foreColor;
+				stage = "Color Combine Sum";
+				ColorCombineSum(subItem, data.mCombineSum);
+				stage = "Rating";
+				subItem = item.SubItems.Add(data.mRating.ToString("F1"));
+				subItem.BackColor = backColor;
+				subItem.ForeColor = foreColor;
+				stage = "Desired Order";
+				subItem = item.SubItems.Add(data.mDesiredOrder.ToString());
+				subItem.BackColor = backColor;
+				subItem.ForeColor = foreColor;
+				stage = "DraftRoundMap";
+				subItem = item.SubItems.Add(mDraftRoundNameMap[(int)data.mDraftPosition]);
+				subItem.BackColor = backColor;
+				subItem.ForeColor = foreColor;
+
+				// Add an extra column for attribute sorting
+				subItem = item.SubItems.Add("0");
+
+				item.Tag = data;
+			}
+			catch (Exception e)
+			{
+				MessageBox.Show("Error displaying player '" + data.mName + "' during stage " + stage + ": " + e.ToString(), "Error Displaying Player",
+					MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+		}
+
+		private void CopyPosRatingToPlayerData(PositionRating posRating, PlayerData data)
+		{
+			data.mCombineSum = posRating.CombineScore;
+			data.mRating = posRating.OverallScore;
+			data.mRatedPosition = posRating.Position;
+			data.mSolecismicRating = posRating.SolecismicRating;
+			data.mFortyRating = posRating.FortyRating;
+			data.mBenchRating = posRating.BenchRating;
+			data.mBroadJumpRating = posRating.BroadJumpRating;
+			data.mPositionDrillRating = posRating.PositionDrillRating;
+			data.mAgilityRating = posRating.AgilityRating;
+			data.mDevelopmentRating = posRating.DevelopmentScore;
+			data.mChemistryRating = posRating.ChemistryScore;
+			data.mScoutImpressionRating = posRating.ScoutImpressionScore;
 		}
 
 		private void CalculatePlayerData(PlayerData data)
 		{
 			data.mPositionRatings = new List<PositionRating>();
-			data.mPositionRatings.Add(CalculatePositionRating(data, data.mPosition));
+			PositionRating posRating = CalculatePositionRating(data, data.mPosition);
+			data.mPositionRatings.Add(posRating);
+			CopyPosRatingToPlayerData(posRating, data);
 			string positionGroup = mPositionToPositionGroupMap[data.mPosition];
 			foreach (string clonePosition in mPositionToPositionGroupMap.Keys)
 			{
 				if (clonePosition != data.mPosition && mPositionToPositionGroupMap[clonePosition] == positionGroup)
 				{
-					data.mPositionRatings.Add(CalculatePositionRating(data, clonePosition));
+					posRating = CalculatePositionRating(data, clonePosition);
+					data.mPositionRatings.Add(posRating);
+					if (posRating.OverallScore > data.mRating)
+					{
+						CopyPosRatingToPlayerData(posRating, data);
+					}
 				}
 			}
 
-			data.mCombineSum = data.mPositionRatings[0].CombineScore;
-			data.mRating = data.mPositionRatings[0].OverallScore;
-			data.mRatedPosition = data.mPositionRatings[0].Position;
+			PredictAttributesFromCombines(data);
 
-			foreach (PositionRating posRating in data.mPositionRatings)
+			ChemistryUtilities.Birthday bDay = ChemistryUtilities.Birthday.Parse(data.mBirthDate);
+			data.mAstrologicalSign = ChemistryUtilities.GetSign(bDay);
+		}
+
+		#region PredictAttributes
+		private void PredictAttributesFromCombines(PlayerData data)
+		{
+			if (data.mPositionGroup == "QB")
 			{
-				if (posRating.OverallScore > data.mRating)
+				PredictQBAttributes(data);
+			}
+			else if (data.mPositionGroup == "RB")
+			{
+				PredictRBAttributes(data);
+			}
+			else if (data.mPositionGroup == "FB")
+			{
+				PredictFBAttributes(data);
+			}
+			else if (data.mPositionGroup == "WR")
+			{
+				PredictWRAttributes(data);
+			}
+			else if (data.mPositionGroup == "TE")
+			{
+				PredictTEAttributes(data);
+			}
+			else if (data.mPositionGroup == "T")
+			{
+				PredictOLAttributes(data);
+			}
+			else if (data.mPositionGroup == "G")
+			{
+				PredictOLAttributes(data);
+			}
+			else if (data.mPositionGroup == "C")
+			{
+				PredictOLAttributes(data);
+			}
+			else if (data.mPositionGroup == "DE")
+			{
+				PredictDLAttributes(data);
+			}
+			else if (data.mPositionGroup == "DT")
+			{
+				PredictDLAttributes(data);
+			}
+			else if (data.mPositionGroup == "OLB")
+			{
+				PredictLBAttributes(data);
+			}
+			else if (data.mPositionGroup == "ILB")
+			{
+				PredictLBAttributes(data);
+			}
+			else if (data.mPositionGroup == "CB")
+			{
+				PredictDBAttributes(data);
+			}
+			else if (data.mPositionGroup == "S")
+			{
+				PredictDBAttributes(data);
+			}
+			else if (data.mPositionGroup == "P")
+			{
+				PredictPAttributes(data);
+			}
+			else if (data.mPositionGroup == "K")
+			{
+				PredictKAttributes(data);
+			}
+		}
+
+		void CalculateCombineStdDevs(PlayerData data, out double sole, out double forty, out double bench, out double agility, out double bj, out double posDrill)
+		{
+			sole = 0.0;
+			forty = 0.0;
+			bench = 0.0;
+			agility = 0.0;
+			bj = 0.0;
+			posDrill = 0.0;
+
+			PositionGroupCombineData combineData = (PositionGroupCombineData)mPositionGroupCombineMap[data.mPositionGroup];
+			if (data.mSolecismic != 0 && data.m40Time != 0.0 && data.mBench != 0 && data.mAgility != 0.0 && data.mBroadJump != 0)
+			{
+				sole = ((((double)data.mSolecismic) - combineData.mSolecismicAverage) / combineData.mSolecismicStdDev);
+				forty = ((((double)data.m40Time) - combineData.m40YardAverage) / combineData.m40YardStdDev);
+				bench = ((((double)data.mBench) - combineData.mBenchAverage) / combineData.mBenchStdDev);
+				agility = ((((double)data.mAgility) - combineData.mAgilityAverage) / combineData.mAgilityStdDev);
+				bj = ((((double)data.mBroadJump) - combineData.mBroadJumpAverage) / combineData.mBroadJumpStdDev);
+				if (combineData.mPositionDrillStdDev != 0.0)
 				{
-					data.mCombineSum = posRating.CombineScore;
-					data.mRating = posRating.OverallScore;
-					data.mRatedPosition = posRating.Position;
+					posDrill += ((((double)data.mPositionDrill) - combineData.mPositionDrillAverage) / combineData.mPositionDrillStdDev);
 				}
 			}
+		}
 
-            PredictAttributesFromCombines(data);
-        }
+		int GeneratePredictedScore(double combine)
+		{
+			int score = 0;
+			if (combine >= 0.0)
+			{
+				score = 35 + (int)Math.Floor((combine / 6.0) * 65.0);
+				if (score > 97)
+				{
+					score = 97;
+				}
+			}
+			else
+			{
+				score = 35 + (int)Math.Floor((combine / 6.0) * 35.0);
+				if (score < 3)
+				{
+					score = 3;
+				}
+			}
+			return score;
+		}
 
-        #region PredictAttributes
-        private void PredictAttributesFromCombines(PlayerData data)
-        {
-            if (data.mPositionGroup == "QB")
-            {
-                PredictQBAttributes(data);
-            }
-            else if (data.mPositionGroup == "RB")
-            {
-                PredictRBAttributes(data);
-            }
-            else if (data.mPositionGroup == "FB")
-            {
-                PredictFBAttributes(data);
-            }
-            else if (data.mPositionGroup == "WR")
-            {
-                PredictWRAttributes(data);
-            }
-            else if (data.mPositionGroup == "TE")
-            {
-                PredictTEAttributes(data);
-            }
-            else if (data.mPositionGroup == "T")
-            {
-                PredictOLAttributes(data);
-            }
-            else if (data.mPositionGroup == "G")
-            {
-                PredictOLAttributes(data);
-            }
-            else if (data.mPositionGroup == "C")
-            {
-                PredictOLAttributes(data);
-            }
-            else if (data.mPositionGroup == "DE")
-            {
-                PredictDLAttributes(data);
-            }
-            else if (data.mPositionGroup == "DT")
-            {
-                PredictDLAttributes(data);
-            }
-            else if (data.mPositionGroup == "OLB")
-            {
-                PredictLBAttributes(data);
-            }
-            else if (data.mPositionGroup == "ILB")
-            {
-                PredictLBAttributes(data);
-            }
-            else if (data.mPositionGroup == "CB")
-            {
-                PredictDBAttributes(data);
-            }
-            else if (data.mPositionGroup == "S")
-            {
-                PredictDBAttributes(data);
-            }
-            else if (data.mPositionGroup == "P")
-            {
-                PredictPAttributes(data);
-            }
-            else if (data.mPositionGroup == "K")
-            {
-                PredictKAttributes(data);
-            }
-        }
+		void PredictQBAttributes(PlayerData data)
+		{
+			double sole, forty, bench, agility, broadjump, posDrill;
+			CalculateCombineStdDevs(data,out sole,out forty,out bench,out agility,out broadjump,out posDrill);
 
-        void CalculateCombineStdDevs(PlayerData data, out double sole, out double forty, out double bench, out double agility, out double bj, out double posDrill)
-        {
-            sole = 0.0;
-            forty = 0.0;
-            bench = 0.0;
-            agility = 0.0;
-            bj = 0.0;
-            posDrill = 0.0;
-
-            PositionGroupCombineData combineData = (PositionGroupCombineData)mPositionGroupCombineMap[data.mPositionGroup];
-            if (data.mSolecismic != 0 && data.m40Time != 0.0 && data.mBench != 0 && data.mAgility != 0.0 && data.mBroadJump != 0)
-            {
-                sole = ((((double)data.mSolecismic) - combineData.mSolecismicAverage) / combineData.mSolecismicStdDev);
-                forty = ((((double)data.m40Time) - combineData.m40YardAverage) / combineData.m40YardStdDev);
-                bench = ((((double)data.mBench) - combineData.mBenchAverage) / combineData.mBenchStdDev);
-                agility = ((((double)data.mAgility) - combineData.mAgilityAverage) / combineData.mAgilityStdDev);
-                bj = ((((double)data.mBroadJump) - combineData.mBroadJumpAverage) / combineData.mBroadJumpStdDev);
-                if (combineData.mPositionDrillStdDev != 0.0)
-                {
-                    posDrill += ((((double)data.mPositionDrill) - combineData.mPositionDrillAverage) / combineData.mPositionDrillStdDev);
-                }
-            }
-        }
-
-        int GeneratePredictedScore(double combine)
-        {
-            int score = 0;
-            if (combine >= 0.0)
-            {
-                score = 35 + (int)Math.Floor((combine / 6.0) * 65.0);
-                if (score > 97)
-                {
-                    score = 97;
-                }
-            }
-            else
-            {
-                score = 35 + (int)Math.Floor((combine / 6.0) * 35.0);
-                if (score < 3)
-                {
-                    score = 3;
-                }
-            }
-            return score;
-        }
-
-        void PredictQBAttributes(PlayerData data)
-        {
-            double sole, forty, bench, agility, broadjump, posDrill;
-            CalculateCombineStdDevs(data,out sole,out forty,out bench,out agility,out broadjump,out posDrill);
-
-            data.mCombinePrediction[0] = GeneratePredictedScore(agility);   // "Screen Passes"
-            data.mCombinePrediction[1] = -1;                                // "Short Passes",
-            data.mCombinePrediction[2] = GeneratePredictedScore(broadjump); // "Medium Passes",
+			data.mCombinePrediction[0] = GeneratePredictedScore(agility);   // "Screen Passes"
+			data.mCombinePrediction[1] = -1;                                // "Short Passes",
+			data.mCombinePrediction[2] = GeneratePredictedScore(broadjump); // "Medium Passes",
 			data.mCombinePrediction[3] = GeneratePredictedScore(bench);	    // "Long Passes",
 			data.mCombinePrediction[4] = GeneratePredictedScore(bench); 	// "Deep Passes",
 			data.mCombinePrediction[5] = GeneratePredictedScore(broadjump);	// "Third Down Passing",
@@ -740,217 +813,272 @@ namespace DraftAnalyzer
 			data.mCombinePrediction[10] = -1;                           	// "Two Minute Offense",
 			data.mCombinePrediction[11] = GeneratePredictedScore(forty);	// "Scramble Frequency",
 			data.mCombinePrediction[12] = -1;           	                // "Kick Holding"
-        }
+		}
 
-        void PredictRBAttributes(PlayerData data)
-        {
-            double sole, forty, bench, agility, broadjump, posDrill;
-            CalculateCombineStdDevs(data,out sole,out forty,out bench,out agility,out broadjump,out posDrill);
+		void PredictRBAttributes(PlayerData data)
+		{
+			double sole, forty, bench, agility, broadjump, posDrill;
+			CalculateCombineStdDevs(data,out sole,out forty,out bench,out agility,out broadjump,out posDrill);
 
 			data.mCombinePrediction[0] = GeneratePredictedScore(forty);     // 	"Breakaway Speed (Ft80)",
-            data.mCombinePrediction[1] = GeneratePredictedScore(bench);     // 	"Power Inside (Bp100)",
-            data.mCombinePrediction[2] = GeneratePredictedScore(agility);   // 	"Third Down Running (Ag33)",
-            data.mCombinePrediction[3] = GeneratePredictedScore(sole);	    // 	"Hole Recognition (So90)",
-            data.mCombinePrediction[4] = GeneratePredictedScore(agility); 	// 	"Elusiveness (Ag33)",
+			data.mCombinePrediction[1] = GeneratePredictedScore(bench);     // 	"Power Inside (Bp100)",
+			data.mCombinePrediction[2] = GeneratePredictedScore(agility);   // 	"Third Down Running (Ag33)",
+			data.mCombinePrediction[3] = GeneratePredictedScore(sole);	    // 	"Hole Recognition (So90)",
+			data.mCombinePrediction[4] = GeneratePredictedScore(agility); 	// 	"Elusiveness (Ag33)",
 			data.mCombinePrediction[5] = GeneratePredictedScore(((broadjump*5.0)+(forty*2.0))/7.0);	// 	"Speed to Outside (Bj50/Ft20)",
 			data.mCombinePrediction[6] = GeneratePredictedScore(posDrill);  // 	"Blitz Pickup (PD90)",
 			data.mCombinePrediction[7] = -1;	                            // 	"Avoid Drops",
 			data.mCombinePrediction[8] = GeneratePredictedScore(agility);	// 	"Getting Downfield (Ag33)",
-            data.mCombinePrediction[9] = -1;                                // 	"Route Running",
-            data.mCombinePrediction[10] = GeneratePredictedScore(posDrill); // 	"Third Down Catching (PD05)",
-            data.mCombinePrediction[11] = -1;                           	// 	"Punt Returns",
+			data.mCombinePrediction[9] = -1;                                // 	"Route Running",
+			data.mCombinePrediction[10] = GeneratePredictedScore(posDrill); // 	"Third Down Catching (PD05)",
+			data.mCombinePrediction[11] = -1;                           	// 	"Punt Returns",
 			data.mCombinePrediction[12] = -1;           	                // 	"Kick Returns",
-            data.mCombinePrediction[13] = GeneratePredictedScore(broadjump);	// 	"Endurance (Bj50)",
-            data.mCombinePrediction[14] = -1;           	                // 	"Special Teams"
-        }
+			data.mCombinePrediction[13] = GeneratePredictedScore(broadjump);	// 	"Endurance (Bj50)",
+			data.mCombinePrediction[14] = -1;           	                // 	"Special Teams"
+		}
 
-        void PredictFBAttributes(PlayerData data)
-        {
-            double sole, forty, bench, agility, broadjump, posDrill;
-            CalculateCombineStdDevs(data, out sole, out forty, out bench, out agility, out broadjump, out posDrill);
+		void PredictFBAttributes(PlayerData data)
+		{
+			double sole, forty, bench, agility, broadjump, posDrill;
+			CalculateCombineStdDevs(data, out sole, out forty, out bench, out agility, out broadjump, out posDrill);
 
 			data.mCombinePrediction[0] = GeneratePredictedScore(broadjump); // 	"Run Blocking",
 			data.mCombinePrediction[1] = -1;                                // 	"Pass Blocking",
 			data.mCombinePrediction[2] = -1;                                // 	"Blocking Strength",
 			data.mCombinePrediction[3] = GeneratePredictedScore(bench);	    // 	"Power Inside",
 			data.mCombinePrediction[4] = GeneratePredictedScore(((broadjump*3.0)+(agility*2.0))/5.0); // 	"Third Down Running",
-            data.mCombinePrediction[5] = GeneratePredictedScore(sole);  	//  "Hole Recognition",
+			data.mCombinePrediction[5] = GeneratePredictedScore(sole);  	//  "Hole Recognition",
 			data.mCombinePrediction[6] = GeneratePredictedScore(posDrill);  // 	"Blitz Pickup",
 			data.mCombinePrediction[7] = -1;	                            // 	"Avoid Drops",
-            data.mCombinePrediction[8] = GeneratePredictedScore(posDrill);	// 	"Route Running",
+			data.mCombinePrediction[8] = GeneratePredictedScore(posDrill);	// 	"Route Running",
 			data.mCombinePrediction[9] = -1;                                // 	"Third Down Catching",
 			data.mCombinePrediction[10] = -1;                               // 	"Endurance",
 			data.mCombinePrediction[11] = -1;                           	// 	"Special Teams"
-        } 
+		} 
 
-        void PredictWRAttributes(PlayerData data)
-        {
-            double sole, forty, bench, agility, broadjump, posDrill;
-            CalculateCombineStdDevs(data, out sole, out forty, out bench, out agility, out broadjump, out posDrill);
+		void PredictWRAttributes(PlayerData data)
+		{
+			double sole, forty, bench, agility, broadjump, posDrill;
+			CalculateCombineStdDevs(data, out sole, out forty, out bench, out agility, out broadjump, out posDrill);
 
-            data.mCombinePrediction[0] = GeneratePredictedScore(posDrill);  // 	"Avoid Drops (PD65)",
-            data.mCombinePrediction[1] = GeneratePredictedScore(agility);   // 	"Getting Downfield (Ag100)",
-            data.mCombinePrediction[2] = GeneratePredictedScore(sole);      // 	"Route Running (So50)",
-            data.mCombinePrediction[3] = -1;	                            // 	"Third Down Catching",
-            data.mCombinePrediction[4] = GeneratePredictedScore(forty); 	// 	"Big Play Receiving (Ft70)",
-            data.mCombinePrediction[5] = GeneratePredictedScore(bench); 	// 	"Courage (Bp100)",
-            data.mCombinePrediction[6] = GeneratePredictedScore(posDrill);  // 	"Adjust to Ball (PD35)",
-            data.mCombinePrediction[7] = GeneratePredictedScore(broadjump);	// 	"Punt Returns (Bj50)",
-            data.mCombinePrediction[8] = GeneratePredictedScore(broadjump);	// 	"Kick Returns (Bj50)",
-            data.mCombinePrediction[9] = -1;                             	// 	"Endurance",
-            data.mCombinePrediction[10] = -1;                           	// 	"Special Teams"
-        }
+			data.mCombinePrediction[0] = GeneratePredictedScore(posDrill);  // 	"Avoid Drops (PD65)",
+			data.mCombinePrediction[1] = GeneratePredictedScore(agility);   // 	"Getting Downfield (Ag100)",
+			data.mCombinePrediction[2] = GeneratePredictedScore(sole);      // 	"Route Running (So50)",
+			data.mCombinePrediction[3] = -1;	                            // 	"Third Down Catching",
+			data.mCombinePrediction[4] = GeneratePredictedScore(forty); 	// 	"Big Play Receiving (Ft70)",
+			data.mCombinePrediction[5] = GeneratePredictedScore(bench); 	// 	"Courage (Bp100)",
+			data.mCombinePrediction[6] = GeneratePredictedScore(posDrill);  // 	"Adjust to Ball (PD35)",
+			data.mCombinePrediction[7] = GeneratePredictedScore(broadjump);	// 	"Punt Returns (Bj50)",
+			data.mCombinePrediction[8] = GeneratePredictedScore(broadjump);	// 	"Kick Returns (Bj50)",
+			data.mCombinePrediction[9] = -1;                             	// 	"Endurance",
+			data.mCombinePrediction[10] = -1;                           	// 	"Special Teams"
+		}
 
-        void PredictTEAttributes(PlayerData data)
-        {
-            double sole, forty, bench, agility, broadjump, posDrill;
-            CalculateCombineStdDevs(data, out sole, out forty, out bench, out agility, out broadjump, out posDrill);
+		void PredictTEAttributes(PlayerData data)
+		{
+			double sole, forty, bench, agility, broadjump, posDrill;
+			CalculateCombineStdDevs(data, out sole, out forty, out bench, out agility, out broadjump, out posDrill);
 
-            data.mCombinePrediction[0] = GeneratePredictedScore(broadjump); //	"Run Blocking",
+			data.mCombinePrediction[0] = GeneratePredictedScore(broadjump); //	"Run Blocking",
 			data.mCombinePrediction[1] = -1;                                //  "Pass Blocking",
 			data.mCombinePrediction[2] = GeneratePredictedScore(bench);     //	"Blocking Strength",
 			data.mCombinePrediction[3] = GeneratePredictedScore(posDrill);  //	"Avoid Drops",
-            data.mCombinePrediction[4] = GeneratePredictedScore((forty+agility)*0.5f);     //	"Getting Downfield",
+			data.mCombinePrediction[4] = GeneratePredictedScore((forty+agility)*0.5f);     //	"Getting Downfield",
 			data.mCombinePrediction[5] = GeneratePredictedScore(sole);      //	"Route Running",
-            data.mCombinePrediction[6] = GeneratePredictedScore(broadjump); //	"Third Down Catching",
+			data.mCombinePrediction[6] = GeneratePredictedScore(broadjump); //	"Third Down Catching",
 			data.mCombinePrediction[7] = GeneratePredictedScore(forty);     //	"Big Play Receiving",
 			data.mCombinePrediction[8] = -1;                                //	"Courage",
 			data.mCombinePrediction[9] = GeneratePredictedScore(posDrill);  //	"Adjust to Ball",
 			data.mCombinePrediction[10] = -1;                               //	"Endurance",
 			data.mCombinePrediction[11] = -1;                               //	"Special Teams",
-            data.mCombinePrediction[12] = -1;                               //	"Long Snapping"
-        }
+			data.mCombinePrediction[12] = -1;                               //	"Long Snapping"
+		}
 
-        void PredictOLAttributes(PlayerData data)
-        {
-            double sole, forty, bench, agility, broadjump, posDrill;
-            CalculateCombineStdDevs(data, out sole, out forty, out bench, out agility, out broadjump, out posDrill);
+		void PredictOLAttributes(PlayerData data)
+		{
+			double sole, forty, bench, agility, broadjump, posDrill;
+			CalculateCombineStdDevs(data, out sole, out forty, out bench, out agility, out broadjump, out posDrill);
 
-            data.mCombinePrediction[0] = GeneratePredictedScore(forty);     //	"Run Blocking (Ft100)",
-            data.mCombinePrediction[1] = GeneratePredictedScore(agility);   //	"Pass Blocking (Ag100)",
-            data.mCombinePrediction[2] = GeneratePredictedScore(bench);     //	"Blocking Strength (Bp100)",
-            data.mCombinePrediction[3] = GeneratePredictedScore(broadjump); //	"Endurance (Bj100)",
-            data.mCombinePrediction[4] = -1;                                //	"Long Snapping"
-        }
+			data.mCombinePrediction[0] = GeneratePredictedScore(forty);     //	"Run Blocking (Ft100)",
+			data.mCombinePrediction[1] = GeneratePredictedScore(agility);   //	"Pass Blocking (Ag100)",
+			data.mCombinePrediction[2] = GeneratePredictedScore(bench);     //	"Blocking Strength (Bp100)",
+			data.mCombinePrediction[3] = GeneratePredictedScore(broadjump); //	"Endurance (Bj100)",
+			data.mCombinePrediction[4] = -1;                                //	"Long Snapping"
+		}
 
-        void PredictDLAttributes(PlayerData data)
-        {
-            double sole, forty, bench, agility, broadjump, posDrill;
-            CalculateCombineStdDevs(data, out sole, out forty, out bench, out agility, out broadjump, out posDrill);
-
-			data.mCombinePrediction[0] = GeneratePredictedScore(agility);   //	"Run Defense (Ag100)",
-            data.mCombinePrediction[1] = GeneratePredictedScore(forty);     //	"Pass Rush Technique (Ft100)",
-            data.mCombinePrediction[2] = GeneratePredictedScore(bench);     //	"Pass Rush Strength (Bp50)",
-            data.mCombinePrediction[3] = GeneratePredictedScore(sole);      //	"Play Diagnosis (So50)",
-            data.mCombinePrediction[4] = GeneratePredictedScore(bench);     //	"Punishing Hitter (Bp50)",
-            data.mCombinePrediction[5] = GeneratePredictedScore(broadjump); //	"Endurance (Bj100)"
-        }
-
-        void PredictLBAttributes(PlayerData data)
-        {
-            double sole, forty, bench, agility, broadjump, posDrill;
-            CalculateCombineStdDevs(data, out sole, out forty, out bench, out agility, out broadjump, out posDrill);
+		void PredictDLAttributes(PlayerData data)
+		{
+			double sole, forty, bench, agility, broadjump, posDrill;
+			CalculateCombineStdDevs(data, out sole, out forty, out bench, out agility, out broadjump, out posDrill);
 
 			data.mCombinePrediction[0] = GeneratePredictedScore(agility);   //	"Run Defense (Ag100)",
-            data.mCombinePrediction[1] = GeneratePredictedScore(forty);     //	"Pass Rush Technique (Ft100)",
-            data.mCombinePrediction[2] = GeneratePredictedScore(broadjump); //	"Man-to-Man Defense (Bj100)",
-            data.mCombinePrediction[3] = GeneratePredictedScore(posDrill);  //	"Zone Defense (PD50)",
-            data.mCombinePrediction[4] = GeneratePredictedScore(bench);     //	"Bump and Run Defense (Bp33)",
-            data.mCombinePrediction[5] = GeneratePredictedScore(bench);     //	"Pass Rush Strength (Bp33)",
-            data.mCombinePrediction[6] = GeneratePredictedScore(sole);      //	"Play Diagnosis (So50)",
-            data.mCombinePrediction[7] = GeneratePredictedScore(bench);     //	"Punishing Hitter (Bp33)",
+			data.mCombinePrediction[1] = GeneratePredictedScore(forty);     //	"Pass Rush Technique (Ft100)",
+			data.mCombinePrediction[2] = GeneratePredictedScore(bench);     //	"Pass Rush Strength (Bp50)",
+			data.mCombinePrediction[3] = GeneratePredictedScore(sole);      //	"Play Diagnosis (So50)",
+			data.mCombinePrediction[4] = GeneratePredictedScore(bench);     //	"Punishing Hitter (Bp50)",
+			data.mCombinePrediction[5] = GeneratePredictedScore(broadjump); //	"Endurance (Bj100)"
+		}
+
+		void PredictLBAttributes(PlayerData data)
+		{
+			double sole, forty, bench, agility, broadjump, posDrill;
+			CalculateCombineStdDevs(data, out sole, out forty, out bench, out agility, out broadjump, out posDrill);
+
+			data.mCombinePrediction[0] = GeneratePredictedScore(agility);   //	"Run Defense (Ag100)",
+			data.mCombinePrediction[1] = GeneratePredictedScore(forty);     //	"Pass Rush Technique (Ft100)",
+			data.mCombinePrediction[2] = GeneratePredictedScore(broadjump); //	"Man-to-Man Defense (Bj100)",
+			data.mCombinePrediction[3] = GeneratePredictedScore(posDrill);  //	"Zone Defense (PD50)",
+			data.mCombinePrediction[4] = GeneratePredictedScore(bench);     //	"Bump and Run Defense (Bp33)",
+			data.mCombinePrediction[5] = GeneratePredictedScore(bench);     //	"Pass Rush Strength (Bp33)",
+			data.mCombinePrediction[6] = GeneratePredictedScore(sole);      //	"Play Diagnosis (So50)",
+			data.mCombinePrediction[7] = GeneratePredictedScore(bench);     //	"Punishing Hitter (Bp33)",
 			data.mCombinePrediction[8] = -1;                                //	"Endurance",
-            data.mCombinePrediction[9] = -1;                                //	"Special Teams"
-        }
+			data.mCombinePrediction[9] = -1;                                //	"Special Teams"
+		}
 
-        void PredictDBAttributes(PlayerData data)
-        {
-            double sole, forty, bench, agility, broadjump, posDrill;
-            CalculateCombineStdDevs(data, out sole, out forty, out bench, out agility, out broadjump, out posDrill);
+		void PredictDBAttributes(PlayerData data)
+		{
+			double sole, forty, bench, agility, broadjump, posDrill;
+			CalculateCombineStdDevs(data, out sole, out forty, out bench, out agility, out broadjump, out posDrill);
 
-            data.mCombinePrediction[0] = GeneratePredictedScore(agility);   //	"Run Defense (Ag100)",
+			data.mCombinePrediction[0] = GeneratePredictedScore(agility);   //	"Run Defense (Ag100)",
 			data.mCombinePrediction[1] = GeneratePredictedScore(forty);     //	"Man-to-Man Defense (Ft50)",
 			data.mCombinePrediction[2] = GeneratePredictedScore((forty+posDrill)*0.5f);     //	"Zone Defense (Ft50PD50)",
-            data.mCombinePrediction[3] = GeneratePredictedScore(bench);     //	"Bump and Run Defense (Bp50)",
-            data.mCombinePrediction[4] = GeneratePredictedScore(sole);      //	"Play Diagnosis (So50)",
-            data.mCombinePrediction[5] = GeneratePredictedScore(bench);     //	"Punishing Hitter (Bp50)",
-            data.mCombinePrediction[6] = GeneratePredictedScore(posDrill);  //	"Interceptions (PD50)",
-            data.mCombinePrediction[7] = GeneratePredictedScore(broadjump); //	"Punt Returns (Bj50)",
-            data.mCombinePrediction[8] = GeneratePredictedScore(broadjump); //	"Kick Returns (Bj50)",
+			data.mCombinePrediction[3] = GeneratePredictedScore(bench);     //	"Bump and Run Defense (Bp50)",
+			data.mCombinePrediction[4] = GeneratePredictedScore(sole);      //	"Play Diagnosis (So50)",
+			data.mCombinePrediction[5] = GeneratePredictedScore(bench);     //	"Punishing Hitter (Bp50)",
+			data.mCombinePrediction[6] = GeneratePredictedScore(posDrill);  //	"Interceptions (PD50)",
+			data.mCombinePrediction[7] = GeneratePredictedScore(broadjump); //	"Punt Returns (Bj50)",
+			data.mCombinePrediction[8] = GeneratePredictedScore(broadjump); //	"Kick Returns (Bj50)",
 			data.mCombinePrediction[9] = -1;                                //	"Endurance",
-            data.mCombinePrediction[10] = -1;                               //	"Special Teams"
-        }
+			data.mCombinePrediction[10] = -1;                               //	"Special Teams"
+		}
 
-        void PredictPAttributes(PlayerData data)
-        {
-            double sole, forty, bench, agility, broadjump, posDrill;
-            CalculateCombineStdDevs(data, out sole, out forty, out bench, out agility, out broadjump, out posDrill);
-
-            data.mCombinePrediction[0] = GeneratePredictedScore(forty);     //	"Kicking Power (Ft100)",
-            data.mCombinePrediction[1] = GeneratePredictedScore(bench);     //	"Punt Hang Time (Bp100)",
-            data.mCombinePrediction[2] = GeneratePredictedScore(sole);      //	"Directional Punting (So50)",
-            data.mCombinePrediction[3] = GeneratePredictedScore(agility);   //	"Kick Holding"
-        }
-
-        void PredictKAttributes(PlayerData data)
-        {
-            double sole, forty, bench, agility, broadjump, posDrill;
-            CalculateCombineStdDevs(data, out sole, out forty, out bench, out agility, out broadjump, out posDrill);
-
-            data.mCombinePrediction[0] = GeneratePredictedScore(sole);      //	"Kicking Accuracy (So50)",
-            data.mCombinePrediction[1] = GeneratePredictedScore(((bench*2.0)+broadjump)/3.0);   //	"Kicking Power (Bp100Bj50)",
-            data.mCombinePrediction[2] = GeneratePredictedScore(forty);     //	"Kickoff Distance (Ft100)",
-            data.mCombinePrediction[3] = GeneratePredictedScore(broadjump); //	"Kickoff Hang Time (Bj50)"
-        }
-
-        #endregion
-
-        private double CalculateCombineRating(PlayerData data, string position)
+		void PredictPAttributes(PlayerData data)
 		{
-			data.mSolecismicRating = 0.0;
-			data.mFortyRating = 0.0;
-			data.mAgilityRating = 0.0;
-			data.mBenchRating = 0.0;
-			data.mBroadJumpRating = 0.0;
-			data.mPositionDrillRating = 0.0;
+			double sole, forty, bench, agility, broadjump, posDrill;
+			CalculateCombineStdDevs(data, out sole, out forty, out bench, out agility, out broadjump, out posDrill);
+
+			data.mCombinePrediction[0] = GeneratePredictedScore(forty);     //	"Kicking Power (Ft100)",
+			data.mCombinePrediction[1] = GeneratePredictedScore(bench);     //	"Punt Hang Time (Bp100)",
+			data.mCombinePrediction[2] = GeneratePredictedScore(sole);      //	"Directional Punting (So50)",
+			data.mCombinePrediction[3] = GeneratePredictedScore(agility);   //	"Kick Holding"
+		}
+
+		void PredictKAttributes(PlayerData data)
+		{
+			double sole, forty, bench, agility, broadjump, posDrill;
+			CalculateCombineStdDevs(data, out sole, out forty, out bench, out agility, out broadjump, out posDrill);
+
+			data.mCombinePrediction[0] = GeneratePredictedScore(sole);      //	"Kicking Accuracy (So50)",
+			data.mCombinePrediction[1] = GeneratePredictedScore(((bench*2.0)+broadjump)/3.0);   //	"Kicking Power (Bp100Bj50)",
+			data.mCombinePrediction[2] = GeneratePredictedScore(forty);     //	"Kickoff Distance (Ft100)",
+			data.mCombinePrediction[3] = GeneratePredictedScore(broadjump); //	"Kickoff Hang Time (Bj50)"
+		}
+
+		#endregion
+
+		private void CalculateCombineRating(PlayerData data, string position, PositionRating posRating)
+		{
+			posRating.SolecismicRating = 0.0;
+			posRating.FortyRating = 0.0;
+			posRating.AgilityRating = 0.0;
+			posRating.BenchRating = 0.0;
+			posRating.BroadJumpRating = 0.0;
+			posRating.PositionDrillRating = 0.0;
 			PositionGroupCombineData combineData = (PositionGroupCombineData)mPositionGroupCombineMap[mPositionToPositionGroupMap[position]];
 			if (data.mSolecismic != 0 && data.m40Time != 0.0 && data.mBench != 0 && data.mAgility != 0.0 && data.mBroadJump != 0)
 			{
-				WeightsForm.PositionWeights posWeights = mWeightsForm.GetPositionWeight(position);
-				data.mSolecismicRating = ((((double)data.mSolecismic) - combineData.mSolecismicAverage) / combineData.mSolecismicStdDev) * posWeights.Solecismic;
-				data.mFortyRating =  ((((double)data.m40Time) - combineData.m40YardAverage) / combineData.m40YardStdDev) * posWeights.Dash;
-				data.mBenchRating = ((((double)data.mBench) - combineData.mBenchAverage) / combineData.mBenchStdDev) * posWeights.Bench;
-				data.mAgilityRating = ((((double)data.mAgility) - combineData.mAgilityAverage) / combineData.mAgilityStdDev) * posWeights.Agility;
-				data.mBroadJumpRating = ((((double)data.mBroadJump) - combineData.mBroadJumpAverage) / combineData.mBroadJumpStdDev) * posWeights.BroadJump;
+				DataReader.DraftWeights.PositionWeights posWeights = mWeightsForm.GetPositionWeight(position);
+				if (mWeightsForm.GlobalWeights.CombineThresholdPenalty != 0 && combineData.mSolecismicThreshold > 0 && data.mSolecismic < combineData.mSolecismicThreshold)
+				{
+					posRating.SolecismicRating = mWeightsForm.GlobalWeights.CombineThresholdPenalty;
+				}
+				else
+				{
+					posRating.SolecismicRating = ((((double)data.mSolecismic) - combineData.mSolecismicAverage) / combineData.mSolecismicStdDev) * posWeights.Solecismic;
+				}
+				if (mWeightsForm.GlobalWeights.CombineThresholdPenalty != 0 && combineData.m40YardThreshold > 0 && data.m40Time > combineData.m40YardThreshold)
+				{
+					posRating.FortyRating = mWeightsForm.GlobalWeights.CombineThresholdPenalty;
+				}
+				else
+				{
+					posRating.FortyRating = ((((double)data.m40Time) - combineData.m40YardAverage) / combineData.m40YardStdDev) * posWeights.Dash;
+				}
+				if (mWeightsForm.GlobalWeights.CombineThresholdPenalty != 0 && combineData.mBenchThreshold > 0 && data.mBench < combineData.mBenchThreshold)
+				{
+					posRating.BenchRating = mWeightsForm.GlobalWeights.CombineThresholdPenalty;
+				}
+				else
+				{
+					posRating.BenchRating = ((((double)data.mBench) - combineData.mBenchAverage) / combineData.mBenchStdDev) * posWeights.Bench;
+				}
+				if (mWeightsForm.GlobalWeights.CombineThresholdPenalty != 0 && combineData.mAgilityThreshold > 0 && data.mAgility > combineData.mAgilityThreshold)
+				{
+					posRating.AgilityRating = mWeightsForm.GlobalWeights.CombineThresholdPenalty;
+				}
+				else
+				{
+					posRating.AgilityRating = ((((double)data.mAgility) - combineData.mAgilityAverage) / combineData.mAgilityStdDev) * posWeights.Agility;
+				}
+				if (mWeightsForm.GlobalWeights.CombineThresholdPenalty != 0 && combineData.mBroadJumpThreshold > 0 && data.mBroadJump < combineData.mBroadJumpThreshold)
+				{
+					posRating.BenchRating = mWeightsForm.GlobalWeights.CombineThresholdPenalty;
+				}
+				else
+				{
+					posRating.BroadJumpRating = ((((double)data.mBroadJump) - combineData.mBroadJumpAverage) / combineData.mBroadJumpStdDev) * posWeights.BroadJump;
+				}
 				if (combineData.mPositionDrillStdDev != 0.0)
 				{
-					data.mPositionDrillRating = ((((double)data.mPositionDrill) - combineData.mPositionDrillAverage) / combineData.mPositionDrillStdDev) * posWeights.PositionDrill;
+					if (mWeightsForm.GlobalWeights.CombineThresholdPenalty != 0 && combineData.mPositionDrillThreshold > 0 && data.mPositionDrill < combineData.mPositionDrillThreshold)
+					{
+						posRating.PositionDrillRating = mWeightsForm.GlobalWeights.CombineThresholdPenalty;
+					}
+					else
+					{
+						posRating.PositionDrillRating = ((((double)data.mPositionDrill) - combineData.mPositionDrillAverage) / combineData.mPositionDrillStdDev) * posWeights.PositionDrill;
+					}
 				}
 			}
 			else
 			{
-				WeightsForm.PositionWeights posWeights = mWeightsForm.GetNoCombinePositionWeight(position);
-				if (combineData.mSolecismicStdDev != 0.0)
+				DataReader.DraftWeights.PositionWeights posWeights = mWeightsForm.GetNoCombinePositionWeight(position);
+				if (combineData.mSolecismicStdDev != 0.0 && data.mSolecismic != 0)
 				{
-					data.mSolecismicRating = ((((double)data.mSolecismic) - combineData.mSolecismicAverage) / combineData.mSolecismicStdDev) * posWeights.Solecismic;
+					if (mWeightsForm.GlobalWeights.CombineThresholdPenalty != 0 && combineData.mSolecismicThreshold > 0 && data.mSolecismic < combineData.mSolecismicThreshold)
+					{
+						posRating.SolecismicRating = mWeightsForm.GlobalWeights.CombineThresholdPenalty;
+					}
+					else
+					{
+						posRating.SolecismicRating = ((((double)data.mSolecismic) - combineData.mSolecismicAverage) / combineData.mSolecismicStdDev) * posWeights.Solecismic;
+					}
 				}
-				if (combineData.mPositionDrillStdDev != 0.0)
+				if (combineData.mPositionDrillStdDev != 0.0 && data.mPositionDrill != 0)
 				{
-					data.mPositionDrillRating = ((((double)data.mPositionDrill) - combineData.mPositionDrillAverage) / combineData.mPositionDrillStdDev) * posWeights.PositionDrill;
+					if (mWeightsForm.GlobalWeights.CombineThresholdPenalty != 0 && combineData.mPositionDrillThreshold > 0 && data.mPositionDrill < combineData.mPositionDrillThreshold)
+					{
+						posRating.PositionDrillRating = mWeightsForm.GlobalWeights.CombineThresholdPenalty;
+					}
+					else
+					{
+						posRating.PositionDrillRating = ((((double)data.mPositionDrill) - combineData.mPositionDrillAverage) / combineData.mPositionDrillStdDev) * posWeights.PositionDrill;
+					}
 				}
 			}
-			double combineRating = data.mSolecismicRating + data.mFortyRating + data.mAgilityRating + data.mBenchRating + data.mBroadJumpRating + data.mPositionDrillRating;
-			return combineRating;
+			posRating.CombineScore = posRating.SolecismicRating + posRating.FortyRating + posRating.AgilityRating + posRating.BenchRating + posRating.BroadJumpRating + posRating.PositionDrillRating;
 		}
 
 		private PositionRating CalculatePositionRating(PlayerData data, string position)
 		{
 			PositionRating posRating = new PositionRating();
 			posRating.Position = position;
-			posRating.CombineScore = CalculateCombineRating(data, position);
+			CalculateCombineRating(data, position, posRating);
 
-			WeightsForm.GlobalWeightData globalData = mWeightsForm.GlobalWeights;
-			WeightsForm.PositionWeights posWeights = null;
+			DataReader.DraftWeights.GlobalWeightData globalData = mWeightsForm.GlobalWeights;
+			DataReader.DraftWeights.PositionWeights posWeights = null;
 			if (data.mSolecismic != 0 && data.m40Time != 0.0 && data.mBench != 0 && data.mAgility != 0.0 && data.mBroadJump != 0)
 			{
 				posWeights = mWeightsForm.GetPositionWeight(position);
@@ -978,7 +1106,7 @@ namespace DraftAnalyzer
 			double attributesFactor = 0.0;
 			switch(globalData.WhichAttributesToUse)
 			{
-				case WeightsForm.AttributeUsage.UseMin:
+				case DataReader.DraftWeights.AttributeUsage.UseMin:
 					{
 						for (int attIndex = 0; attIndex < posWeights.Attributes.Length; ++attIndex)
 						{
@@ -986,7 +1114,7 @@ namespace DraftAnalyzer
 						}
 					}
 					break;
-				case WeightsForm.AttributeUsage.UseAverage:
+				case DataReader.DraftWeights.AttributeUsage.UseAverage:
 					{
 						for (int attIndex = 0; attIndex < posWeights.Attributes.Length; ++attIndex)
 						{
@@ -995,7 +1123,7 @@ namespace DraftAnalyzer
 						}
 					}
 					break;
-				case WeightsForm.AttributeUsage.UseMax:
+				case DataReader.DraftWeights.AttributeUsage.UseMax:
 					{
 						for (int attIndex = 0; attIndex < posWeights.Attributes.Length; ++attIndex)
 						{
@@ -1007,26 +1135,26 @@ namespace DraftAnalyzer
 			posRating.AttributeScore = attributesFactor;
 
 			double scoutFactor = 0.0;
-			if (data.mImpression == "Very Overrated")
-			{
-				scoutFactor -= (double)globalData.ScoutImpression;
-			}
-			else if (data.mImpression == "Very Underrated")
-			{
-				scoutFactor += (double)globalData.ScoutImpression;
-			}
-			else if (data.mImpression == "Underrated")
-			{
-				scoutFactor += ((double)globalData.ScoutImpression)*0.5;
-			}
-			else if (data.mImpression == "Overrated")
-			{
-				scoutFactor -= ((double)globalData.ScoutImpression) * 0.5;
-			}
-			else if (data.mImpression == "Hard to Read")
-			{
-				scoutFactor -= ((double)globalData.ScoutImpression) * 0.1;
-			}
+			//if (data.mImpression == "Very Overrated")
+			//{
+			//	scoutFactor -= (double)globalData.ScoutImpression;
+			//}
+			//else if (data.mImpression == "Very Underrated")
+			//{
+			//	scoutFactor += (double)globalData.ScoutImpression;
+			//}
+			//else if (data.mImpression == "Underrated")
+			//{
+			//	scoutFactor += ((double)globalData.ScoutImpression)*0.5;
+			//}
+			//else if (data.mImpression == "Overrated")
+			//{
+			//	scoutFactor -= ((double)globalData.ScoutImpression) * 0.5;
+			//}
+			//else if (data.mImpression == "Hard to Read")
+			//{
+			//	scoutFactor -= ((double)globalData.ScoutImpression) * 0.1;
+			//}
 			posRating.ScoutImpressionScore = scoutFactor;
 
 			double chemistryFactor = 0.0;
@@ -1038,14 +1166,12 @@ namespace DraftAnalyzer
 			{
 				chemistryFactor += (double)globalData.Affinity * data.mAffinitiesFactor;
 			}
-			if (data.mCharacter.Length > 1)
-			{
-				chemistryFactor -= (double)globalData.RedFlag;
-			}
 			posRating.ChemistryScore = chemistryFactor;
 
+			posRating.DevelopmentScore = (data.mPercentDeveloped - globalData.AvgDev) * ((double)globalData.DevWt / (double)globalData.AvgDev);
+
 			posRating.OverallScore = posRating.CombineScore + posRating.SizeScore + posRating.ChemistryScore +
-				posRating.AttributeScore + posRating.ScoutImpressionScore;
+				posRating.AttributeScore + posRating.ScoutImpressionScore + posRating.DevelopmentScore;
 			posRating.OverallScore *= posWeights.Weight;
 
 			return posRating;
@@ -1057,6 +1183,16 @@ namespace DraftAnalyzer
 			statusStripMain.Refresh();
 			listViewDraftees.SuspendLayout();
 			listViewDraftees.Items.Clear();
+			int oldSortColumn = 2;
+			WindowsUtilities.SortType oldSortType = WindowsUtilities.SortType.SortByColoredString;
+			bool oldDescending = true;
+			if (listViewDraftees.ListViewItemSorter != null)
+			{
+				oldSortColumn = ((WindowsUtilities.SortTypeListViewItemSorter)listViewDraftees.ListViewItemSorter).SortColumn;
+				oldSortType = ((WindowsUtilities.SortTypeListViewItemSorter)listViewDraftees.ListViewItemSorter).SortMethod;
+				oldDescending = ((WindowsUtilities.SortTypeListViewItemSorter)listViewDraftees.ListViewItemSorter).Descending;
+			}
+			listViewDraftees.ListViewItemSorter = null;
 			if (mPlayerData != null)
 			{
 				toolStripProgressBarAction.Maximum = mPlayerData.Count;
@@ -1074,6 +1210,8 @@ namespace DraftAnalyzer
 					}
 				}
 			}
+			listViewDraftees.ListViewItemSorter = new WindowsUtilities.SortTypeListViewItemSorter(oldSortColumn, oldSortType, oldDescending);
+			listViewDraftees.Sort();
 			listViewDraftees.ResumeLayout();
 			toolStripStatusLabelAction.Text = "Finished!";
 			toolStripProgressBarAction.Value = 0;
@@ -1098,14 +1236,14 @@ namespace DraftAnalyzer
 				attributeBrush = Brushes.DodgerBlue;
 			}
 			g.FillRectangle(attributeBrush, attributeMin, 0, attributeMax - attributeMin + 1, picBox.Height);
-            g.DrawLine(Pens.Black, 25, 0, 25, picBox.Height);
-            g.DrawLine(Pens.Black, 50, 0, 50, picBox.Height);
-            g.DrawLine(Pens.Black, 75, 0, 75, picBox.Height);
-            if (combineSpot >= 0)
-            {
-                g.FillRectangle(Brushes.White, combineSpot - 1, 0, 3, picBox.Height);
-            }
-            g.DrawRectangle(Pens.Black, 0, 0, picBox.Width - 1, picBox.Height - 1);
+			g.DrawLine(Pens.Black, 25, 0, 25, picBox.Height);
+			g.DrawLine(Pens.Black, 50, 0, 50, picBox.Height);
+			g.DrawLine(Pens.Black, 75, 0, 75, picBox.Height);
+			if (combineSpot >= 0)
+			{
+				g.FillRectangle(Brushes.White, combineSpot - 1, 0, 3, picBox.Height);
+			}
+			g.DrawRectangle(Pens.Black, 0, 0, picBox.Width - 1, picBox.Height - 1);
 			g.Flush();
 
 			picBox.Image = newImage;
@@ -1192,7 +1330,7 @@ namespace DraftAnalyzer
 					mAttributeLabels[i].Text = attributeNames[i];
 					int attributeMin = data.mAttributes[i * 2];
 					int attributeMax = data.mAttributes[(i * 2) + 1];
-                    int combineSpot = data.mCombinePrediction[i];
+					int combineSpot = data.mCombinePrediction[i];
 					BuildAttributeImage(mAttributePictureBoxes[i], attributeMin, attributeMax, combineSpot, data.mInterviewed == "Yes", attributeNotMasked[i]);
 				}
 				for (int j = attributeNames.Length; j < kMaxAttributeCounts; j++)
@@ -1221,18 +1359,9 @@ namespace DraftAnalyzer
 				detailsText += "DOB: ";
 				detailsText += data.mBirthDate;
 				detailsText += Environment.NewLine;
-				detailsText += "HomeTown: ";
-				detailsText += data.mHomeTown;
+				detailsText += "Bureau: ";
+				detailsText += data.mGrade.ToString("F1");
 				detailsText += Environment.NewLine;
-				detailsText += "Agent: ";
-				detailsText += data.mAgent;
-				detailsText += Environment.NewLine;
-				if (data.mCharacter.Length > 0)
-				{
-					detailsText += "Character: ";
-					detailsText += data.mCharacter;
-					detailsText += Environment.NewLine;
-				}
 				if (data.mConflicts.Length > 0)
 				{
 					detailsText += "Conflicts: ";
@@ -1251,31 +1380,32 @@ namespace DraftAnalyzer
 					detailsText += data.mFormations;
 					detailsText += Environment.NewLine;
 				}
-				if (data.mInterviewed == "Yes")
-				{
-					detailsText += "Loyalty: ";
-					detailsText += data.mLoyalty;
-					detailsText += Environment.NewLine;
-					detailsText += "Play For Winner: ";
-					detailsText += data.mPlayForWinner;
-					detailsText += Environment.NewLine;
-					detailsText += "Leadership: ";
-					detailsText += data.mLeadership;
-					detailsText += Environment.NewLine;
-					detailsText += "Intelligence: ";
-					detailsText += data.mIntelligence;
-					detailsText += Environment.NewLine;
-					detailsText += "Personality: ";
-					detailsText += data.mPersonality;
-					detailsText += Environment.NewLine;
-				}
-				PositionRating pRat = data.mPositionRatings[0];
+				detailsText += Environment.NewLine;
 				detailsText += "Comb: ";
-				detailsText += pRat.CombineScore.ToString("F2");
-				detailsText += " Chem: ";
-				detailsText += pRat.ChemistryScore.ToString("F2");
+				detailsText += data.mCombineSum.ToString("F2");
+				detailsText += Environment.NewLine;
+				detailsText += "Sole: ";
+				detailsText += data.mSolecismicRating.ToString("F2");
+				detailsText += " Dash: ";
+				detailsText += data.mFortyRating.ToString("F2");
+				detailsText += " Agil: ";
+				detailsText += data.mAgilityRating.ToString("F2");
+				detailsText += Environment.NewLine;
+				detailsText += "Bnch: ";
+				detailsText += data.mBenchRating.ToString("F2");
+				detailsText += " BrdJ: ";
+				detailsText += data.mBroadJumpRating.ToString("F2");
+				detailsText += " PDrl: ";
+				detailsText += data.mPositionDrillRating.ToString("F2");
+				detailsText += Environment.NewLine;
+				detailsText += Environment.NewLine;
+				detailsText += "Chem: ";
+				detailsText += data.mChemistryRating.ToString("F2");
 				detailsText += " Impr: ";
-				detailsText += pRat.ScoutImpressionScore.ToString("F2");
+				detailsText += data.mScoutImpressionRating.ToString("F2");
+				detailsText += " Dev: ";
+				detailsText += data.mDevelopmentRating.ToString("F2");
+				detailsText += Environment.NewLine;
 				detailsText += Environment.NewLine;
 				foreach (PositionRating posRating in data.mPositionRatings)
 				{
@@ -1507,7 +1637,6 @@ namespace DraftAnalyzer
 			if (mSelectedPlayerData != null)
 			{
 				DisplayPlayerData(mSelectedPlayerData.mOriginalOrder);
-				//listViewDraftees.RedrawItems(mSelectedPlayerListIndex, mSelectedPlayerListIndex, true);
 			}
 
 			mSelectedPlayerData = null;
@@ -1523,7 +1652,6 @@ namespace DraftAnalyzer
 			if (mSelectedPlayerData != null)
 			{
 				DisplayPlayerData(mSelectedPlayerData.mOriginalOrder);
-				//listViewDraftees.RedrawItems(mSelectedPlayerListIndex, mSelectedPlayerListIndex, true);
 			}
 
 			mSelectedPlayerListIndex = listIndex;
@@ -1604,7 +1732,7 @@ namespace DraftAnalyzer
 			MarkSelectedPlayer();
 		}
 
-		private const int kDraftListVersion = 7;
+		private const int kDraftListVersion = 4;
 		private void SaveDraftListFile(string filename)
 		{
 			Encoding windows1252Encoding = Encoding.GetEncoding(1252);
@@ -1630,17 +1758,8 @@ namespace DraftAnalyzer
 				outFile.Write(data.mPositionGroup);
 				outFile.Write(data.mCollege);
 				outFile.Write(data.mBirthDate);
-				outFile.Write(data.mHomeTown);
-				outFile.Write(data.mAgent);
 				outFile.Write(data.mHeight);
 				outFile.Write(data.mWeight);
-				outFile.Write(data.mVolatility);
-				outFile.Write(data.mLoyalty);
-				outFile.Write(data.mPlayForWinner);
-				outFile.Write(data.mLeadership);
-				outFile.Write(data.mIntelligence);
-				outFile.Write(data.mPersonality);
-				outFile.Write(data.mPopularity);
 				outFile.Write(data.mSolecismic);
 				outFile.Write(data.m40Time);
 				outFile.Write(data.mBench);
@@ -1648,11 +1767,10 @@ namespace DraftAnalyzer
 				outFile.Write(data.mBroadJump);
 				outFile.Write(data.mPositionDrill);
 				outFile.Write(data.mPercentDeveloped);
+				outFile.Write(data.mGrade);
 				outFile.Write(data.mInterviewed);
-				outFile.Write(data.mImpression);
 				outFile.Write(data.mConflicts);
 				outFile.Write(data.mAffinities);
-				outFile.Write(data.mCharacter);
 				outFile.Write(data.mFormations);
 				outFile.Write(data.mOriginalOrder);
 				outFile.Write(data.mDesiredOrder);
@@ -1687,7 +1805,7 @@ namespace DraftAnalyzer
 				int version = inFile.ReadInt32();
 				int playerCount = inFile.ReadInt32();
 
-				if (version >= 4)
+				if (version >= 2)
 				{
 					mChemistryForm.BackfieldWeight = inFile.ReadDouble();
 					mChemistryForm.ReceiversWeight = inFile.ReadDouble();
@@ -1695,7 +1813,6 @@ namespace DraftAnalyzer
 					mChemistryForm.DefensiveFrontWeight = inFile.ReadDouble();
 					mChemistryForm.SecondaryWeight = inFile.ReadDouble();
 				}
-
 				mPlayerData = new System.Collections.ArrayList();
 				mDraftOrderList = new System.Collections.Generic.SortedList<int, int>();
 
@@ -1708,20 +1825,8 @@ namespace DraftAnalyzer
 					data.mPositionGroup = inFile.ReadString();
 					data.mCollege = inFile.ReadString();
 					data.mBirthDate = inFile.ReadString();
-					data.mHomeTown = inFile.ReadString();
-					data.mAgent = inFile.ReadString();
 					data.mHeight = inFile.ReadInt32();
 					data.mWeight = inFile.ReadInt32();
-					data.mVolatility = inFile.ReadInt32();
-					data.mLoyalty = inFile.ReadInt32();
-					data.mPlayForWinner = inFile.ReadInt32();
-					data.mLeadership = inFile.ReadInt32();
-					data.mIntelligence = inFile.ReadInt32();
-					data.mPersonality = inFile.ReadInt32();
-					if (version >= 6)
-					{
-						data.mPopularity = inFile.ReadInt32();
-					}
 					data.mSolecismic = inFile.ReadInt32();
 					data.m40Time = inFile.ReadDouble();
 					data.mBench = inFile.ReadInt32();
@@ -1729,35 +1834,27 @@ namespace DraftAnalyzer
 					data.mBroadJump = inFile.ReadInt32();
 					data.mPositionDrill = inFile.ReadInt32();
 					data.mPercentDeveloped = inFile.ReadInt32();
+					data.mGrade = inFile.ReadDouble();
 					data.mInterviewed = inFile.ReadString();
-					data.mImpression = inFile.ReadString();
-					if (version >= 3)
+					if (version >= 2)
 					{
 						data.mConflicts = inFile.ReadString();
 						data.mAffinities = inFile.ReadString();
-						data.mCharacter = inFile.ReadString();
 					}
 					data.mFormations = inFile.ReadInt32();
 					data.mOriginalOrder = inFile.ReadInt32();
 					data.mDesiredOrder = inFile.ReadInt32();
 					data.mDrafted = inFile.ReadBoolean();
 					data.mMarked = inFile.ReadBoolean();
-					if (version > 1)
-					{
-						string draftPosition = inFile.ReadString();
-						data.mDraftPosition = (DraftPosition)Enum.Parse(typeof(DraftPosition), draftPosition);
-					}
-					else
-					{
-						data.mDraftPosition = DraftPosition.NotSet;
-					}
+					string draftPosition = inFile.ReadString();
+					data.mDraftPosition = (DraftPosition)Enum.Parse(typeof(DraftPosition), draftPosition);
 					data.mAttributes = new int[kMaxAttributeCounts * 2];
 					for (int i = 0; i < data.mAttributes.Length; i++)
 					{
 						data.mAttributes[i] = inFile.ReadInt32();
 					}
 
-					if (version >= 5)
+					if (version >= 2)
 					{
 						data.mConflictsFactor = inFile.ReadDouble();
 						data.mAffinitiesFactor = inFile.ReadDouble();
@@ -1767,15 +1864,21 @@ namespace DraftAnalyzer
 						data.mAffinitiesFactor = 1.0;
 						data.mConflictsFactor = 1.0;
 					}
+					data.mSolecismicRating = inFile.ReadDouble();
+					data.mFortyRating = inFile.ReadDouble();
+					data.mBenchRating = inFile.ReadDouble();
+					data.mAgilityRating = inFile.ReadDouble();
+					data.mBroadJumpRating = inFile.ReadDouble();
+					data.mPositionDrillRating = inFile.ReadDouble();
 
-					if (version >= 7)
+					if (version == 3)
 					{
-						data.mSolecismicRating = inFile.ReadDouble();
-						data.mFortyRating = inFile.ReadDouble();
-						data.mBenchRating = inFile.ReadDouble();
-						data.mAgilityRating = inFile.ReadDouble();
-						data.mBroadJumpRating = inFile.ReadDouble();
-						data.mPositionDrillRating = inFile.ReadDouble();
+						/*data.mDraftable = */inFile.ReadInt32();
+						/*data.mVeryGood = */inFile.ReadInt32();
+						/*data.mGood = */inFile.ReadInt32();
+						/*data.mAverage = */inFile.ReadInt32();
+						/*data.mFairPoor = */inFile.ReadInt32();
+						/*data.mSlotScore = */inFile.ReadInt32();
 					}
 
 					mPlayerData.Add(data);
@@ -1791,110 +1894,123 @@ namespace DraftAnalyzer
 			}
 		}
 
-		private void LoadExtractorFile(string filename)
+		private void LoadExportedDraftees(string directoryName)
 		{
+			string rookiesPath = System.IO.Path.Combine(directoryName, "rookies.csv");
+			string draftPersonalPath = System.IO.Path.Combine(directoryName, "draft_personal.csv");
+			string infoPath = System.IO.Path.Combine(directoryName, "player_information.csv");
 			try
 			{
-				using (System.IO.StreamReader inFile = new System.IO.StreamReader(filename))
+				// read position and birthdate from player_information.csv
+				using (System.IO.StreamReader rookieFile = new System.IO.StreamReader(rookiesPath),
+					draftFile = new System.IO.StreamReader(draftPersonalPath),
+					infoFile = new System.IO.StreamReader(infoPath))
 				{
 					mPlayerData = new System.Collections.ArrayList();
 					mDraftOrderList = new SortedList<int, int>();
 
 					System.Globalization.NumberFormatInfo nfi = System.Globalization.NumberFormatInfo.InvariantInfo;
 
-					string headerLine = inFile.ReadLine();
-					bool hasCurrentAndFuture = headerLine.Contains(",Cur,Fut");
-					bool hasChemistry = headerLine.Contains(",Conflicts,Affinities,Character");
-					while (!inFile.EndOfStream)
+					string headerLine = rookieFile.ReadLine();
+					headerLine = draftFile.ReadLine();
+					headerLine = infoFile.ReadLine();
+					while (!rookieFile.EndOfStream)
 					{
-						string curLine = inFile.ReadLine();
-						string[] fields = DataReader.CSVHelper.ParseLine(curLine);
-#if !DEBUG
+						string rookieLine = rookieFile.ReadLine();
+						string draftLine = draftFile.ReadLine();
+						string infoLine = infoFile.ReadLine();
+						string[] rookieFields = DataReader.CSVHelper.ParseLine(rookieLine);
+						string[] draftFields = DataReader.CSVHelper.ParseLine(draftLine);
+						string[] infoFields = DataReader.CSVHelper.ParseLine(infoLine);
+						while (infoFields[0] != rookieFields[0] && !infoFile.EndOfStream)
+						{
+							infoLine = infoFile.ReadLine();
+							infoFields = DataReader.CSVHelper.ParseLine(infoLine);
+						}
 						try
 						{
-#endif
-							PlayerData newData = new PlayerData();
-							newData.mName = fields[0];
-							newData.mPosition = fields[1];
-							newData.mPositionGroup = fields[2];
-							newData.mCollege = fields[3];
-							newData.mBirthDate = fields[5];
-							newData.mHomeTown = fields[6];
-							newData.mAgent = fields[7];
-							newData.mHeight = Int32.Parse(fields[9], nfi);
-							newData.mWeight = Int32.Parse(fields[10], nfi);
-							newData.mVolatility = Int32.Parse(fields[12], nfi);
-							newData.mLoyalty = Int32.Parse(fields[14], nfi);
-							newData.mPlayForWinner = Int32.Parse(fields[15], nfi);
-							newData.mLeadership = Int32.Parse(fields[16], nfi);
-							newData.mIntelligence = Int32.Parse(fields[17], nfi);
-							newData.mPersonality = Int32.Parse(fields[18], nfi);
-							newData.mPopularity = Int32.Parse(fields[19], nfi);
-							newData.mSolecismic = Int32.Parse(fields[21], nfi);
-							newData.m40Time = Double.Parse(fields[22],nfi);
-							newData.mBench = Int32.Parse(fields[23], nfi);
-							newData.mAgility = Double.Parse(fields[24], nfi);
-							newData.mBroadJump = Int32.Parse(fields[25], nfi);
-							newData.mPositionDrill = Int32.Parse(fields[26], nfi);
-							newData.mPercentDeveloped = Int32.Parse(fields[27], nfi);
-							newData.mInterviewed = fields[28];
-							newData.mImpression = fields[29];
-							int attributeStartField = 30;
-							if (hasCurrentAndFuture)
+							if (rookieFields[0] != draftFields[0])
 							{
-								attributeStartField += 2;
-							}
-							if (hasChemistry)
-							{
-								newData.mConflicts = fields[attributeStartField++];
-								newData.mAffinities = fields[attributeStartField++];
-								newData.mCharacter = fields[attributeStartField++];
+								DialogResult result = MessageBox.Show("Player IDs do not match up:" + Environment.NewLine + rookieLine + Environment.NewLine + draftLine,
+									"Parse Error", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
+								if (result == DialogResult.Cancel)
+								{
+									return;
+								}
 							}
 							else
 							{
-								newData.mConflicts = "";
+								PlayerData newData = new PlayerData();
+								newData.mName = rookieFields[2] + " " + rookieFields[1];
+								newData.mPosition = infoFields[5];
+								newData.mPositionGroup = rookieFields[3];
+								newData.mCollege = rookieFields[4];
+								newData.mBirthDate = infoFields[17].ToString() + "-" + infoFields[18].ToString() + "-" + infoFields[16].ToString();
+								newData.mHeight = Int32.Parse(rookieFields[5], nfi);
+								newData.mWeight = Int32.Parse(rookieFields[6], nfi);
+								newData.m40Time = ((Double)Int32.Parse(rookieFields[7], nfi)) / 100.0;
+								newData.mSolecismic = Int32.Parse(rookieFields[8], nfi);
+								newData.mBench = Int32.Parse(rookieFields[9], nfi);
+								newData.mAgility = ((Double)Int32.Parse(rookieFields[10], nfi)) / 100.0;
+								newData.mBroadJump = Int32.Parse(rookieFields[11], nfi);
+								newData.mPositionDrill = Int32.Parse(rookieFields[12], nfi);
+								newData.mPercentDeveloped = Int32.Parse(rookieFields[13], nfi);
+								newData.mGrade = ((Double)Int32.Parse(rookieFields[14], nfi)) / 10.0;
 								newData.mAffinities = "";
-								newData.mCharacter = "";
+								newData.mConflicts = "";
+
+								if (draftFields[1] == "0")
+								{
+									newData.mInterviewed = "No";
+								}
+								else
+								{
+									newData.mInterviewed = "Yes";
+								}
+
+								string[] posAttributes = mPositionGroupAttributeNames[newData.mPositionGroup];
+								for (int i = 0; i < posAttributes.Length; ++i)
+								{
+									for (int j = 0; j < mAllAttributeNames.Length; ++j)
+									{
+										if (posAttributes[i].StartsWith(mAllAttributeNames[j]))
+										{
+											newData.mAttributes[(i * 2)] = Int32.Parse(draftFields[mAttributeColumns[j]], nfi);
+											newData.mAttributes[(i * 2) + 1] = Int32.Parse(draftFields[mAttributeColumns[j] + kHighAttributeOffset], nfi);
+										}
+									}
+								}
+
+								newData.mOriginalOrder = mPlayerData.Count;
+								newData.mDesiredOrder = mPlayerData.Count;
+								newData.mDrafted = false;
+								newData.mMarked = false;
+								newData.mOrderDrafted = -1;
+								newData.mDraftPosition = DraftPosition.NotSet;
+								mDraftOrderList.Add(newData.mDesiredOrder, mPlayerData.Count);
+								mPlayerData.Add(newData);
 							}
-							newData.mFormations = 0;
-							if (newData.mPositionGroup == "QB")
-							{
-								newData.mFormations = Int32.Parse(fields[attributeStartField]);
-								attributeStartField += 1;
-							}
-							int attributeIndex = 0;
-							while (attributeStartField < fields.Length)
-							{
-								newData.mAttributes[attributeIndex++] = Int32.Parse(fields[attributeStartField++], nfi);
-							}
-							
-							newData.mOriginalOrder = mPlayerData.Count;
-							newData.mDesiredOrder = mPlayerData.Count;
-							newData.mDrafted = false;
-							newData.mMarked = false;
-							newData.mOrderDrafted = -1;
-							newData.mDraftPosition = DraftPosition.NotSet;
-							mDraftOrderList.Add(newData.mDesiredOrder, mPlayerData.Count);
-							mPlayerData.Add(newData);
-#if !DEBUG
 						}
 						catch (FormatException)
 						{
-							DialogResult result = MessageBox.Show("One of the fields on the line was bad:" + Environment.NewLine + curLine,
-								"Parse Error",MessageBoxButtons.RetryCancel,MessageBoxIcon.Error);
+							DialogResult result = MessageBox.Show("One of the fields on the line was bad:" + Environment.NewLine + rookieLine + Environment.NewLine + draftLine,
+								"Parse Error", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
 							if (result == DialogResult.Cancel)
 							{
 								return;
 							}
 						}
-#endif
 					}
 				}
 			}
 			catch (System.IO.IOException e)
 			{
-				MessageBox.Show("Could not open file '" + filename + "': " + e.ToString(), "Error Loading Extractor File",
-					MessageBoxButtons.OK, MessageBoxIcon.Error);
+				string errorString = "IO Error: " + e.ToString();
+				if (e.InnerException != null)
+				{
+					errorString += System.Environment.NewLine + e.InnerException.ToString();
+				}
+				MessageBox.Show(errorString, "Error Loading draft data", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}
 
@@ -1946,11 +2062,11 @@ namespace DraftAnalyzer
 			}
 			toolStripStatusLabelAction.Text = "Finished!";
 			toolStripProgressBarAction.Value = 0;
-            if (sortDraftedToBottomToolStripMenuItem.Checked)
-            {
-                WindowsUtilities.SortTypeListViewItemSorter.UpdateSortColumn(listViewDraftees, -1, sortDraftedToBottomToolStripMenuItem.Checked);
-            }
-        }
+			if (sortDraftedToBottomToolStripMenuItem.Checked)
+			{
+				WindowsUtilities.SortTypeListViewItemSorter.UpdateSortColumn(listViewDraftees, -1, sortDraftedToBottomToolStripMenuItem.Checked);
+			}
+		}
 
 		private void MarkDrafted(string line)
 		{
@@ -2178,19 +2294,26 @@ namespace DraftAnalyzer
 				{
 					outFile.WriteLine("Name,Position,BirthDate");
 					int numberToWrite = System.Math.Min(100, mPlayerData.Count);
-					for (int draftOrder = 0; draftOrder < numberToWrite; ++draftOrder)
+					int numberWritten = 0;
+					int draftOrder = 0;
+					while (numberWritten < numberToWrite && draftOrder < mPlayerData.Count)
 					{
 						PlayerData curData = (PlayerData)mPlayerData[mDraftOrderList[draftOrder]];
-						outFile.Write("\"" + curData.mName + "\",");
-						outFile.Write("\"" + curData.mPosition + "\",");
-						outFile.Write("\"" + curData.mBirthDate + "\"");
-						outFile.WriteLine();
+						if (!curData.mDrafted)
+						{
+							outFile.Write("\"" + curData.mName + "\",");
+							outFile.Write("\"" + curData.mPosition + "\",");
+							outFile.Write("\"" + curData.mBirthDate + "\"");
+							outFile.WriteLine();
+							numberWritten += 1;
+						}
+						draftOrder += 1;
 					}
 				}
 			}
 		}
 
-		private void UpdateSelectedPlayerDraftPosition(DraftPosition newPosition, bool goToTop)
+		private void UpdateSelectedPlayerDraftPosition(DraftPosition newPosition, bool goToTop, bool updateUI)
 		{
 			if (mSelectedPlayerData != null)
 			{
@@ -2224,21 +2347,24 @@ namespace DraftAnalyzer
 						break;
 					}
 				}
-				UpdateSelectedPlayerDraftOrder(newPosition, oldDraftOrder, newDraftOrder);
+				UpdateSelectedPlayerDraftOrder(newPosition, oldDraftOrder, newDraftOrder, updateUI);
 			}
 		}
 
-		private void UpdateSelectedPlayerDraftOrder(DraftPosition newPosition, int oldDraftOrder, int newDraftOrder)
+		private void UpdateSelectedPlayerDraftOrder(DraftPosition newPosition, int oldDraftOrder, int newDraftOrder, bool updateUI)
 		{
 			if (oldDraftOrder != newDraftOrder)
 			{
 				Cursor oldCursor = Cursor;
-				Cursor = Cursors.WaitCursor;
+				if (updateUI)
+				{
+					Cursor = Cursors.WaitCursor;
+					toolStripStatusLabelAction.Text = "Fixing order...";
+					toolStripProgressBarAction.Value = 0;
+					statusStripMain.Refresh();
+					toolStripProgressBarAction.Maximum = Math.Abs(newDraftOrder - oldDraftOrder);
+				}
 
-				toolStripStatusLabelAction.Text = "Fixing order...";
-				toolStripProgressBarAction.Value = 0;
-				statusStripMain.Refresh();
-				toolStripProgressBarAction.Maximum = Math.Abs(newDraftOrder - oldDraftOrder);
 				int draftOrder;
 				if (oldDraftOrder > newDraftOrder)
 				{
@@ -2247,8 +2373,11 @@ namespace DraftAnalyzer
 						mDraftOrderList[draftOrder] = mDraftOrderList[draftOrder - 1];
 						PlayerData data = (PlayerData)mPlayerData[mDraftOrderList[draftOrder]];
 						data.mDesiredOrder = draftOrder;
-						DisplayPlayerData(mDraftOrderList[draftOrder]);
-						toolStripProgressBarAction.Value += 1;
+						if (updateUI)
+						{
+							DisplayPlayerData(mDraftOrderList[draftOrder]);
+							toolStripProgressBarAction.Value += 1;
+						}
 					}
 				}
 				else
@@ -2258,20 +2387,30 @@ namespace DraftAnalyzer
 						mDraftOrderList[draftOrder] = mDraftOrderList[draftOrder + 1];
 						PlayerData data = (PlayerData)mPlayerData[mDraftOrderList[draftOrder]];
 						data.mDesiredOrder = draftOrder;
-						DisplayPlayerData(mDraftOrderList[draftOrder]);
-						toolStripProgressBarAction.Value += 1;
+						if (updateUI)
+						{
+							DisplayPlayerData(mDraftOrderList[draftOrder]);
+							toolStripProgressBarAction.Value += 1;
+						}
 					}
 				}
 
 				mDraftOrderList[newDraftOrder] = mSelectedPlayerData.mOriginalOrder;
-				Cursor = oldCursor;
 
-				toolStripStatusLabelAction.Text = "Finished!";
-				toolStripProgressBarAction.Value = 0;
+				if (updateUI)
+				{
+					Cursor = oldCursor;
+
+					toolStripStatusLabelAction.Text = "Finished!";
+					toolStripProgressBarAction.Value = 0;
+				}
 			}
 			mSelectedPlayerData.mDesiredOrder = newDraftOrder;
 			mSelectedPlayerData.mDraftPosition = newPosition;
-			DisplayPlayerData(mSelectedPlayerData.mOriginalOrder);
+			if (updateUI)
+			{
+				DisplayPlayerData(mSelectedPlayerData.mOriginalOrder);
+			}
 		}
 
 		private void MoveSelectedPlayerUp()
@@ -2285,7 +2424,7 @@ namespace DraftAnalyzer
 					int playerIndex = mDraftOrderList[newDraftOrder];
 					if (((PlayerData)mPlayerData[playerIndex]).mDraftPosition == mSelectedPlayerData.mDraftPosition)
 					{
-						UpdateSelectedPlayerDraftOrder(mSelectedPlayerData.mDraftPosition, oldDraftOrder, newDraftOrder);
+						UpdateSelectedPlayerDraftOrder(mSelectedPlayerData.mDraftPosition, oldDraftOrder, newDraftOrder, true);
 					}
 				}
 			}
@@ -2302,7 +2441,7 @@ namespace DraftAnalyzer
 					int playerIndex = mDraftOrderList[newDraftOrder];
 					if (((PlayerData)mPlayerData[playerIndex]).mDraftPosition == mSelectedPlayerData.mDraftPosition)
 					{
-						UpdateSelectedPlayerDraftOrder(mSelectedPlayerData.mDraftPosition, oldDraftOrder, newDraftOrder);
+						UpdateSelectedPlayerDraftOrder(mSelectedPlayerData.mDraftPosition, oldDraftOrder, newDraftOrder, true);
 					}
 				}
 			}
@@ -2310,87 +2449,87 @@ namespace DraftAnalyzer
 
 		private void firstRoundTop_click(object sender, EventArgs e)
 		{
-			UpdateSelectedPlayerDraftPosition(DraftPosition.FirstRound, true);
+			UpdateSelectedPlayerDraftPosition(DraftPosition.FirstRound, true, true);
 		}
 
 		private void firstRoundBottom_click(object sender, EventArgs e)
 		{
-			UpdateSelectedPlayerDraftPosition(DraftPosition.FirstRound, false);
+			UpdateSelectedPlayerDraftPosition(DraftPosition.FirstRound, false, true);
 		}
 
 		private void secondRoundTop_click(object sender, EventArgs e)
 		{
-			UpdateSelectedPlayerDraftPosition(DraftPosition.SecondRound, true);
+			UpdateSelectedPlayerDraftPosition(DraftPosition.SecondRound, true, true);
 		}
 
 		private void secondRoundBottom_click(object sender, EventArgs e)
 		{
-			UpdateSelectedPlayerDraftPosition(DraftPosition.SecondRound, false);
+			UpdateSelectedPlayerDraftPosition(DraftPosition.SecondRound, false, true);
 		}
 
 		private void thirdRoundTop_click(object sender, EventArgs e)
 		{
-			UpdateSelectedPlayerDraftPosition(DraftPosition.ThirdRound, true);
+			UpdateSelectedPlayerDraftPosition(DraftPosition.ThirdRound, true, true);
 		}
 
 		private void thirdRoundBottom_click(object sender, EventArgs e)
 		{
-			UpdateSelectedPlayerDraftPosition(DraftPosition.ThirdRound, false);
+			UpdateSelectedPlayerDraftPosition(DraftPosition.ThirdRound, false, true);
 		}
 
 		private void fourthRoundTop_click(object sender, EventArgs e)
 		{
-			UpdateSelectedPlayerDraftPosition(DraftPosition.FourthRound, true);
+			UpdateSelectedPlayerDraftPosition(DraftPosition.FourthRound, true, true);
 		}
 
 		private void fourthRoundBottom_click(object sender, EventArgs e)
 		{
-			UpdateSelectedPlayerDraftPosition(DraftPosition.FourthRound, false);
+			UpdateSelectedPlayerDraftPosition(DraftPosition.FourthRound, false, true);
 		}
 
 		private void fifthRoundTop_click(object sender, EventArgs e)
 		{
-			UpdateSelectedPlayerDraftPosition(DraftPosition.FifthRound, true);
+			UpdateSelectedPlayerDraftPosition(DraftPosition.FifthRound, true, true);
 		}
 
 		private void fifthRoundBottom_click(object sender, EventArgs e)
 		{
-			UpdateSelectedPlayerDraftPosition(DraftPosition.FifthRound, false);
+			UpdateSelectedPlayerDraftPosition(DraftPosition.FifthRound, false, true);
 		}
 
 		private void sixthRoundTop_click(object sender, EventArgs e)
 		{
-			UpdateSelectedPlayerDraftPosition(DraftPosition.SixthRound, true);
+			UpdateSelectedPlayerDraftPosition(DraftPosition.SixthRound, true, true);
 		}
 
 		private void sixthRoundBottom_click(object sender, EventArgs e)
 		{
-			UpdateSelectedPlayerDraftPosition(DraftPosition.SixthRound, false);
+			UpdateSelectedPlayerDraftPosition(DraftPosition.SixthRound, false, true);
 		}
 
 		private void seventhRoundTop_click(object sender, EventArgs e)
 		{
-			UpdateSelectedPlayerDraftPosition(DraftPosition.SeventhRound, true);
+			UpdateSelectedPlayerDraftPosition(DraftPosition.SeventhRound, true, true);
 		}
 
 		private void seventhRoundBottom_click(object sender, EventArgs e)
 		{
-			UpdateSelectedPlayerDraftPosition(DraftPosition.SeventhRound, false);
+			UpdateSelectedPlayerDraftPosition(DraftPosition.SeventhRound, false, true);
 		}
 
 		private void undraftedFATop_click(object sender, EventArgs e)
 		{
-			UpdateSelectedPlayerDraftPosition(DraftPosition.UndraftedFA, true);
+			UpdateSelectedPlayerDraftPosition(DraftPosition.UndraftedFA, true, true);
 		}
 
 		private void undraftedFABottom_click(object sender, EventArgs e)
 		{
-			UpdateSelectedPlayerDraftPosition(DraftPosition.UndraftedFA, false);
+			UpdateSelectedPlayerDraftPosition(DraftPosition.UndraftedFA, false, true);
 		}
 
 		private void dontDraftToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			UpdateSelectedPlayerDraftPosition(DraftPosition.DontDraft, false);
+			UpdateSelectedPlayerDraftPosition(DraftPosition.DontDraft, false, true);
 		}
 
 		private void moveUpToolStripMenuItem_Click(object sender, EventArgs e)
@@ -2409,39 +2548,39 @@ namespace DraftAnalyzer
 			{
 				if (e.KeyData == Keys.D1 || e.KeyData == Keys.NumPad1)
 				{
-					UpdateSelectedPlayerDraftPosition(DraftPosition.FirstRound, false);
+					UpdateSelectedPlayerDraftPosition(DraftPosition.FirstRound, false, true);
 				}
 				else if (e.KeyData == Keys.D2 || e.KeyData == Keys.NumPad2)
 				{
-					UpdateSelectedPlayerDraftPosition(DraftPosition.SecondRound, false);
+					UpdateSelectedPlayerDraftPosition(DraftPosition.SecondRound, false, true);
 				}
 				else if (e.KeyData == Keys.D3 || e.KeyData == Keys.NumPad3)
 				{
-					UpdateSelectedPlayerDraftPosition(DraftPosition.ThirdRound, false);
+					UpdateSelectedPlayerDraftPosition(DraftPosition.ThirdRound, false, true);
 				}
 				else if (e.KeyData == Keys.D4 || e.KeyData == Keys.NumPad4)
 				{
-					UpdateSelectedPlayerDraftPosition(DraftPosition.FourthRound, false);
+					UpdateSelectedPlayerDraftPosition(DraftPosition.FourthRound, false, true);
 				}
 				else if (e.KeyData == Keys.D5 || e.KeyData == Keys.NumPad5)
 				{
-					UpdateSelectedPlayerDraftPosition(DraftPosition.FifthRound, false);
+					UpdateSelectedPlayerDraftPosition(DraftPosition.FifthRound, false, true);
 				}
 				else if (e.KeyData == Keys.D6 || e.KeyData == Keys.NumPad6)
 				{
-					UpdateSelectedPlayerDraftPosition(DraftPosition.SixthRound, false);
+					UpdateSelectedPlayerDraftPosition(DraftPosition.SixthRound, false, true);
 				}
 				else if (e.KeyData == Keys.D7 || e.KeyData == Keys.NumPad7)
 				{
-					UpdateSelectedPlayerDraftPosition(DraftPosition.SeventhRound, false);
+					UpdateSelectedPlayerDraftPosition(DraftPosition.SeventhRound, false, true);
 				}
 				else if (e.KeyData == Keys.F)
 				{
-					UpdateSelectedPlayerDraftPosition(DraftPosition.UndraftedFA, false);
+					UpdateSelectedPlayerDraftPosition(DraftPosition.UndraftedFA, false, true);
 				}
 				else if (e.KeyData == Keys.X)
 				{
-					UpdateSelectedPlayerDraftPosition(DraftPosition.DontDraft, false);
+					UpdateSelectedPlayerDraftPosition(DraftPosition.DontDraft, false, true);
 				}
 				else if (e.KeyData == Keys.D)
 				{
@@ -2485,11 +2624,13 @@ namespace DraftAnalyzer
 		private Dictionary<string,string[]> mPositionGroupAttributeNames;
 		private Dictionary<string, bool[]> mPositionGroupAttributeNotMasked;
 		private string[] mAllAttributeNames;
+		private int[] mAttributeColumns;
+		private const int kHighAttributeOffset = 58;
 
 		private void InitializeSorters()
 		{
 			// Initially sort on draft order
-			listViewDraftees.ListViewItemSorter = new WindowsUtilities.SortTypeListViewItemSorter(16, WindowsUtilities.SortType.SortByInteger,false);
+			listViewDraftees.ListViewItemSorter = null;
 			columnHeader40.Tag = WindowsUtilities.SortType.SortByDouble;
 			columnHeaderAgility.Tag = WindowsUtilities.SortType.SortByDouble;
 			columnHeaderBench.Tag = WindowsUtilities.SortType.SortByDouble;
@@ -2497,18 +2638,14 @@ namespace DraftAnalyzer
 			columnHeaderCombineSum.Tag = WindowsUtilities.SortType.SortByDouble;
 			columnHeaderDraftOrder.Tag = WindowsUtilities.SortType.SortByInteger;
 			columnHeaderDraftRound.Tag = WindowsUtilities.SortType.SortByString;
-			columnHeaderImpression.Tag = WindowsUtilities.SortType.SortByString;
-			columnHeaderInterviewed.Tag = WindowsUtilities.SortType.SortByString;
+			columnHeaderGrade.Tag = WindowsUtilities.SortType.SortByDouble;
 			columnHeaderName.Tag = WindowsUtilities.SortType.SortByString;
-			columnHeaderOriginalOrder.Tag = WindowsUtilities.SortType.SortByInteger;
 			columnHeaderPercentDeveloped.Tag = WindowsUtilities.SortType.SortByInteger;
 			columnHeaderBars.Tag = WindowsUtilities.SortType.SortByDouble;
 			columnHeaderPosition.Tag = WindowsUtilities.SortType.SortByIntegerTag;
 			columnHeaderPositionDrill.Tag = WindowsUtilities.SortType.SortByDouble;
-			columnHeaderRatedPosition.Tag = WindowsUtilities.SortType.SortByIntegerTag;
 			columnHeaderRating.Tag = WindowsUtilities.SortType.SortByDouble;
 			columnHeaderSolecismic.Tag = WindowsUtilities.SortType.SortByDouble;
-			columnHeaderVolatility.Tag = WindowsUtilities.SortType.SortByInteger;
 		}
 
 		private void listViewDraftees_ColumnClick(object sender, ColumnClickEventArgs e)
@@ -2516,18 +2653,24 @@ namespace DraftAnalyzer
 			WindowsUtilities.SortTypeListViewItemSorter.UpdateSortColumn(listViewDraftees, e.Column, sortDraftedToBottomToolStripMenuItem.Checked);
 		}
 
-        private void sortDraftedToBottomToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
-        {
-            WindowsUtilities.SortTypeListViewItemSorter.UpdateSortColumn(listViewDraftees, -1, sortDraftedToBottomToolStripMenuItem.Checked);
-            mSettings.WriteXMLValue(kSettingsRoot, kSortDraftedToBottom, sortDraftedToBottomToolStripMenuItem.Checked);
-        }
+		private void sortDraftedToBottomToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+		{
+			WindowsUtilities.SortTypeListViewItemSorter.UpdateSortColumn(listViewDraftees, -1, sortDraftedToBottomToolStripMenuItem.Checked);
+			mSettings.WriteXMLValue(kSettingsRoot, kSortDraftedToBottom, sortDraftedToBottomToolStripMenuItem.Checked);
+		}
+
+		private void colorChemistryGroupsToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+		{
+			mSettings.WriteXMLValue(kSettingsRoot, kColorChemistryGroups, colorChemistryGroupsToolStripMenuItem.Checked);
+			DisplayPlayerData();
+		}
 
 		#region Maps
 		private void InitializeMaps()
 		{
+			InitializePositionGroupOrderMap();
 			InitializeCombineMap();
 			InitializeAttributeNames();
-			InitializePositionGroupOrderMap();
 			InitializePositionToPositionGroupMap();
 			InitializePositionSizeRangesMap();
 		}
@@ -2831,6 +2974,17 @@ namespace DraftAnalyzer
 			newRanges.MinHeight = 70;
 			newRanges.AverageHeight = 72;
 			mPositionSizeRangesMap["FS"] = newRanges;
+
+			newRanges = new PositionSizeRanges();
+			newRanges.MinWeight = 210;
+			newRanges.WellBelowAverageWeightCap = 245;
+			newRanges.BelowAverageWeightCap = 252;
+			newRanges.AverageWeightCap = 278;
+			newRanges.AboveAverageWeightCap = 308;
+			newRanges.WellAboveAverageWeightCap = 999;
+			newRanges.MinHeight = 0;
+			newRanges.AverageHeight = 75;
+			mPositionSizeRangesMap["LS"] = newRanges;
 		}
 
 		private void InitializePositionToPositionGroupMap()
@@ -2863,6 +3017,7 @@ namespace DraftAnalyzer
 			mPositionToPositionGroupMap["FS"] = "S";
 			mPositionToPositionGroupMap["P"] = "P";
 			mPositionToPositionGroupMap["K"] = "K";
+			mPositionToPositionGroupMap["LS"] = "LS";
 		}
 
 		private void InitializePositionGroupOrderMap()
@@ -2885,6 +3040,25 @@ namespace DraftAnalyzer
 			mPositionGroupOrderMap.Add("S", positionOrder++);
 			mPositionGroupOrderMap.Add("P", positionOrder++);
 			mPositionGroupOrderMap.Add("K", positionOrder++);
+			mPositionGroupOrderMap.Add("LS", positionOrder++);
+
+			m_PositionWeightsDefaultMap["QB"] = 1.137;
+			m_PositionWeightsDefaultMap["RB"] = 1.058;
+			m_PositionWeightsDefaultMap["FB"] = 0.805;
+			m_PositionWeightsDefaultMap["TE"] = 0.867;
+			m_PositionWeightsDefaultMap["WR"] = 1.036;
+			m_PositionWeightsDefaultMap["C"] = 0.856;
+			m_PositionWeightsDefaultMap["G"] = 0.945;
+			m_PositionWeightsDefaultMap["T"] = 1.095;
+			m_PositionWeightsDefaultMap["P"] = 0.529;
+			m_PositionWeightsDefaultMap["K"] = 0.591;
+			m_PositionWeightsDefaultMap["DE"] = 1.095;
+			m_PositionWeightsDefaultMap["DT"] = 1.076;
+			m_PositionWeightsDefaultMap["ILB"] = 0.971;
+			m_PositionWeightsDefaultMap["OLB"] = 0.955;
+			m_PositionWeightsDefaultMap["CB"] = 1.027;
+			m_PositionWeightsDefaultMap["S"] = 0.938;
+			m_PositionWeightsDefaultMap["LS"] = 0.2;
 		}
 
 		private void InitializeAttributeNames()
@@ -3035,7 +3209,7 @@ namespace DraftAnalyzer
 			mPositionGroupAttributeNotMasked.Add("FB", attributesNotMasked);
 
 			// TE
-            attributeNames = new string[]
+			attributeNames = new string[]
 			{
 				"Run Blocking (Bj50)",
 				"Pass Blocking",
@@ -3161,14 +3335,14 @@ namespace DraftAnalyzer
 			// P
 			attributeNames = new string[]
 			{
-				"Kicking Power (Ft100)",
+				"Punt Power (Ft100)",
 				"Punt Hang Time (Bp100)",
 				"Directional Punting (So50)",
 				"Kick Holding"
 			};
 			attributesNotMasked = new bool[]
 			{
-				false, //"Kicking Power (Ft100)",
+				false, //"Punt Power (Ft100)",
 				false, //"Punt Hang Time (Bp100)",
 				false, //"Directional Punting (So50)",
 				false //"Kick Holding"
@@ -3362,6 +3536,18 @@ namespace DraftAnalyzer
 			mPositionGroupAttributeNames.Add("S", attributeNames);
 			mPositionGroupAttributeNotMasked.Add("S", attributesNotMasked);
 
+			// LS
+			attributeNames = new string[]
+			{
+				"Long Snapping"
+			};
+			attributesNotMasked = new bool[]
+			{
+				false //"Snapping",
+			};
+			mPositionGroupAttributeNames.Add("LS", attributeNames);
+			mPositionGroupAttributeNotMasked.Add("LS", attributesNotMasked);
+
 			mAllAttributeNames = new string[]
 			{
 				"Accuracy",
@@ -3395,6 +3581,7 @@ namespace DraftAnalyzer
 				"Pass Rush Technique",
 				"Power Inside",
 				"Punt Hang Time",
+				"Punt Power",
 				"Punt Returns",
 				"Play Diagnosis",
 				"Punishing Hitter",
@@ -3415,62 +3602,173 @@ namespace DraftAnalyzer
 				"Third Down Catching",
 				"Zone Defense"
 			};
+
+			mAttributeColumns = new int[]
+			{
+				10,	// "Accuracy",
+				33,	// "Adjust to Ball",
+				27,	// "Avoid Drops",
+				31,	// "Big Play Receiving",
+				26,	// "Blitz Pickup",
+				39,	// "Blocking Strength",
+				20,	// "Breakaway Speed",
+				51,	// "Bump and Run Defense",
+				32,	// "Courage",
+				6,	// "Deep Passes",
+				42,	// "Directional Punting",
+				24,	// "Elusiveness",
+				56,	// "Endurance",
+				28,	// "Getting Downfield",
+				23,	// "Hole Recognition",
+				55,	// "Interceptions",
+				59, // "Kick Holding",
+				35,	// "Kick Returns",
+				45,	// "Kicking Accuracy",
+				46,	// "Kicking Power",
+				43,	// "Kickoff Distance",
+				44,	// "Kickoff Hang Time",
+				5,	// "Long Passes",
+				58, // "Long Snapping",
+				49,	// "Man-to-Man Defense",
+				4,	// "Medium Passes",
+				38,	// "Pass Blocking",
+				52,	// "Pass Rush Strength",
+				48,	// "Pass Rush Technique",
+				21,	// "Power Inside",
+				41,	// "Punt Hang Time",
+				40,	// "Punt Power",
+				34,	// "Punt Returns",
+				53,	// "Play Diagnosis",
+				54,	// "Punishing Hitter",
+				13,	// "Read Defense",
+				29,	// "Route Running",
+				37,	// "Run Blocking",
+				47,	// "Run Defense",
+				8,	// "Scramble Frequency",
+				2,	// "Screen Passes",
+				12,	// "Sense Rush",
+				3,	// "Short Passes",
+				57,	// "Special Teams",
+				25,	// "Speed to Outside",
+				7,	// "Third Down Passing",
+				22,	// "Third Down Running",
+				11,	// "Timing",
+				14,	// "Two Minute Offense",
+				30,	// "Third Down Catching",
+				50	// "Zone Defense"
+			};
 		}
+
+		private enum CombineOrder
+		{
+			Dash,
+			Solecismic,
+			Bench,
+			Agility,
+			BroadJump,
+			PositionDrill
+		}
+
+		private ushort[,] CombineThresholds =
+		{
+			{ 0,28,10,780,0,0 },
+			{ 465,0,0,735,114,17 },
+			{ 478,0,20,0,104,22 },
+			{ 451,0,0,720,0,42 },
+			{ 478,0,22,775,102,0 },
+			{ 527,0,28,780,84,0 },
+			{ 527,0,27,790,0,0 },
+			{ 531,0,25,800,0,0 },
+			{ 485,0,27,760,0,0 },
+			{ 0,0,28,780,0,0 },
+			{ 0,0,21,760,107,0 },
+			{ 0,0,18,740,108,22 },
+			{ 452,0,12,720,0,37 },
+			{ 459,0,15,735,0,37 },
+			{ 497,0,10,0,0,0 },
+			{ 0,23,9,0,104,0 },
+			{ 531,0,25,800,0,0 },
+		};
+
+		private double[,] CombineAverages =
+		{
+			{4.79,28.0,9.5,7.87,102.6,71.2},
+			{4.67,20.7,14.1,7.35,115.3,17.4},
+			{4.81,21.9,19.8,7.58,103.9,23.4},
+			{4.56,21.0,9.9,7.26,108.1,40.3},
+			{4.84,23.3,20.5,7.95,103.0,28.0},
+			{5.32,27.3,26.8,7.91,92.3,0.0},
+			{5.29,28.0,26.7,8.02,90.0,0.0},
+			{5.35,29.6,22.6,8.12,88.4,0.0},
+			{4.90,23.6,25.7,7.68,107.8,0.0},
+			{5.14,22.4,27.4,7.92,97.3,0.0},
+			{4.88,27.1,20.3,7.68,104.4,23.4},
+			{4.75,25.1,16.8,7.46,108.6,23.6},
+			{4.55,22.2,10.9,7.26,107.2,35.0},
+			{4.62,28.8,14.2,7.42,99.1,35.0},
+			{5.09,25.6,10.1,7.69,106.8,0.0},
+			{5.15,27.0,9.1,7.67,103.7,0.0},
+			{5.35,29.6,22.6,8.12,88.4,0.0},
+		};
+
+		private double[,] CombineStandardDeviations =
+		{
+			{0.151,7.21,2.19,0.253,6.01,9.55},
+			{0.093,6.45,3.44,0.151,5.14,6.30},
+			{0.078,5.75,3.90,0.199,5.07,7.51},
+			{0.104,6.99,3.09,0.194,4.92,9.94},
+			{0.097,6.81,4.22,0.358,6.69,10.54},
+			{0.166,10.24,5.07,0.268,6.66,0.00},
+			{0.135,9.76,4.27,0.268,6.32,0.00},
+			{0.133,9.87,4.82,0.220,6.69,0.00},
+			{0.140,6.82,3.93,0.300,7.34,0.00},
+			{0.143,6.54,3.71,0.331,9.43,0.00},
+			{0.111,7.09,3.53,0.240,5.93,7.67},
+			{0.119,7.13,3.49,0.199,5.86,7.72},
+			{0.079,6.90,2.56,0.201,4.35,9.42},
+			{0.091,7.59,2.97,0.224,4.31,9.41},
+			{0.179,7.44,3.62,0.338,7.04,0.00},
+			{0.136,7.47,2.87,0.337,6.40,0.00},
+			{0.133,9.87,4.82,0.220,6.69,0.00},
+		};
 
 		private void InitializeCombineMap()
 		{
-			System.Globalization.NumberFormatInfo nfi = System.Globalization.NumberFormatInfo.InvariantInfo;
-			System.Globalization.NumberStyles ns = System.Globalization.NumberStyles.Float;
-
 			mPositionGroupCombineMap = new System.Collections.Hashtable();
-			using (System.IO.StreamReader inFile = new System.IO.StreamReader("CombineData.csv"))
+			foreach (string posGroup in mPositionGroupOrderMap.Keys)
 			{
-				string headerLine = inFile.ReadLine();
-				while (!inFile.EndOfStream)
-				{
-					string curLine = inFile.ReadLine();
-					string[] fields = DataReader.CSVHelper.ParseLine(curLine);
+				int posIndex = mPositionGroupOrderMap[posGroup];
+				PositionGroupCombineData data = new PositionGroupCombineData();
+				data.m40YardAverage = CombineAverages[posIndex,(int)CombineOrder.Dash];
+				data.m40YardThreshold = CombineThresholds[posIndex,(int)CombineOrder.Dash] / 100.0;
+				data.m40YardStdDev = CombineStandardDeviations[posIndex,(int)CombineOrder.Dash];
+				data.mSolecismicAverage = CombineAverages[posIndex,(int)CombineOrder.Solecismic];
+				data.mSolecismicThreshold = CombineThresholds[posIndex, (int)CombineOrder.Solecismic];
+				data.mSolecismicStdDev = CombineStandardDeviations[posIndex, (int)CombineOrder.Solecismic];
+				data.mBenchAverage = CombineAverages[posIndex,(int)CombineOrder.Bench];
+				data.mBenchThreshold = CombineThresholds[posIndex, (int)CombineOrder.Bench];
+				data.mBenchStdDev = CombineStandardDeviations[posIndex, (int)CombineOrder.Bench];
+				data.mAgilityAverage = CombineAverages[posIndex,(int)CombineOrder.Agility];
+				data.mAgilityThreshold = CombineThresholds[posIndex, (int)CombineOrder.Agility] / 100.0;
+				data.mAgilityStdDev = CombineStandardDeviations[posIndex, (int)CombineOrder.Agility];
+				data.mBroadJumpAverage = CombineAverages[posIndex,(int)CombineOrder.BroadJump];
+				data.mBroadJumpThreshold = CombineThresholds[posIndex, (int)CombineOrder.BroadJump];
+				data.mBroadJumpStdDev = CombineStandardDeviations[posIndex, (int)CombineOrder.BroadJump];
+				data.mPositionDrillAverage = CombineAverages[posIndex,(int)CombineOrder.PositionDrill];
+				data.mPositionDrillThreshold = CombineThresholds[posIndex, (int)CombineOrder.PositionDrill];
+				data.mPositionDrillStdDev = CombineStandardDeviations[posIndex, (int)CombineOrder.PositionDrill];
 
-					if (fields.Length == 25)
-					{
-						PositionGroupCombineData data = new PositionGroupCombineData();
-						Double.TryParse(fields[1], ns, nfi, out data.m40YardAverage);
-						Double.TryParse(fields[2], ns, nfi, out data.m40YardMin);
-						Double.TryParse(fields[3], ns, nfi, out data.m40YardMax);
-						Double.TryParse(fields[4], ns, nfi, out data.m40YardStdDev);
-						Double.TryParse(fields[5], ns, nfi, out data.mSolecismicAverage);
-						Double.TryParse(fields[6], ns, nfi, out data.mSolecismicMin);
-						Double.TryParse(fields[7], ns, nfi, out data.mSolecismicMax);
-						Double.TryParse(fields[8], ns, nfi, out data.mSolecismicStdDev);
-						Double.TryParse(fields[9], ns, nfi, out data.mBenchAverage);
-						Double.TryParse(fields[10], ns, nfi, out data.mBenchMin);
-						Double.TryParse(fields[11], ns, nfi, out data.mBenchMax);
-						Double.TryParse(fields[12], ns, nfi, out data.mBenchStdDev);
-						Double.TryParse(fields[13], ns, nfi, out data.mAgilityAverage);
-						Double.TryParse(fields[14], ns, nfi, out data.mAgilityMin);
-						Double.TryParse(fields[15], ns, nfi, out data.mAgilityMax);
-						Double.TryParse(fields[16], ns, nfi, out data.mAgilityStdDev);
-						Double.TryParse(fields[17], ns, nfi, out data.mBroadJumpAverage);
-						Double.TryParse(fields[18], ns, nfi, out data.mBroadJumpMin);
-						Double.TryParse(fields[19], ns, nfi, out data.mBroadJumpMax);
-						Double.TryParse(fields[20], ns, nfi, out data.mBroadJumpStdDev);
-						Double.TryParse(fields[21], ns, nfi, out data.mPositionDrillAverage);
-						Double.TryParse(fields[22], ns, nfi, out data.mPositionDrillMin);
-						Double.TryParse(fields[23], ns, nfi, out data.mPositionDrillMax);
-						Double.TryParse(fields[24], ns, nfi, out data.mPositionDrillStdDev);
+				data.m40YardStdDev *= -1.0;
+				data.mAgilityStdDev *= -1.0;
 
-						data.m40YardStdDev *= -1.0;
-						data.mAgilityStdDev *= -1.0;
-
-						mPositionGroupCombineMap.Add(fields[0], data);
-					}
-					else
-					{
-						MessageBox.Show("Bad line '" + curLine + "' in CombineData.csv", "Combine Data Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-					}
-				}
+				mPositionGroupCombineMap.Add(posGroup, data);
 			}
 		}
-		#endregion
+        #endregion
+
+        private void buttonReleaseNotes_Click(object sender, EventArgs e)
+        {
+            System.Diagnostics.Process.Start("release_notes.txt");
+        }
     }
 }

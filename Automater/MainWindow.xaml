@@ -1,0 +1,19 @@
+﻿<Window x:Class="Automater.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Automater" Height="150" Width="300">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal" Margin="5,5,5,5">
+            <Label>Seasons To Run: </Label>
+            <TextBox x:Name="textBoxSeasonCount" Width="120" PreviewTextInput="textBoxSeasonCount_PreviewTextInput"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Grid.Row="1" Margin="5,5,5,5">
+            <Button x:Name="buttonRunSeasons" Content="Run Seasons" Click="buttonRunSeasons_Click"></Button>
+        </StackPanel>
+    </Grid>
+</Window>

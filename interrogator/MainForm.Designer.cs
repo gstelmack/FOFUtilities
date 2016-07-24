@@ -28,11 +28,10 @@ namespace Interrogator
 		/// </summary>
 		private void InitializeComponent()
 		{
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
 			this.labelSavedGame = new System.Windows.Forms.Label();
 			this.labelOutputStatus = new System.Windows.Forms.Label();
 			this.comboBoxSavedGame = new System.Windows.Forms.ComboBox();
-			this.labelOutputDirectory = new System.Windows.Forms.Label();
-			this.buttonOutputDirectory = new System.Windows.Forms.Button();
 			this.checkBoxProcessFromSeason = new System.Windows.Forms.CheckBox();
 			this.textBoxStartingSeason = new System.Windows.Forms.TextBox();
 			this.buttonGenerateCSV = new System.Windows.Forms.Button();
@@ -71,26 +70,6 @@ namespace Interrogator
 			this.comboBoxSavedGame.Name = "comboBoxSavedGame";
 			this.comboBoxSavedGame.Size = new System.Drawing.Size(162, 21);
 			this.comboBoxSavedGame.TabIndex = 12;
-			// 
-			// labelOutputDirectory
-			// 
-			this.labelOutputDirectory.AutoSize = true;
-			this.labelOutputDirectory.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.labelOutputDirectory.Location = new System.Drawing.Point(12, 9);
-			this.labelOutputDirectory.Name = "labelOutputDirectory";
-			this.labelOutputDirectory.Size = new System.Drawing.Size(100, 13);
-			this.labelOutputDirectory.TabIndex = 13;
-			this.labelOutputDirectory.Text = "Output Directory";
-			this.labelOutputDirectory.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-			// 
-			// buttonOutputDirectory
-			// 
-			this.buttonOutputDirectory.Location = new System.Drawing.Point(144, 4);
-			this.buttonOutputDirectory.Name = "buttonOutputDirectory";
-			this.buttonOutputDirectory.Size = new System.Drawing.Size(453, 23);
-			this.buttonOutputDirectory.TabIndex = 14;
-			this.buttonOutputDirectory.UseVisualStyleBackColor = true;
-			this.buttonOutputDirectory.Click += new System.EventHandler(this.buttonOutputDirectory_Click);
 			// 
 			// checkBoxProcessFromSeason
 			// 
@@ -194,11 +173,10 @@ namespace Interrogator
 			this.Controls.Add(this.buttonGenerateCSV);
 			this.Controls.Add(this.textBoxStartingSeason);
 			this.Controls.Add(this.checkBoxProcessFromSeason);
-			this.Controls.Add(this.buttonOutputDirectory);
-			this.Controls.Add(this.labelOutputDirectory);
 			this.Controls.Add(this.comboBoxSavedGame);
 			this.Controls.Add(this.labelOutputStatus);
 			this.Controls.Add(this.labelSavedGame);
+			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.Name = "MainForm";
 			this.Text = "Interrogator";
 			this.ResumeLayout(false);
@@ -211,8 +189,6 @@ namespace Interrogator
 		private System.Windows.Forms.Label labelSavedGame;
 		private System.Windows.Forms.Label labelOutputStatus;
 		private System.Windows.Forms.ComboBox comboBoxSavedGame;
-		private System.Windows.Forms.Label labelOutputDirectory;
-		private System.Windows.Forms.Button buttonOutputDirectory;
 		private System.Windows.Forms.CheckBox checkBoxProcessFromSeason;
 		private System.Windows.Forms.TextBox textBoxStartingSeason;
 		private System.Windows.Forms.Button buttonGenerateCSV;

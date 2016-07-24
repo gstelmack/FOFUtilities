@@ -23,1063 +23,57 @@ namespace DataReader
 			FileReadCallback = readCallback;
 			mUniverseData = universeData;
 			mStartingSeason = startingSeason;
-			LoadLeagueFile(Path.ChangeExtension(pathPrefix, ".fju"));
-			LoadPlayerFile(Path.ChangeExtension(pathPrefix, ".fpd"));
-			LoadSeasonData(pathPrefix);
+			mSavedGamePath = pathPrefix;
+			mLeagueID = Path.GetFileName(pathPrefix);
+			mExportPath = Path.Combine(universeData.ExportDirectory, mLeagueID);
+			LoadTeamInformation();
 			if (loadGameList)
 			{
-				LoadGameList(pathPrefix);
+				LoadGameList();
 			}
 		}
 
-		private class PlayerActiveSorter : System.Collections.IComparer
+		private void LoadTeamInformation()
 		{
-			public int Compare(object x, object y)
-			{
-				PlayerActiveRecord i1 = (PlayerActiveRecord)x;
-				PlayerActiveRecord i2 = (PlayerActiveRecord)y;
-
-				return i1.PlayerID.CompareTo(i2.PlayerID);
-			}
-		}
-
-		private class PlayerHistoricalSorter : System.Collections.IComparer
-		{
-			public int Compare(object x, object y)
-			{
-				PlayerHistoricalRecord i1 = (PlayerHistoricalRecord)x;
-				PlayerHistoricalRecord i2 = (PlayerHistoricalRecord)y;
-
-				return i1.PlayerID.CompareTo(i2.PlayerID);
-			}
-		}
-
-		private class PlayerGameStatSorter : System.Collections.IComparer
-		{
-			public int Compare(object x, object y)
-			{
-				PlayerGameStatsRecord i1 = (PlayerGameStatsRecord)x;
-				PlayerGameStatsRecord i2 = (PlayerGameStatsRecord)y;
-
-				if (i1.PlayerID == i2.PlayerID)
-				{
-					return i1.Week.CompareTo(i2.Week);
-				}
-				else
-				{
-					return i1.PlayerID.CompareTo(i2.PlayerID);
-				}
-			}
-		}
-
-		public void SortPlayerArrays()
-		{
-			Array.Sort(mPlayerActiveRecords, new PlayerActiveSorter());
-			Array.Sort(mPlayerHistoricalRecords, new PlayerHistoricalSorter());
-			Array.Sort(mPlayerGameStatsRecords[mSeasonsPlayed - 1], new PlayerGameStatSorter());
-		}
-
-		private void LoadPlayerFile(string fileName)
-		{
+			string teamInformationPath = System.IO.Path.Combine(mExportPath, "team_information.csv");
+			// read position and birthdate from player_information.csv
 			if (FileReadCallback != null)
 			{
-				FileReadCallback(System.IO.Path.GetFileName(fileName));
+				FileReadCallback("team_information.csv");
 			}
-
-			System.IO.FileStream inStream = new System.IO.FileStream(fileName, System.IO.FileMode.Open, System.IO.FileAccess.Read);
-			Encoding windows1252Encoding = Encoding.GetEncoding(1252);
-			System.IO.BinaryReader inFile = new System.IO.BinaryReader(inStream, windows1252Encoding);
-
-			//BinaryHelper.SetupTracer(Path.GetFileName(fileName));
-
-			BinaryHelper.ExtractString(inFile, 16, "Header");
-
-			// Skip the encrypted free agent records
-			long skipAmount = mFreeAgentRecordCount * 1696;
-			inStream.Seek(skipAmount, SeekOrigin.Current);
-
-			BinaryHelper.TracerWriteLine("Active Players");
-			BinaryHelper.TracerIndent();
-			mPlayerActiveRecords = new PlayerActiveRecord[mActivePlayerCount];
-			for (int playerIndex = 0; playerIndex < mActivePlayerCount; playerIndex++)
+			using (System.IO.StreamReader teamInformationFile = new System.IO.StreamReader(teamInformationPath))
 			{
-				BinaryHelper.TracerWriteLine("Player " + playerIndex);
-				BinaryHelper.TracerIndent();
+				System.Globalization.NumberFormatInfo nfi = System.Globalization.NumberFormatInfo.InvariantInfo;
 
-				mPlayerActiveRecords[playerIndex] = new PlayerActiveRecord();
-				mPlayerActiveRecords[playerIndex].PlayerID = BinaryHelper.ReadInt32(inFile,"PlayerID");
-				mPlayerActiveRecords[playerIndex].Position = BinaryHelper.ReadInt16(inFile,"Position");
-				mPlayerActiveRecords[playerIndex].Experience = BinaryHelper.ReadInt16(inFile,"Experience");
-				mPlayerActiveRecords[playerIndex].Number = BinaryHelper.ReadInt16(inFile,"Number");
-				mPlayerActiveRecords[playerIndex].PositionGroup = BinaryHelper.ReadInt16(inFile,"PositionGroup");
-				mPlayerActiveRecords[playerIndex].Team = BinaryHelper.ReadInt16(inFile,"Team");
-				mPlayerActiveRecords[playerIndex].InjuryLength = BinaryHelper.ReadInt16(inFile,"InjuryLength");
-				BinaryHelper.ProbeBytes(inFile, 2);
-				mPlayerActiveRecords[playerIndex].Loyalty = BinaryHelper.ReadInt16(inFile,"Loyalty");
-				mPlayerActiveRecords[playerIndex].PlaysToWin = BinaryHelper.ReadInt16(inFile,"PlaysToWin");
-				BinaryHelper.ProbeBytes(inFile, 2);
-				mPlayerActiveRecords[playerIndex].Personality = BinaryHelper.ReadInt16(inFile, "Personality");
-				mPlayerActiveRecords[playerIndex].Leadership = BinaryHelper.ReadInt16(inFile,"Leadership");
-				mPlayerActiveRecords[playerIndex].Intelligence = BinaryHelper.ReadInt16(inFile,"Intelligence");
-				mPlayerActiveRecords[playerIndex].RedFlagMarker = BinaryHelper.ReadInt16(inFile,"RedFlagMarker");
-				BinaryHelper.ProbeBytes(inFile, 4);
-				mPlayerActiveRecords[playerIndex].Volatility = BinaryHelper.ReadInt16(inFile, "Volatility");
-				BinaryHelper.ProbeBytes(inFile, 14);
-				mPlayerActiveRecords[playerIndex].JoinedTeam = BinaryHelper.ReadInt16(inFile, "JoinedTeam");
-				mPlayerActiveRecords[playerIndex].UFAYear = BinaryHelper.ReadInt16(inFile, "UFAYear");
-				mPlayerActiveRecords[playerIndex].Popularity = BinaryHelper.ReadInt16(inFile, "Popularity");
-				BinaryHelper.ProbeBytes(inFile, 8);
-				mPlayerActiveRecords[playerIndex].ContractLength = BinaryHelper.ReadInt16(inFile, "ContractLength");
-				BinaryHelper.ProbeBytes(inFile, 6);
-				mPlayerActiveRecords[playerIndex].Salary = new int[MaxContractYears];
-				int contractIndex;
-				for (contractIndex = 0; contractIndex < MaxContractYears; contractIndex++)
+				string headerLine = teamInformationFile.ReadLine();
+				while (!teamInformationFile.EndOfStream)
 				{
-					mPlayerActiveRecords[playerIndex].Salary[contractIndex] = BinaryHelper.ReadCodedInt32(inFile, "Salary" + contractIndex.ToString());
-				}
-				mPlayerActiveRecords[playerIndex].Bonus = new int[MaxContractYears];
-				for (contractIndex = 0; contractIndex < MaxContractYears; contractIndex++)
-				{
-					mPlayerActiveRecords[playerIndex].Bonus[contractIndex] = BinaryHelper.ReadCodedInt32(inFile, "Bonus" + contractIndex.ToString());
-				}
-				BinaryHelper.ProbeBytes(inFile, 30);
-
-				BinaryHelper.TracerWriteLine("Interview Markers");
-				BinaryHelper.TracerIndent();
-				mPlayerActiveRecords[playerIndex].InterviewMarkers = new short[kTeamCount];
-				for (int teamIndex = 0; teamIndex < kTeamCount; teamIndex++)
-				{
-					mPlayerActiveRecords[playerIndex].InterviewMarkers[teamIndex] = BinaryHelper.ReadInt16(inFile, "Team" + teamIndex.ToString());
-				}
-				BinaryHelper.TracerOutdent();
-
-				BinaryHelper.ProbeBytes(inFile, 4);
-
-				BinaryHelper.TracerOutdent();
-			}
-			BinaryHelper.TracerOutdent();
-
-			BinaryHelper.ProbeBytes(inFile, 500);
-
-			BinaryHelper.ClearTracer();
-			inFile.Close();
-
-			// Correct active player index to player id for the current season game stats.
-			int yearIndex = mSeasonsPlayed - 1;
-			for (int playerGameIndex = 0; playerGameIndex < mPlayerGameStatsRecords[yearIndex].Length; ++playerGameIndex)
-			{
-				int activePlayerIndex = mPlayerGameStatsRecords[yearIndex][playerGameIndex].PlayerID;
-				mPlayerGameStatsRecords[yearIndex][playerGameIndex].PlayerID = mPlayerActiveRecords[activePlayerIndex].PlayerID;
-			}
-		}
-
-		private void LoadLeagueFile(string fileName)
-		{
-			if (FileReadCallback != null)
-			{
-				FileReadCallback(System.IO.Path.GetFileName(fileName));
-			}
-
-			System.IO.FileStream inStream = new System.IO.FileStream(fileName, System.IO.FileMode.Open, System.IO.FileAccess.Read);
-			Encoding windows1252Encoding = Encoding.GetEncoding(1252);
-			System.IO.BinaryReader inFile = new System.IO.BinaryReader(inStream, windows1252Encoding);
-
-			//BinaryHelper.SetupTracer(Path.GetFileName(fileName));
-
-			BinaryHelper.ExtractString(inFile, 16, "Header");
-
-			mCurrentYear = BinaryHelper.ReadInt16(inFile,"Current Year");
-			mStartingYear = mCurrentYear;
-			if (mStartingSeason == LoadCurrentSeasonOnly)
-			{
-				mStartingSeason = mStartingYear;
-			}
-			else if (mStartingSeason < 0)
-			{
-				mStartingSeason = mStartingYear + mStartingSeason + 1;
-			}
-			mGameStage = BinaryHelper.ReadInt16(inFile, "Game Stage");
-			mCurrentWeek = BinaryHelper.ReadInt16(inFile, "Current Week");
-			mFAStage = BinaryHelper.ReadInt16(inFile, "FA Stage");
-			BinaryHelper.ProbeBytes(inFile, 6);
-			mPlayersTeam = BinaryHelper.ReadInt16(inFile, "Player's Team");
-			mNumberOfTeams = BinaryHelper.ReadInt16(inFile, "Team Count");
-			BinaryHelper.ProbeBytes(inFile, 4);
-			BinaryHelper.TracerIndent();
-			for (int teamControl = 0; teamControl < NumberOfTeams; teamControl++)
-			{
-				BinaryHelper.TracerWriteLine("Team " + teamControl + " control");
-				BinaryHelper.TracerIndent();
-				mTeamRecords[teamControl] = new TeamRecord();
-				short humanControlled = BinaryHelper.ReadInt16(inFile,"Human Controlled");
-				if (humanControlled == 0)
-				{
-					mTeamRecords[teamControl].HumanControlled = false;
-				}
-				else
-				{
-					mTeamRecords[teamControl].HumanControlled = true;
-				}
-				BinaryHelper.TracerOutdent();
-			}
-			BinaryHelper.TracerOutdent();
-			mNextPlayerID = BinaryHelper.ReadInt32(inFile, "Next Player ID");
-			BinaryHelper.ProbeBytes(inFile,134);
-			mSalaryCap = BinaryHelper.ReadCodedInt32(inFile, "Salary Cap");
-			mMinSalary = BinaryHelper.ReadCodedInt32(inFile, "Min Salary");
-			BinaryHelper.ProbeBytes(inFile, 8);
-
-			BinaryHelper.TracerIndent();
-			int i;
-			for (i = 0; i < kTeamCount; i++)
-			{
-				BinaryHelper.TracerWriteLine("Team " + i + " Cap Loss");
-				BinaryHelper.TracerIndent();
-				mTeamRecords[i].CapLossThisYear = BinaryHelper.ReadCodedInt32(inFile, "CapLossThisYear");
-				mTeamRecords[i].CapLossNextYear = BinaryHelper.ReadCodedInt32(inFile, "CapLossNextYear");
-				BinaryHelper.TracerOutdent();
-			}
-			BinaryHelper.TracerOutdent();
-
-			BinaryHelper.ProbeBytes(inFile, 108);
-
-			BinaryHelper.TracerIndent();
-			for (int year = 0; year < 4; year++)
-			{
-				BinaryHelper.TracerWriteLine("Draft Year " + year);
-				mDraftYears[year] = new DraftYear();
-				mDraftYears[year].DraftRounds = new DraftRound[7];
-				BinaryHelper.TracerIndent();
-				for (int round = 0; round < 7; round++)
-				{
-					BinaryHelper.TracerWriteLine("Draft Round " + round);
-					mDraftYears[year].DraftRounds[round] = new DraftRound();
-					mDraftYears[year].DraftRounds[round].PickTeam = new short[kTeamCount];
-					BinaryHelper.TracerIndent();
-					for (int pick = 0; pick < kTeamCount; pick++)
-					{
-						mDraftYears[year].DraftRounds[round].PickTeam[pick] = BinaryHelper.ReadInt16(inFile, "PickTeam");
-					}
-					BinaryHelper.TracerOutdent();
-				}
-				BinaryHelper.TracerOutdent();
-			}
-			BinaryHelper.TracerOutdent();
-
-			BinaryHelper.TracerWriteLine("Reading transactions...");
-			BinaryHelper.TracerIndent();
-			TransactionRecord[] curTransactions = new TransactionRecord[kTransactionRecordCount];
-			for (int transIndex = 0; transIndex < kTransactionRecordCount; transIndex++)
-			{
-				BinaryHelper.TracerWriteLine("Transaction " + transIndex);
-				BinaryHelper.TracerIndent();
-
-				curTransactions[transIndex] = new TransactionRecord();
-				curTransactions[transIndex].PlayerRec2Index = BinaryHelper.ReadInt32(inFile, "Player Index"); ;
-				curTransactions[transIndex].Salary = BinaryHelper.ReadCodedInt32(inFile, "Salary");
-				curTransactions[transIndex].TransactionType = BinaryHelper.ReadInt16(inFile, "Type");
-				curTransactions[transIndex].Team1Index = BinaryHelper.ReadInt16(inFile, "Team 1 Index");
-				curTransactions[transIndex].Team2Index = BinaryHelper.ReadInt16(inFile, "Team 2 Index");
-				curTransactions[transIndex].Position = BinaryHelper.ReadInt16(inFile, "Position");
-				curTransactions[transIndex].Years = BinaryHelper.ReadInt16(inFile, "Years");
-				curTransactions[transIndex].Stage = BinaryHelper.ReadInt16(inFile, "Stage");
-				BinaryHelper.TracerOutdent();
-			}
-			BinaryHelper.TracerOutdent();
-
-			short validTransactionCount = BinaryHelper.ReadInt16(inFile, "Valid Transaction Count");
-			Array.Resize(ref curTransactions, validTransactionCount);
-
-			BinaryHelper.ProbeTo(inFile, 0x31AA8);
-
-			BinaryHelper.TracerWriteLine("Reading emails...");
-			BinaryHelper.TracerIndent();
-			short stringLength;
-			for (int emailIndex = 0; emailIndex < kEmailRecordCount; emailIndex++)
-			{
-				BinaryHelper.TracerWriteLine("Email " + emailIndex);
-				BinaryHelper.TracerIndent();
-
-				mEmails[emailIndex] = new EmailRecord();
-				mEmails[emailIndex].Flag = BinaryHelper.ReadInt16(inFile, "Flag");
-				stringLength = BinaryHelper.ReadInt16(inFile,"From Length");
-				mEmails[emailIndex].From = BinaryHelper.ExtractString(inFile, stringLength, "From");
-				stringLength = BinaryHelper.ReadInt16(inFile, "Subject Length");
-				mEmails[emailIndex].Subject = BinaryHelper.ExtractString(inFile, stringLength, "Subject");
-				stringLength = BinaryHelper.ReadInt16(inFile, "Body Length");
-				mEmails[emailIndex].Message = BinaryHelper.ExtractString(inFile, stringLength, "Body");
-
-				BinaryHelper.TracerOutdent();
-			}
-			BinaryHelper.TracerOutdent();
-
-			BinaryHelper.ProbeBytes(inFile, 24);
-
-			mFreeAgentRecordCount = BinaryHelper.ReadInt16(inFile, "Free Agent Record Count");
-			mActivePlayerCount = BinaryHelper.ReadInt16(inFile, "Active Player Count");
-			int historicalPlayerCount = BinaryHelper.ReadInt32(inFile, "Historical Player Count");
-			BinaryHelper.ProbeBytes(inFile, 8);
-			mSeasonsPlayed = BinaryHelper.ReadInt16(inFile, "Seasons Played");
-			mTransactions = new TransactionRecord[mSeasonsPlayed][];
-			int curSeasonIndex = mSeasonsPlayed - 1;
-			mTransactions[curSeasonIndex] = curTransactions;
-			BinaryHelper.ProbeBytes(inFile, 4);
-
-			string playerNameFile = Path.ChangeExtension(fileName, ".ffn");
-			System.IO.FileStream nameStream = new System.IO.FileStream(playerNameFile, System.IO.FileMode.Open, System.IO.FileAccess.Read);
-			System.IO.BinaryReader nameFile = new System.IO.BinaryReader(nameStream, windows1252Encoding);
-			string nameHeader = BinaryHelper.ExtractString(nameFile, 16, "Name File Header");
-
-			BinaryHelper.TracerWriteLine("Reading historical player records...");
-			BinaryHelper.TracerIndent();
-			mPlayerHistoricalRecords = new PlayerHistoricalRecord[historicalPlayerCount];
-			for (int record2Index = 0; record2Index < mPlayerHistoricalRecords.Length; ++record2Index)
-			{
-				BinaryHelper.TracerWriteLine("Historical Player Record " + record2Index);
-				BinaryHelper.TracerIndent();
-
-				mPlayerHistoricalRecords[record2Index] = new PlayerHistoricalRecord();
-
-				mPlayerHistoricalRecords[record2Index].PlayerID = BinaryHelper.ReadInt32(inFile, "PlayerID");
-				mPlayerHistoricalRecords[record2Index].Position = BinaryHelper.ReadInt16(inFile, "Position");
-				mPlayerHistoricalRecords[record2Index].Experience = BinaryHelper.ReadInt16(inFile, "Experience");
-				stringLength = BinaryHelper.ReadInt16(inFile, "Last Name Length");
-				mPlayerHistoricalRecords[record2Index].LastName = BinaryHelper.ExtractString(nameFile, stringLength, "Last Name");
-				stringLength = BinaryHelper.ReadInt16(inFile, "First Name Length");
-				mPlayerHistoricalRecords[record2Index].FirstName = BinaryHelper.ExtractString(nameFile, stringLength, "First Name");
-				stringLength = BinaryHelper.ReadInt16(inFile, "Nickname Length");
-				mPlayerHistoricalRecords[record2Index].NickName = BinaryHelper.ExtractString(nameFile, stringLength, "Nickname");
-				BinaryHelper.ProbeBytes(inFile, 2);
-				mPlayerHistoricalRecords[record2Index].PlayerOfTheGame = BinaryHelper.ReadInt16(inFile, "Player of Game");
-				mPlayerHistoricalRecords[record2Index].ChampionshipRings = BinaryHelper.ReadInt16(inFile, "Champ Rings");
-				short playerOfTheWeek = BinaryHelper.ReadInt16(inFile, "Player of the Week");
-				mPlayerHistoricalRecords[record2Index].PlayerOfTheWeekMentions = (short)(playerOfTheWeek % 200);
-				mPlayerHistoricalRecords[record2Index].PlayerOfTheWeekWins = (short)(playerOfTheWeek / 200);
-				mPlayerHistoricalRecords[record2Index].Height = BinaryHelper.ReadInt16(inFile, "Height");
-				mPlayerHistoricalRecords[record2Index].Weight = BinaryHelper.ReadInt16(inFile, "Weight");
-				short hofBool = BinaryHelper.ReadInt16(inFile, "HOF?");
-				short hofYear = BinaryHelper.ReadInt16(inFile, "HOF Year");
-				short hofVote = BinaryHelper.ReadInt16(inFile, "HOF Vote");
-				if (hofYear <= mCurrentYear)	// no peeking!
-				{
-					mPlayerHistoricalRecords[record2Index].InHallOfFame = hofBool;
-					mPlayerHistoricalRecords[record2Index].HallOfFameYear = hofYear;
-					mPlayerHistoricalRecords[record2Index].HallOfFameVote = hofVote;
-				}
-				else
-				{
-					mPlayerHistoricalRecords[record2Index].InHallOfFame = 0;
-					mPlayerHistoricalRecords[record2Index].HallOfFameYear = 0;
-					mPlayerHistoricalRecords[record2Index].HallOfFameVote = 0;
-				}
-				BinaryHelper.ProbeBytes(inFile, 2);
-				mPlayerHistoricalRecords[record2Index].BirthYear = BinaryHelper.ReadInt16(inFile, "Birth Year");
-				short birthday = BinaryHelper.ReadInt16(inFile, "Birth Date");
-				mPlayerHistoricalRecords[record2Index].BirthMonth = (short)(birthday / 100);
-				mPlayerHistoricalRecords[record2Index].BirthDay = (short)(birthday % 100);
-				mPlayerHistoricalRecords[record2Index].College = BinaryHelper.ReadInt16(inFile, "College");
-				short draftPosition = BinaryHelper.ReadInt16(inFile, "Draft Position");
-				mPlayerHistoricalRecords[record2Index].DraftRound = (short)(draftPosition / 100);
-				mPlayerHistoricalRecords[record2Index].DraftPick = (short)(draftPosition % 100);
-				mPlayerHistoricalRecords[record2Index].FourthQuarterHeroics = BinaryHelper.ReadInt16(inFile, "4Q Hero");
-				mPlayerHistoricalRecords[record2Index].QBWins = BinaryHelper.ReadInt16(inFile, "QB Wins");
-				mPlayerHistoricalRecords[record2Index].QBLosses = BinaryHelper.ReadInt16(inFile, "QB Losses");
-				mPlayerHistoricalRecords[record2Index].QBTies = BinaryHelper.ReadInt16(inFile, "QB Ties");
-				mPlayerHistoricalRecords[record2Index].HomeTown = BinaryHelper.ReadInt16(inFile, "Home Town");
-				BinaryHelper.ProbeBytes(inFile, 2);
-				mPlayerHistoricalRecords[record2Index].DraftedBy = BinaryHelper.ReadInt16(inFile, "Drafted By");
-				mPlayerHistoricalRecords[record2Index].YearDrafted = BinaryHelper.ReadInt16(inFile, "Year Drafted");
-				mPlayerHistoricalRecords[record2Index].YearsInLeagueCount = BinaryHelper.ReadInt16(inFile, "Years In League Count");
-				mPlayerHistoricalRecords[record2Index].YearsInLeague = new short[MaxPlayerHistoricalYearCount];
-				mPlayerHistoricalRecords[record2Index].YearDataIndex = new int[MaxPlayerHistoricalYearCount];
-				for (int gameRecordIndex = 0; gameRecordIndex < MaxPlayerHistoricalYearCount; gameRecordIndex++)
-				{
-					short first = BinaryHelper.ReadInt16(inFile, "Year Data Index First");
-					short second = BinaryHelper.ReadInt16(inFile, "Year Data Index Second");
-					mPlayerHistoricalRecords[record2Index].YearDataIndex[gameRecordIndex] = first;
-					if (second > 0)
-					{
-						mPlayerHistoricalRecords[record2Index].YearDataIndex[gameRecordIndex] += (32768 * second);
-					}
-				}
-				for (int yearIndex = 0; yearIndex < MaxPlayerHistoricalYearCount; yearIndex++)
-				{
-					short testYear = BinaryHelper.ReadInt16(inFile, "Year");
-					mPlayerHistoricalRecords[record2Index].YearsInLeague[yearIndex] = testYear;
-					if (testYear < mStartingYear && yearIndex < mPlayerHistoricalRecords[record2Index].YearsInLeagueCount)
-					{
-						mStartingYear = testYear;
-					}
-				}
-				BinaryHelper.ProbeBytes(inFile, 2);
-				BinaryHelper.TracerOutdent();
-			}
-			BinaryHelper.TracerOutdent();
-			nameFile.Close();
-
-			mSeasonRecords = new SeasonRecord[mSeasonsPlayed];
-			mFranchisePerformanceRecords = new FranchisePerformanceRecord[mSeasonsPlayed * kTeamCount];
-			mGameResultRecords = new GameResultRecord[kSeasonGameCount * mSeasonsPlayed];
-
-			BinaryHelper.TracerWriteLine("Reading season records...");
-			BinaryHelper.TracerIndent();
-			int seasonIndex;
-			for (seasonIndex = 0; seasonIndex < mSeasonsPlayed; seasonIndex++)
-			{
-				BinaryHelper.TracerWriteLine("Reading season " + seasonIndex.ToString() + "...");
-				BinaryHelper.TracerIndent();
-
-				mSeasonRecords[seasonIndex] = new SeasonRecord();
-				mSeasonRecords[seasonIndex].PlayerEval = BinaryHelper.ReadInt16(inFile, "Player Eval");
-				mSeasonRecords[seasonIndex].PlayerTeam = BinaryHelper.ReadInt16(inFile, "Player Team");
-				mSeasonRecords[seasonIndex].Wins = BinaryHelper.ReadInt16(inFile, "Wins");
-				mSeasonRecords[seasonIndex].Losses = BinaryHelper.ReadInt16(inFile, "Losses");
-				mSeasonRecords[seasonIndex].Ties = BinaryHelper.ReadInt16(inFile, "Ties");
-				mSeasonRecords[seasonIndex].Year = BinaryHelper.ReadInt16(inFile, "Year");
-				if (seasonIndex == 0 && mSeasonRecords[seasonIndex].Year == 0)
-				{
-					mSeasonRecords[seasonIndex].Year = mCurrentYear;
-				}
-
-				BinaryHelper.ProbeBytes(inFile, 80);
-
-				int franchiseIndex;
-				int franchiseStartIndex = seasonIndex*kTeamCount;
-				for (franchiseIndex=0;franchiseIndex<kTeamCount;++franchiseIndex)
-				{
-					mFranchisePerformanceRecords[franchiseStartIndex + franchiseIndex] = new FranchisePerformanceRecord();
-					mFranchisePerformanceRecords[franchiseStartIndex+franchiseIndex].Year = mSeasonRecords[seasonIndex].Year;
-					mFranchisePerformanceRecords[franchiseStartIndex+franchiseIndex].FranchiseValue = BinaryHelper.ReadInt16(inFile,"Franchise Value");
-				}
-				for (franchiseIndex=0;franchiseIndex<kTeamCount;++franchiseIndex)
-				{
-					mFranchisePerformanceRecords[franchiseStartIndex+franchiseIndex].ProfitScore = BinaryHelper.ReadInt16(inFile,"Profit Score");
-				}
-				for (franchiseIndex=0;franchiseIndex<kTeamCount;++franchiseIndex)
-				{
-					mFranchisePerformanceRecords[franchiseStartIndex+franchiseIndex].PerformanceScore = BinaryHelper.ReadInt16(inFile,"Performance Score");
-				}
-				for (franchiseIndex=0;franchiseIndex<kTeamCount;++franchiseIndex)
-				{
-					mFranchisePerformanceRecords[franchiseStartIndex+franchiseIndex].RosterScore = BinaryHelper.ReadInt16(inFile,"Roster Score");
-				}
-				for (franchiseIndex=0;franchiseIndex<kTeamCount;++franchiseIndex)
-				{
-					mFranchisePerformanceRecords[franchiseStartIndex+franchiseIndex].Playoffs = BinaryHelper.ReadInt16(inFile,"Playoffs");
-				}
-				for (franchiseIndex=0;franchiseIndex<kTeamCount;++franchiseIndex)
-				{
-					short tempTeamIndex = BinaryHelper.ReadInt16(inFile,"Team Index");
-					mFranchisePerformanceRecords[franchiseStartIndex+tempTeamIndex].Wins = BinaryHelper.ReadInt16(inFile,"Wins");
-					mFranchisePerformanceRecords[franchiseStartIndex+tempTeamIndex].Losses = BinaryHelper.ReadInt16(inFile,"Losses");
-					mFranchisePerformanceRecords[franchiseStartIndex+tempTeamIndex].Ties = BinaryHelper.ReadInt16(inFile,"Ties");
-					mFranchisePerformanceRecords[franchiseStartIndex+tempTeamIndex].Unknown = BinaryHelper.ReadInt16(inFile,"Unknown");
-					mFranchisePerformanceRecords[franchiseStartIndex+tempTeamIndex].PointsFor = BinaryHelper.ReadInt16(inFile,"PointsFor");
-					mFranchisePerformanceRecords[franchiseStartIndex+tempTeamIndex].PointsAgainst = BinaryHelper.ReadInt16(inFile,"PointsAgainst");
-					mFranchisePerformanceRecords[franchiseStartIndex+tempTeamIndex].ConfWins = BinaryHelper.ReadInt16(inFile,"ConfWins");
-					mFranchisePerformanceRecords[franchiseStartIndex+tempTeamIndex].ConfLoss = BinaryHelper.ReadInt16(inFile,"ConfLoss");
-					mFranchisePerformanceRecords[franchiseStartIndex+tempTeamIndex].ConfTies = BinaryHelper.ReadInt16(inFile,"ConfTies");
-					mFranchisePerformanceRecords[franchiseStartIndex+tempTeamIndex].DivWin = BinaryHelper.ReadInt16(inFile,"DivWin");
-					mFranchisePerformanceRecords[franchiseStartIndex+tempTeamIndex].DivLoss = BinaryHelper.ReadInt16(inFile,"DivLoss");
-					mFranchisePerformanceRecords[franchiseStartIndex+tempTeamIndex].DivTie = BinaryHelper.ReadInt16(inFile,"DivTie");
-				}
-				for (franchiseIndex=0;franchiseIndex<kTeamCount;++franchiseIndex)
-				{
-					mFranchisePerformanceRecords[franchiseStartIndex+franchiseIndex].Attendance = BinaryHelper.ReadInt16(inFile,"Attendance");
-				}
-				for (franchiseIndex=0;franchiseIndex<kTeamCount;++franchiseIndex)
-				{
-					mFranchisePerformanceRecords[franchiseStartIndex+franchiseIndex].StadiumCapacity = BinaryHelper.ReadInt16(inFile,"StadiumCapacity");
-				}
-				for (franchiseIndex=0;franchiseIndex<kTeamCount;++franchiseIndex)
-				{
-					mFranchisePerformanceRecords[franchiseStartIndex + franchiseIndex].TVRevenue = BinaryHelper.ReadCodedInt32(inFile, "TVRevenue");
-				}
-				for (franchiseIndex=0;franchiseIndex<kTeamCount;++franchiseIndex)
-				{
-					mFranchisePerformanceRecords[franchiseStartIndex + franchiseIndex].TicketRevenue = BinaryHelper.ReadCodedInt32(inFile, "TicketRevenue");
-				}
-				for (franchiseIndex=0;franchiseIndex<kTeamCount;++franchiseIndex)
-				{
-					mFranchisePerformanceRecords[franchiseStartIndex + franchiseIndex].SuiteRevenue = BinaryHelper.ReadCodedInt32(inFile, "SuiteRevenue");
-				}
-				for (franchiseIndex=0;franchiseIndex<kTeamCount;++franchiseIndex)
-				{
-					BinaryHelper.ReadCodedInt32(inFile, "Unknown");
-				}
-				for (franchiseIndex=0;franchiseIndex<kTeamCount;++franchiseIndex)
-				{
-					mFranchisePerformanceRecords[franchiseStartIndex + franchiseIndex].PlayerSalaries = BinaryHelper.ReadCodedInt32(inFile, "PlayerSalaries");
-				}
-				for (franchiseIndex=0;franchiseIndex<kTeamCount;++franchiseIndex)
-				{
-					mFranchisePerformanceRecords[franchiseStartIndex + franchiseIndex].PlayerBonuses = BinaryHelper.ReadCodedInt32(inFile, "PlayerBonuses");
-				}
-				for (franchiseIndex = 0; franchiseIndex < kTeamCount; ++franchiseIndex)
-				{
-					BinaryHelper.ReadCodedInt32(inFile, "Unknown");
-				}
-				for (franchiseIndex=0;franchiseIndex<kTeamCount;++franchiseIndex)
-				{
-					mFranchisePerformanceRecords[franchiseStartIndex + franchiseIndex].Concessions = BinaryHelper.ReadCodedInt32(inFile, "Concessions");
-				}
-				for (franchiseIndex=0;franchiseIndex<kTeamCount;++franchiseIndex)
-				{
-					mFranchisePerformanceRecords[franchiseStartIndex + franchiseIndex].Parking = BinaryHelper.ReadCodedInt32(inFile, "Parking");
-				}
-				for (franchiseIndex=0;franchiseIndex<kTeamCount;++franchiseIndex)
-				{
-					mFranchisePerformanceRecords[franchiseStartIndex + franchiseIndex].Advertising = BinaryHelper.ReadCodedInt32(inFile, "Advertising");
-				}
-				for (franchiseIndex=0;franchiseIndex<kTeamCount;++franchiseIndex)
-				{
-					mFranchisePerformanceRecords[franchiseStartIndex + franchiseIndex].Training = BinaryHelper.ReadCodedInt32(inFile, "Training");
-				}
-				for (franchiseIndex=0;franchiseIndex<kTeamCount;++franchiseIndex)
-				{
-					mFranchisePerformanceRecords[franchiseStartIndex + franchiseIndex].Coaching = BinaryHelper.ReadCodedInt32(inFile, "Coaching");
-				}
-				for (franchiseIndex=0;franchiseIndex<kTeamCount;++franchiseIndex)
-				{
-					mFranchisePerformanceRecords[franchiseStartIndex + franchiseIndex].Scouting = BinaryHelper.ReadCodedInt32(inFile, "Scouting");
-				}
-				for (franchiseIndex=0;franchiseIndex<kTeamCount;++franchiseIndex)
-				{
-					mFranchisePerformanceRecords[franchiseStartIndex + franchiseIndex].Maintenance = BinaryHelper.ReadCodedInt32(inFile, "Maintenance");
-				}
-				for (franchiseIndex=0;franchiseIndex<kTeamCount;++franchiseIndex)
-				{
-					BinaryHelper.ReadCodedInt32(inFile, "Unknown");
-				}
-				for (franchiseIndex = 0; franchiseIndex < kTeamCount; ++franchiseIndex)
-				{
-					mFranchisePerformanceRecords[franchiseStartIndex + franchiseIndex].StadiumPayment = BinaryHelper.ReadCodedInt32(inFile, "StadiumPayment");
-				}
-				for (franchiseIndex = 0; franchiseIndex < kTeamCount; ++franchiseIndex)
-				{
-					BinaryHelper.ReadCodedInt32(inFile, "Unknown");
-				}
-				for (franchiseIndex=0;franchiseIndex<kTeamCount;++franchiseIndex)
-				{
-					BinaryHelper.ReadCodedInt32(inFile, "Unknown");
-				}
-				for (franchiseIndex=0;franchiseIndex<kTeamCount;++franchiseIndex)
-				{
-					BinaryHelper.ReadCodedInt32(inFile, "Unknown");
-				}
-				for (franchiseIndex=0;franchiseIndex<kTeamCount;++franchiseIndex)
-				{
-					BinaryHelper.ReadCodedInt32(inFile, "Unknown");
-				}
-				for (franchiseIndex=0;franchiseIndex<kTeamCount;++franchiseIndex)
-				{
-					BinaryHelper.ReadCodedInt32(inFile, "Unknown");
-				}
-				for (franchiseIndex=0;franchiseIndex<kTeamCount;++franchiseIndex)
-				{
-					BinaryHelper.ReadCodedInt32(inFile, "Unknown");
-				}
-				BinaryHelper.ProbeBytes(inFile,18);
-
-				BinaryHelper.TracerWriteLine("Reading Game Result Entries...");
-				BinaryHelper.TracerIndent();
-				int gameIndex;
-				int gameStartIndex = kSeasonGameCount*seasonIndex;
-				for (gameIndex=0;gameIndex<kSeasonGameCount;++gameIndex)
-				{
-					BinaryHelper.TracerWriteLine("Reading game "+gameIndex.ToString()+"...");
-					BinaryHelper.TracerIndent();
-					mGameResultRecords[gameStartIndex + gameIndex] = new GameResultRecord();
-					mGameResultRecords[gameStartIndex+gameIndex].Year = mSeasonRecords[seasonIndex].Year;
-					mGameResultRecords[gameStartIndex+gameIndex].Week = BinaryHelper.ReadInt16(inFile,"Week");
-					mGameResultRecords[gameStartIndex+gameIndex].AwayScore = BinaryHelper.ReadInt16(inFile,"AwayScore");
-					mGameResultRecords[gameStartIndex+gameIndex].AwayTeam = BinaryHelper.ReadInt16(inFile,"AwayTeam");
-					mGameResultRecords[gameStartIndex+gameIndex].HomeScore = BinaryHelper.ReadInt16(inFile,"HomeScore");
-					mGameResultRecords[gameStartIndex+gameIndex].HomeTeam = BinaryHelper.ReadInt16(inFile,"HomeTeam");
-					mGameResultRecords[gameStartIndex+gameIndex].Attendance = BinaryHelper.ReadInt16(inFile,"Attendance");
-					mGameResultRecords[gameStartIndex + gameIndex].Weather = BinaryHelper.ReadInt16(inFile, "Weather");
-					BinaryHelper.TracerOutdent();
-				}
-				BinaryHelper.TracerOutdent();
-
-				BinaryHelper.ProbeBytes(inFile,128);
-
-				BinaryHelper.TracerWriteLine("Reading Game Leader Entries...");
-				BinaryHelper.TracerIndent();
-				for (gameIndex=0;gameIndex<kSeasonGameCount;++gameIndex)
-				{
-					BinaryHelper.TracerWriteLine("Reading game "+gameIndex.ToString()+"...");
-					BinaryHelper.TracerIndent();
-					mGameResultRecords[gameStartIndex+gameIndex].AwayPassingLeaderPlayerID = BinaryHelper.ReadInt32(inFile,"AwayPassingLeaderPlayerID");
-					mGameResultRecords[gameStartIndex+gameIndex].HomePassingLeaderPlayerID = BinaryHelper.ReadInt32(inFile,"HomePassingLeaderPlayerID");
-					mGameResultRecords[gameStartIndex+gameIndex].AwayRushingLeaderPlayerID = BinaryHelper.ReadInt32(inFile,"AwayRushingLeaderPlayerID");
-					mGameResultRecords[gameStartIndex+gameIndex].HomeRushingLeaderPlayerID = BinaryHelper.ReadInt32(inFile,"HomeRushingLeaderPlayerID");
-					mGameResultRecords[gameStartIndex+gameIndex].AwayReceivingLeaderPlayerID = BinaryHelper.ReadInt32(inFile,"AwayReceivingLeaderPlayerID");
-					mGameResultRecords[gameStartIndex+gameIndex].HomeReceivingLeaderPlayerID = BinaryHelper.ReadInt32(inFile,"HomeReceivingLeaderPlayerID");
-					mGameResultRecords[gameStartIndex+gameIndex].AwayPassAttempts = BinaryHelper.ReadInt16(inFile,"AwayPassAttempts");
-					mGameResultRecords[gameStartIndex+gameIndex].AwayPassCompletions = BinaryHelper.ReadInt16(inFile,"AwayPassCompletions");
-					mGameResultRecords[gameStartIndex+gameIndex].AwayPassYards = BinaryHelper.ReadInt16(inFile,"AwayPassYards");
-					mGameResultRecords[gameStartIndex+gameIndex].HomePassAttempts = BinaryHelper.ReadInt16(inFile,"HomePassAttempts");
-					mGameResultRecords[gameStartIndex+gameIndex].HomePassCompletions = BinaryHelper.ReadInt16(inFile,"HomePassCompletions");
-					mGameResultRecords[gameStartIndex+gameIndex].HomePassYards = BinaryHelper.ReadInt16(inFile,"HomePassYards");
-					mGameResultRecords[gameStartIndex+gameIndex].AwayRushAttempts = BinaryHelper.ReadInt16(inFile,"AwayRushAttempts");
-					mGameResultRecords[gameStartIndex+gameIndex].AwayRushYards = BinaryHelper.ReadInt16(inFile,"AwayRushYards");
-					mGameResultRecords[gameStartIndex+gameIndex].HomeRushAttempts = BinaryHelper.ReadInt16(inFile,"HomeRushAttempts");
-					mGameResultRecords[gameStartIndex+gameIndex].HomeRushYards = BinaryHelper.ReadInt16(inFile,"HomeRushYards");
-					mGameResultRecords[gameStartIndex+gameIndex].AwayReceptions = BinaryHelper.ReadInt16(inFile,"AwayReceptions");
-					mGameResultRecords[gameStartIndex+gameIndex].AwayReceivingYards = BinaryHelper.ReadInt16(inFile,"AwayReceivingYards");
-					mGameResultRecords[gameStartIndex+gameIndex].HomeReceptions = BinaryHelper.ReadInt16(inFile,"HomeReceptions");
-					mGameResultRecords[gameStartIndex+gameIndex].HomeReceivingYards = BinaryHelper.ReadInt16(inFile,"HomeReceivingYards");
-					BinaryHelper.TracerOutdent();
-				}
-				BinaryHelper.TracerOutdent();
-
-				//long UnknownLong1;
-				//short UnknownShort1;
-				//short UnknownShort2;
-				//long UnknownLong3;
-				//long Unknown_Set16[160];	// 32*5
-				//short Unknown_Set17[128];	// 32*4
-				BinaryHelper.ProbeBytes(inFile,908);
-
-				BinaryHelper.TracerOutdent();
-			}
-			BinaryHelper.TracerOutdent();
-
-			for (seasonIndex = 0; seasonIndex < mSeasonsPlayed; seasonIndex++)
-			{
-				BinaryHelper.ProbeBytes(inFile, 4640 * 2);
-			}
-			mTeamStadiumBlocks = new TeamStadiumBlock[kTeamCount];
-			for (i = 0; i < kTeamCount; i++)
-			{
-				mTeamStadiumBlocks[i] = new TeamStadiumBlock();
-				BinaryHelper.ProbeBytes(inFile, 109 * 2);
-				mTeamStadiumBlocks[i].StadiumType = BinaryHelper.ReadInt16(inFile,"StadiumType");
-				mTeamStadiumBlocks[i].YearStadiumBuilt = BinaryHelper.ReadInt16(inFile,"YearStadiumBuilt");
-				mTeamStadiumBlocks[i].TotalCapacity = BinaryHelper.ReadInt16(inFile,"TotalCapacity");
-				mTeamStadiumBlocks[i].LuxuryBoxes = BinaryHelper.ReadInt16(inFile,"LuxuryBoxes");
-				mTeamStadiumBlocks[i].ClubSeats = BinaryHelper.ReadInt16(inFile,"ClubSeats");
-				mTeamStadiumBlocks[i].Unknown1 = BinaryHelper.ReadInt16(inFile,"Unknown1");
-				mTeamStadiumBlocks[i].Unknown2 = BinaryHelper.ReadInt16(inFile,"Unknown2");
-				mTeamStadiumBlocks[i].FanLoyalty = BinaryHelper.ReadInt16(inFile,"FanLoyalty");
-				mTeamStadiumBlocks[i].PublicSupportForStadium = BinaryHelper.ReadInt16(inFile,"PublicSupportForStadium");
-				BinaryHelper.ProbeBytes(inFile, 1 * 2);
-				mUniverseData.TeamRecords[i].CityIndex = BinaryHelper.ReadInt16(inFile, "CityIndex");
-				BinaryHelper.ProbeBytes(inFile, 2 * 2);
-				mTeamStadiumBlocks[i].UpperDeckPrice = BinaryHelper.ReadInt16(inFile,"UpperDeckPrice");
-				mTeamStadiumBlocks[i].EndZonePrice = BinaryHelper.ReadInt16(inFile,"EndZonePrice");
-				mTeamStadiumBlocks[i].MezzaninePrice = BinaryHelper.ReadInt16(inFile,"MezzaninePrice");
-				mTeamStadiumBlocks[i].SidelinesPrice = BinaryHelper.ReadInt16(inFile,"SidelinesPrice");
-				mTeamStadiumBlocks[i].ClubSeatsPrice = BinaryHelper.ReadInt16(inFile,"ClubSeatsPrice");
-				mTeamStadiumBlocks[i].LuxuryBoxPrice = BinaryHelper.ReadInt16(inFile,"LuxuryBoxPrice");
-				mTeamStadiumBlocks[i].Unknown3 = BinaryHelper.ReadInt16(inFile,"Unknown3");
-				mTeamStadiumBlocks[i].Unknown4 = BinaryHelper.ReadInt16(inFile,"Unknown4");
-				mTeamStadiumBlocks[i].ConstructionCompletionYear = BinaryHelper.ReadInt16(inFile,"ConstructionCompletionYear");
-				mTeamStadiumBlocks[i].ConstructionType = BinaryHelper.ReadInt16(inFile,"ConstructionType");
-				mTeamStadiumBlocks[i].Unknown5 = BinaryHelper.ReadInt16(inFile,"Unknown5");
-				mTeamStadiumBlocks[i].ConstructionCapacity = BinaryHelper.ReadInt16(inFile,"ConstructionCapacity");
-				mTeamStadiumBlocks[i].ConstructionLuxuryBoxes = BinaryHelper.ReadInt16(inFile,"ConstructionLuxuryBoxes");
-				mTeamStadiumBlocks[i].ConstructionClubSeats = BinaryHelper.ReadInt16(inFile,"ConstructionClubSeats");
-				mTeamStadiumBlocks[i].ConstructionStadiumType = BinaryHelper.ReadInt16(inFile,"ConstructionStadiumType");
-				mTeamStadiumBlocks[i].Unknown7 = BinaryHelper.ReadInt16(inFile,"Unknown7");
-				mTeamStadiumBlocks[i].PriorYearAttendance = BinaryHelper.ReadInt16(inFile,"PriorYearAttendance");
-				BinaryHelper.ProbeBytes(inFile, 87 * 2);
-			}
-
-			BinaryHelper.TracerIndent();
-			mTeamScheduleGameRecords = new TeamScheduleGameRecord[26 * kTeamCount];
-			for (i = 0; i < mTeamScheduleGameRecords.Length; i++)
-			{
-				BinaryHelper.TracerIndent();
-				BinaryHelper.TracerWriteLine("Team Game Record " + i.ToString());
-				mTeamScheduleGameRecords[i] = new TeamScheduleGameRecord();
-				mTeamScheduleGameRecords[i].TeamIndex = (short)(i/26);
-				mTeamScheduleGameRecords[i].Week = BinaryHelper.ReadInt16(inFile, "Week");
-				mTeamScheduleGameRecords[i].Away = BinaryHelper.ReadInt16(inFile, "Away");
-				mTeamScheduleGameRecords[i].ConferenceGame = BinaryHelper.ReadInt16(inFile, "ConferenceGame");
-				mTeamScheduleGameRecords[i].DivisionGame = BinaryHelper.ReadInt16(inFile, "DivisionGame");
-				mTeamScheduleGameRecords[i].Opponent = BinaryHelper.ReadInt16(inFile, "Opponent");
-				mTeamScheduleGameRecords[i].Score = BinaryHelper.ReadInt16(inFile, "Score");
-				mTeamScheduleGameRecords[i].OppScore = BinaryHelper.ReadInt16(inFile, "OppScore");
-				mTeamScheduleGameRecords[i].Unknown1 = BinaryHelper.ReadInt16(inFile, "Unknown1");
-				mTeamScheduleGameRecords[i].Attendance = BinaryHelper.ReadInt16(inFile, "Attendance");
-				mTeamScheduleGameRecords[i].Unknown2 = BinaryHelper.ReadInt16(inFile, "Unknown2");
-				mTeamScheduleGameRecords[i].Weather = BinaryHelper.ReadInt16(inFile, "Weather");	// ? Temp appears in here, but not the usual encoding
-				mTeamScheduleGameRecords[i].Unknown3 = BinaryHelper.ReadInt16(inFile, "Unknown3");
-				mTeamScheduleGameRecords[i].Unknown4 = BinaryHelper.ReadInt16(inFile, "Unknown4");
-				BinaryHelper.TracerOutdent();
-			}
-			BinaryHelper.TracerOutdent();
-
-			BinaryHelper.TracerIndent();
-			for (i = 0; i < mUniverseData.CityRecords.Length; i++)
-			{
-				BinaryHelper.TracerWriteLine("City = " + i);
-				BinaryHelper.TracerIndent();
-				mUniverseData.CityRecords[i].Population = BinaryHelper.ReadInt16(inFile, "Population");
-				mUniverseData.CityRecords[i].GrowthRate = BinaryHelper.ReadInt16(inFile, "Growth Rate");
-				mUniverseData.CityRecords[i].AverageIncome = BinaryHelper.ReadInt16(inFile, "Avg Income");
-				mUniverseData.CityRecords[i].PovertyLevel = BinaryHelper.ReadInt16(inFile, "Poverty Level");
-				mUniverseData.CityRecords[i].EntertainmentCompetiton = BinaryHelper.ReadInt16(inFile, "Entertainment Competition");
-				mUniverseData.CityRecords[i].SeptemberHigh = BinaryHelper.ReadInt16(inFile, "September High");
-				mUniverseData.CityRecords[i].SeptemberLow = BinaryHelper.ReadInt16(inFile, "September Low");
-				mUniverseData.CityRecords[i].SeptemberHumidity = BinaryHelper.ReadInt16(inFile, "September Humidity");
-				mUniverseData.CityRecords[i].DecemberHigh = BinaryHelper.ReadInt16(inFile, "December High");
-				mUniverseData.CityRecords[i].DecemberLow = BinaryHelper.ReadInt16(inFile, "December Low");
-				mUniverseData.CityRecords[i].DecemberHumidity = BinaryHelper.ReadInt16(inFile, "December Humidity");
-				mUniverseData.CityRecords[i].NinetyDegreeDays = BinaryHelper.ReadInt16(inFile, "90 Degree Days");
-				mUniverseData.CityRecords[i].SnowDays = BinaryHelper.ReadInt16(inFile, "Snow Days");
-				mUniverseData.CityRecords[i].StormyDays = BinaryHelper.ReadInt16(inFile, "Stormy Days");
-				mUniverseData.CityRecords[i].Elevation = BinaryHelper.ReadInt16(inFile, "Elevation");
-				mUniverseData.CityRecords[i].Longitude = BinaryHelper.ReadInt16(inFile, "Longitude");
-				mUniverseData.CityRecords[i].Latitude = BinaryHelper.ReadInt16(inFile, "Latitude");
-				mUniverseData.CityRecords[i].HasTeam = BinaryHelper.ReadInt16(inFile, "Has Team");
-				mUniverseData.CityRecords[i].TrendSetting = BinaryHelper.ReadInt16(inFile, "TrendSetting");
-				mUniverseData.CityRecords[i].Region = BinaryHelper.ReadInt16(inFile, "Region");
-				mUniverseData.CityRecords[i].WantsNewTeam = BinaryHelper.ReadInt16(inFile, "WantsNewTeam");
-				mUniverseData.CityRecords[i].State = BinaryHelper.ReadInt16(inFile, "State");
-				BinaryHelper.ProbeBytes(inFile, 2);
-				BinaryHelper.TracerOutdent();
-			}
-			BinaryHelper.TracerOutdent();
-
-			BinaryHelper.ProbeBytes(inFile, 883 * 2);
-
-			BinaryHelper.TracerWriteLine("Player Game Stats");
-			BinaryHelper.TracerIndent();
-			int playerGameCount = kPlayerGamesPerSeason * mActivePlayerCount;
-			mPlayerGameStatsRecords = new PlayerGameStatsRecord[mSeasonsPlayed][];
-			mPlayerGameStatsRecords[curSeasonIndex] = new PlayerGameStatsRecord[playerGameCount];
-			for (int playerGameIndex = 0; playerGameIndex < playerGameCount; ++playerGameIndex)
-			{
-				BinaryHelper.TracerWriteLine("Record " + playerGameIndex.ToString());
-				BinaryHelper.TracerIndent();
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex] = new PlayerGameStatsRecord();
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].PlayerID = playerGameIndex / kPlayerGamesPerSeason;
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].Week = (short)((playerGameIndex % kPlayerGamesPerSeason)+6);
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].Year = BinaryHelper.ReadInt16(inFile, "Year");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].Team = BinaryHelper.ReadInt16(inFile, "Team");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].GamePlayed = BinaryHelper.ReadInt16(inFile, "GamePlayed");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].GameStarted = BinaryHelper.ReadInt16(inFile, "GameStarted");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].PassAttempts = BinaryHelper.ReadInt16(inFile, "PassAttempts");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].PassCompletions = BinaryHelper.ReadInt16(inFile, "PassCompletions");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].PassYards = BinaryHelper.ReadInt16(inFile, "PassYards");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].LongestPass = BinaryHelper.ReadInt16(inFile, "LongestPass");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].TDPasses = BinaryHelper.ReadInt16(inFile, "TDPasses");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].INTThrown = BinaryHelper.ReadInt16(inFile, "INTThrown");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].TimesSacked = BinaryHelper.ReadInt16(inFile, "TimesSacked");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].SackedYards = BinaryHelper.ReadInt16(inFile, "SackedYards");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].RushAttempts = BinaryHelper.ReadInt16(inFile, "RushAttempts");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].RushingYards = BinaryHelper.ReadInt16(inFile, "RushingYards");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].LongestRun = BinaryHelper.ReadInt16(inFile, "LongestRun");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].RushTD = BinaryHelper.ReadInt16(inFile, "RushTD");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].Catches = BinaryHelper.ReadInt16(inFile, "Catches");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].ReceivingYards = BinaryHelper.ReadInt16(inFile, "ReceivingYards");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].LongestReception = BinaryHelper.ReadInt16(inFile, "LongestReception");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].ReceivingTDs = BinaryHelper.ReadInt16(inFile, "ReceivingTDs");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].PassTargets = BinaryHelper.ReadInt16(inFile, "PassTargets");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].YardsAfterCatch = BinaryHelper.ReadInt16(inFile, "YardsAfterCatch");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].PassDrops = BinaryHelper.ReadInt16(inFile, "PassDrops");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].PuntReturns = BinaryHelper.ReadInt16(inFile, "PuntReturns");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].PuntReturnYards = BinaryHelper.ReadInt16(inFile, "PuntReturnYards");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].PuntReturnTDs = BinaryHelper.ReadInt16(inFile, "PuntReturnTDs");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].KickReturns = BinaryHelper.ReadInt16(inFile, "KickReturns");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].KickReturnYards = BinaryHelper.ReadInt16(inFile, "KickReturnYards");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].KickReturnTDs = BinaryHelper.ReadInt16(inFile, "KickReturnTDs");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].Fumbles = BinaryHelper.ReadInt16(inFile, "Fumbles");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].FumbleRecoveries = BinaryHelper.ReadInt16(inFile, "FumbleRecoveries");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].ForcedFumbles = BinaryHelper.ReadInt16(inFile, "ForcedFumbles");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].MiscTD = BinaryHelper.ReadInt16(inFile, "MiscTD");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].KeyRunBlock = BinaryHelper.ReadInt16(inFile, "KeyRunBlock");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].KeyRunBlockOpportunites = BinaryHelper.ReadInt16(inFile, "KeyRunBlockOpportunites");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].SacksAllowed = BinaryHelper.ReadInt16(inFile, "SacksAllowed");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].Tackles = BinaryHelper.ReadInt16(inFile, "Tackles");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].Assists = BinaryHelper.ReadInt16(inFile, "Assists");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].Sacks = BinaryHelper.ReadInt16(inFile, "Sacks");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].INTs = BinaryHelper.ReadInt16(inFile, "INTs");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].INTReturnYards = BinaryHelper.ReadInt16(inFile, "INTReturnYards");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].INTReturnTDs = BinaryHelper.ReadInt16(inFile, "INTReturnTDs");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].PassesDefended = BinaryHelper.ReadInt16(inFile, "PassesDefended");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].PassesBlocked = BinaryHelper.ReadInt16(inFile, "PassesBlocked");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].QBHurries = BinaryHelper.ReadInt16(inFile, "QBHurries");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].PassesCaught = BinaryHelper.ReadInt16(inFile, "PassesCaught");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].PassPlays = BinaryHelper.ReadInt16(inFile, "PassPlays");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].RunPlays = BinaryHelper.ReadInt16(inFile, "RunPlays");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].FGMade = BinaryHelper.ReadInt16(inFile, "FGMade");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].FGAttempted = BinaryHelper.ReadInt16(inFile, "FGAttempted");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].FGLong = BinaryHelper.ReadInt16(inFile, "FGLong");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].PAT = BinaryHelper.ReadInt16(inFile, "PAT");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].PATAttempted = BinaryHelper.ReadInt16(inFile, "PATAttempted");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].Punts = BinaryHelper.ReadInt16(inFile, "Punts");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].PuntYards = BinaryHelper.ReadInt16(inFile, "PuntYards");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].PuntLong = BinaryHelper.ReadInt16(inFile, "PuntLong");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].PuntIn20 = BinaryHelper.ReadInt16(inFile, "PuntIn20");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].Points = BinaryHelper.ReadInt16(inFile, "Points");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].OpposingTeamID = BinaryHelper.ReadInt16(inFile, "Unknown1");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].ThirdDownRushes = BinaryHelper.ReadInt16(inFile, "ThirdDownRushes");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].ThirdDownRushConversions = BinaryHelper.ReadInt16(inFile, "ThirdDownRushConversions");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].ThirdDownPassAttempts = BinaryHelper.ReadInt16(inFile, "ThirdDownPassAttempts");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].ThirdDownPassCompletions = BinaryHelper.ReadInt16(inFile, "ThirdDownPassCompletions");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].ThirdDownPassConversions = BinaryHelper.ReadInt16(inFile, "ThirdDownPassConversions");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].ThirdDownReceivingTargets = BinaryHelper.ReadInt16(inFile, "ThirdDownReceivingTargets");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].ThirdDownReceivingCatches = BinaryHelper.ReadInt16(inFile, "ThirdDownReceivingCatches");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].ThirdDownReceivingConversions = BinaryHelper.ReadInt16(inFile, "ThirdDownReceivingConversions");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].FirstDownRushes = BinaryHelper.ReadInt16(inFile, "FirstDownRushes");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].FirstDownPasses = BinaryHelper.ReadInt16(inFile, "FirstDownPasses");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].FirstDownCatches = BinaryHelper.ReadInt16(inFile, "FirstDownCatches");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].FG40PlusAttempts = BinaryHelper.ReadInt16(inFile, "FG40PlusAttempts");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].FG40PlusMade = BinaryHelper.ReadInt16(inFile, "FG40PlusMade");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].FG50PlusAttempts = BinaryHelper.ReadInt16(inFile, "FG50PlusAttempts");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].FG50PlusMade = BinaryHelper.ReadInt16(inFile, "FG50PlusMade");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].PuntNetYards = BinaryHelper.ReadInt16(inFile, "PuntNetYards");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].SpecialTeamsTackles = BinaryHelper.ReadInt16(inFile, "SpecialTeamsTackles");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].Unknown14 = BinaryHelper.ReadInt16(inFile, "Unknown14");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].TimesKnockedDown = BinaryHelper.ReadInt16(inFile, "TimesKnockedDown");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].RedZoneRushes = BinaryHelper.ReadInt16(inFile, "RedZoneRushes");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].RedZoneRushingYards = BinaryHelper.ReadInt16(inFile, "RedZoneRushingYards");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].RedZonePassAttempts = BinaryHelper.ReadInt16(inFile, "RedZonePassAttempts");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].RedZonePassCompletions = BinaryHelper.ReadInt16(inFile, "RedZonePassCompletions");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].RedZonePassingYards = BinaryHelper.ReadInt16(inFile, "RedZonePassingYards");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].RedZoneReceivingTargets = BinaryHelper.ReadInt16(inFile, "RedZoneReceivingTargets");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].RedZoneReceivingCatches = BinaryHelper.ReadInt16(inFile, "RedZoneReceivingCatches");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].RedZoneReceivingYards = BinaryHelper.ReadInt16(inFile, "RedZoneReceivingYards");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].TotalTDs = BinaryHelper.ReadInt16(inFile, "TotalTDs");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].TwoPointConversions = BinaryHelper.ReadInt16(inFile, "TwoPointConversions");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].PancakeBlocks = BinaryHelper.ReadInt16(inFile, "PancakeBlocks");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].QBKnockdowns = BinaryHelper.ReadInt16(inFile, "QBKnockdowns");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].Unknown23 = BinaryHelper.ReadInt16(inFile, "Unknown23");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].SpecialTeamsPlays = BinaryHelper.ReadInt16(inFile, "SpecialTeamsPlays");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].RushingGamesOver100Yards = BinaryHelper.ReadInt16(inFile, "RushingGamesOver100Yards");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].ReceivingGamesOver100Yards = BinaryHelper.ReadInt16(inFile, "ReceivingGamesOver100Yards");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].PassingGamesOver300Yards = BinaryHelper.ReadInt16(inFile, "PassingGamesOver300Yards");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].RunsOf10YardsPlus = BinaryHelper.ReadInt16(inFile, "RunsOf10YardsPlus");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].CatchesOf20YardsPlus = BinaryHelper.ReadInt16(inFile, "CatchesOf20YardsPlus");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].ThrowsOf20YardsPlus = BinaryHelper.ReadInt16(inFile, "ThrowsOf20YardsPlus");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].YardsFromScrimmage = BinaryHelper.ReadInt16(inFile, "YardsFromScrimmage");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].AllPurposeYards = BinaryHelper.ReadInt16(inFile, "AllPurposeYards");
-				BinaryHelper.TracerOutdent();
-			}
-			BinaryHelper.TracerOutdent();
-
-			BinaryHelper.ClearTracer();
-			inFile.Close();
-		}
-
-		private void LoadSeasonData(string pathPrefix)
-		{
-			for (int yearIndex = 0; yearIndex < (mSeasonsPlayed - 1); ++yearIndex)
-			{
-				int year = mStartingYear + yearIndex;
-				if (year >= mStartingSeason)
-				{
-					LoadSeasonFile(System.IO.Path.ChangeExtension(pathPrefix, year.ToString()), yearIndex);
-				}
-			}
-			SetGameStatPlayerIDs();
-		}
-
-		private void LoadSeasonFile(string fileName, int curSeasonIndex)
-		{
-			if (!System.IO.File.Exists(fileName))
-			{
-				return;
-			}
-
-			if (FileReadCallback != null)
-			{
-				FileReadCallback(System.IO.Path.GetFileName(fileName));
-			}
-
-			System.IO.FileStream inStream = new System.IO.FileStream(fileName, System.IO.FileMode.Open, System.IO.FileAccess.Read);
-			Encoding windows1252Encoding = Encoding.GetEncoding(1252);
-			System.IO.BinaryReader inFile = new System.IO.BinaryReader(inStream, windows1252Encoding);
-
-			long endPosition = inStream.Length;
-
-			//BinaryHelper.SetupTracer(Path.GetFileName(fileName));
-
-			BinaryHelper.ExtractString(inFile, 16, "Header");
-
-			short firstCount = BinaryHelper.ReadInt16(inFile, "First Count");
-			short secondCount = BinaryHelper.ReadInt16(inFile, "Second Count");
-			int playerGameCount = firstCount + (secondCount * 32768);
-			mPlayerGameStatsRecords[curSeasonIndex] = new PlayerGameStatsRecord[playerGameCount];
-
-			BinaryHelper.TracerWriteLine("Player Game Stats");
-			BinaryHelper.TracerIndent();
-			for (int playerGameIndex = 0; playerGameIndex < playerGameCount; ++playerGameIndex)
-			{
-				BinaryHelper.TracerWriteLine("Record " + playerGameIndex.ToString());
-				BinaryHelper.TracerIndent();
-
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex] = new PlayerGameStatsRecord();
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].PlayerID = -1;
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].Week = (short)((playerGameIndex % kPlayerGamesPerSeason)+6);
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].Year = BinaryHelper.ReadInt16(inFile, "Year");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].Team = BinaryHelper.ReadInt16(inFile, "Team");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].GamePlayed = BinaryHelper.ReadInt16(inFile, "GamePlayed");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].GameStarted = BinaryHelper.ReadInt16(inFile, "GameStarted");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].PassAttempts = BinaryHelper.ReadInt16(inFile, "PassAttempts");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].PassCompletions = BinaryHelper.ReadInt16(inFile, "PassCompletions");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].PassYards = BinaryHelper.ReadInt16(inFile, "PassYards");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].LongestPass = BinaryHelper.ReadInt16(inFile, "LongestPass");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].TDPasses = BinaryHelper.ReadInt16(inFile, "TDPasses");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].INTThrown = BinaryHelper.ReadInt16(inFile, "INTThrown");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].TimesSacked = BinaryHelper.ReadInt16(inFile, "TimesSacked");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].SackedYards = BinaryHelper.ReadInt16(inFile, "SackedYards");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].RushAttempts = BinaryHelper.ReadInt16(inFile, "RushAttempts");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].RushingYards = BinaryHelper.ReadInt16(inFile, "RushingYards");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].LongestRun = BinaryHelper.ReadInt16(inFile, "LongestRun");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].RushTD = BinaryHelper.ReadInt16(inFile, "RushTD");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].Catches = BinaryHelper.ReadInt16(inFile, "Catches");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].ReceivingYards = BinaryHelper.ReadInt16(inFile, "ReceivingYards");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].LongestReception = BinaryHelper.ReadInt16(inFile, "LongestReception");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].ReceivingTDs = BinaryHelper.ReadInt16(inFile, "ReceivingTDs");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].PassTargets = BinaryHelper.ReadInt16(inFile, "PassTargets");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].YardsAfterCatch = BinaryHelper.ReadInt16(inFile, "YardsAfterCatch");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].PassDrops = BinaryHelper.ReadInt16(inFile, "PassDrops");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].PuntReturns = BinaryHelper.ReadInt16(inFile, "PuntReturns");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].PuntReturnYards = BinaryHelper.ReadInt16(inFile, "PuntReturnYards");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].PuntReturnTDs = BinaryHelper.ReadInt16(inFile, "PuntReturnTDs");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].KickReturns = BinaryHelper.ReadInt16(inFile, "KickReturns");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].KickReturnYards = BinaryHelper.ReadInt16(inFile, "KickReturnYards");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].KickReturnTDs = BinaryHelper.ReadInt16(inFile, "KickReturnTDs");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].Fumbles = BinaryHelper.ReadInt16(inFile, "Fumbles");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].FumbleRecoveries = BinaryHelper.ReadInt16(inFile, "FumbleRecoveries");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].ForcedFumbles = BinaryHelper.ReadInt16(inFile, "ForcedFumbles");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].MiscTD = BinaryHelper.ReadInt16(inFile, "MiscTD");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].KeyRunBlock = BinaryHelper.ReadInt16(inFile, "KeyRunBlock");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].KeyRunBlockOpportunites = BinaryHelper.ReadInt16(inFile, "KeyRunBlockOpportunites");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].SacksAllowed = BinaryHelper.ReadInt16(inFile, "SacksAllowed");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].Tackles = BinaryHelper.ReadInt16(inFile, "Tackles");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].Assists = BinaryHelper.ReadInt16(inFile, "Assists");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].Sacks = BinaryHelper.ReadInt16(inFile, "Sacks");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].INTs = BinaryHelper.ReadInt16(inFile, "INTs");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].INTReturnYards = BinaryHelper.ReadInt16(inFile, "INTReturnYards");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].INTReturnTDs = BinaryHelper.ReadInt16(inFile, "INTReturnTDs");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].PassesDefended = BinaryHelper.ReadInt16(inFile, "PassesDefended");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].PassesBlocked = BinaryHelper.ReadInt16(inFile, "PassesBlocked");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].QBHurries = BinaryHelper.ReadInt16(inFile, "QBHurries");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].PassesCaught = BinaryHelper.ReadInt16(inFile, "PassesCaught");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].PassPlays = BinaryHelper.ReadInt16(inFile, "PassPlays");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].RunPlays = BinaryHelper.ReadInt16(inFile, "RunPlays");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].FGMade = BinaryHelper.ReadInt16(inFile, "FGMade");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].FGAttempted = BinaryHelper.ReadInt16(inFile, "FGAttempted");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].FGLong = BinaryHelper.ReadInt16(inFile, "FGLong");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].PAT = BinaryHelper.ReadInt16(inFile, "PAT");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].PATAttempted = BinaryHelper.ReadInt16(inFile, "PATAttempted");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].Punts = BinaryHelper.ReadInt16(inFile, "Punts");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].PuntYards = BinaryHelper.ReadInt16(inFile, "PuntYards");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].PuntLong = BinaryHelper.ReadInt16(inFile, "PuntLong");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].PuntIn20 = BinaryHelper.ReadInt16(inFile, "PuntIn20");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].Points = BinaryHelper.ReadInt16(inFile, "Points");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].OpposingTeamID = BinaryHelper.ReadInt16(inFile, "Unknown1");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].ThirdDownRushes = BinaryHelper.ReadInt16(inFile, "ThirdDownRushes");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].ThirdDownRushConversions = BinaryHelper.ReadInt16(inFile, "ThirdDownRushConversions");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].ThirdDownPassAttempts = BinaryHelper.ReadInt16(inFile, "ThirdDownPassAttempts");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].ThirdDownPassCompletions = BinaryHelper.ReadInt16(inFile, "ThirdDownPassCompletions");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].ThirdDownPassConversions = BinaryHelper.ReadInt16(inFile, "ThirdDownPassConversions");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].ThirdDownReceivingTargets = BinaryHelper.ReadInt16(inFile, "ThirdDownReceivingTargets");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].ThirdDownReceivingCatches = BinaryHelper.ReadInt16(inFile, "ThirdDownReceivingCatches");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].ThirdDownReceivingConversions = BinaryHelper.ReadInt16(inFile, "ThirdDownReceivingConversions");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].FirstDownRushes = BinaryHelper.ReadInt16(inFile, "FirstDownRushes");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].FirstDownPasses = BinaryHelper.ReadInt16(inFile, "FirstDownPasses");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].FirstDownCatches = BinaryHelper.ReadInt16(inFile, "FirstDownCatches");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].FG40PlusAttempts = BinaryHelper.ReadInt16(inFile, "FG40PlusAttempts");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].FG40PlusMade = BinaryHelper.ReadInt16(inFile, "FG40PlusMade");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].FG50PlusAttempts = BinaryHelper.ReadInt16(inFile, "FG50PlusAttempts");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].FG50PlusMade = BinaryHelper.ReadInt16(inFile, "FG50PlusMade");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].PuntNetYards = BinaryHelper.ReadInt16(inFile, "PuntNetYards");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].SpecialTeamsTackles = BinaryHelper.ReadInt16(inFile, "SpecialTeamsTackles");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].Unknown14 = BinaryHelper.ReadInt16(inFile, "Unknown14");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].TimesKnockedDown = BinaryHelper.ReadInt16(inFile, "TimesKnockedDown");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].RedZoneRushes = BinaryHelper.ReadInt16(inFile, "RedZoneRushes");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].RedZoneRushingYards = BinaryHelper.ReadInt16(inFile, "RedZoneRushingYards");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].RedZonePassAttempts = BinaryHelper.ReadInt16(inFile, "RedZonePassAttempts");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].RedZonePassCompletions = BinaryHelper.ReadInt16(inFile, "RedZonePassCompletions");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].RedZonePassingYards = BinaryHelper.ReadInt16(inFile, "RedZonePassingYards");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].RedZoneReceivingTargets = BinaryHelper.ReadInt16(inFile, "RedZoneReceivingTargets");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].RedZoneReceivingCatches = BinaryHelper.ReadInt16(inFile, "RedZoneReceivingCatches");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].RedZoneReceivingYards = BinaryHelper.ReadInt16(inFile, "RedZoneReceivingYards");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].TotalTDs = BinaryHelper.ReadInt16(inFile, "TotalTDs");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].TwoPointConversions = BinaryHelper.ReadInt16(inFile, "TwoPointConversions");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].PancakeBlocks = BinaryHelper.ReadInt16(inFile, "PancakeBlocks");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].QBKnockdowns = BinaryHelper.ReadInt16(inFile, "QBKnockdowns");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].Unknown23 = BinaryHelper.ReadInt16(inFile, "Unknown23");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].SpecialTeamsPlays = BinaryHelper.ReadInt16(inFile, "SpecialTeamsPlays");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].RushingGamesOver100Yards = BinaryHelper.ReadInt16(inFile, "RushingGamesOver100Yards");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].ReceivingGamesOver100Yards = BinaryHelper.ReadInt16(inFile, "ReceivingGamesOver100Yards");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].PassingGamesOver300Yards = BinaryHelper.ReadInt16(inFile, "PassingGamesOver300Yards");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].RunsOf10YardsPlus = BinaryHelper.ReadInt16(inFile, "RunsOf10YardsPlus");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].CatchesOf20YardsPlus = BinaryHelper.ReadInt16(inFile, "CatchesOf20YardsPlus");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].ThrowsOf20YardsPlus = BinaryHelper.ReadInt16(inFile, "ThrowsOf20YardsPlus");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].YardsFromScrimmage = BinaryHelper.ReadInt16(inFile, "YardsFromScrimmage");
-				mPlayerGameStatsRecords[curSeasonIndex][playerGameIndex].AllPurposeYards = BinaryHelper.ReadInt16(inFile, "AllPurposeYards");
-				BinaryHelper.TracerOutdent();
-			}
-			BinaryHelper.TracerOutdent();
-
-			short transactionCount = 0;
-			if (inStream.Position < endPosition)
-			{
-				transactionCount = BinaryHelper.ReadInt16(inFile, "Transaction Count");
-			}
-
-			BinaryHelper.TracerWriteLine("Transactions");
-			BinaryHelper.TracerIndent();
-			mTransactions[curSeasonIndex] = new TransactionRecord[transactionCount];
-			int lastIndex = 0;
-			for (int transIndex = 0; transIndex < transactionCount; ++transIndex)
-			{
-				BinaryHelper.TracerWriteLine("Transaction " + transIndex.ToString());
-				BinaryHelper.TracerIndent();
-
-				mTransactions[curSeasonIndex][transIndex] = new TransactionRecord();
-				mTransactions[curSeasonIndex][transIndex].PlayerRec2Index = BinaryHelper.ReadInt32(inFile, "Player Index"); ;
-				mTransactions[curSeasonIndex][transIndex].Salary = BinaryHelper.ReadCodedInt32(inFile, "Salary");
-				mTransactions[curSeasonIndex][transIndex].TransactionType = BinaryHelper.ReadInt16(inFile, "Type");
-				mTransactions[curSeasonIndex][transIndex].Team1Index = BinaryHelper.ReadInt16(inFile, "Team 1 Index");
-				mTransactions[curSeasonIndex][transIndex].Team2Index = BinaryHelper.ReadInt16(inFile, "Team 2 Index");
-				mTransactions[curSeasonIndex][transIndex].Position = BinaryHelper.ReadInt16(inFile, "Position");
-				mTransactions[curSeasonIndex][transIndex].Years = BinaryHelper.ReadInt16(inFile, "Years");
-				mTransactions[curSeasonIndex][transIndex].Stage = BinaryHelper.ReadInt16(inFile, "Stage");
-
-				BinaryHelper.TracerOutdent();
-
-				lastIndex = transIndex;
-				if (inStream.Position >= endPosition)
-				{
-					break;
-				}
-			}
-			BinaryHelper.TracerOutdent();
-
-			int finalSize = lastIndex + 1;
-			if (mTransactions[curSeasonIndex].Length > finalSize)
-			{
-				Array.Resize(ref mTransactions[curSeasonIndex], lastIndex + 1);
-			}
-
-			BinaryHelper.ClearTracer();
-			inFile.Close();
-		}
-
-		private void SetGameStatPlayerIDs()
-		{
-			for (int i = 0; i < mPlayerHistoricalRecords.Length; ++i)
-			{
-				for (int j = 0; j < mPlayerHistoricalRecords[i].YearsInLeagueCount; ++j)
-				{
-					int yearIndex = mPlayerHistoricalRecords[i].YearsInLeague[j] - mStartingYear;
-					if (mPlayerGameStatsRecords[yearIndex] != null)
-					{
-						int gameRecordIndex = mPlayerHistoricalRecords[i].YearDataIndex[j];
-						for (int k = 0; k < kPlayerGamesPerSeason; ++k)
-						{
-							mPlayerGameStatsRecords[yearIndex][gameRecordIndex + k].PlayerID = mPlayerHistoricalRecords[i].PlayerID;
-						}
-					}
+					string teamLine = teamInformationFile.ReadLine();
+					string[] fields = DataReader.CSVHelper.ParseLine(teamLine);
+					int teamID = Int32.Parse(fields[0]);
+					mTeamInformationRecords[teamID] = new TeamInformationRecord();
+					mTeamInformationRecords[teamID].Wins = Int32.Parse(fields[1]);
+					mTeamInformationRecords[teamID].Losses = Int32.Parse(fields[2]);
+					mTeamInformationRecords[teamID].Ties = Int32.Parse(fields[3]);
+					mTeamInformationRecords[teamID].PlayoffAppearances = Int32.Parse(fields[4]);
+					mTeamInformationRecords[teamID].BowlAppearances = Int32.Parse(fields[5]);
+					mTeamInformationRecords[teamID].BowlWins = Int32.Parse(fields[6]);
+					mTeamInformationRecords[teamID].PlayoffWins = Int32.Parse(fields[7]);
+					mTeamInformationRecords[teamID].PlayoffLosses = Int32.Parse(fields[8]);
+					mTeamInformationRecords[teamID].TurfType = fields[9];
+					mTeamInformationRecords[teamID].YearStadiumBuilt = Int32.Parse(fields[10]);
+					mTeamInformationRecords[teamID].StadiumCapacity = Int32.Parse(fields[11]);
+					mTeamInformationRecords[teamID].LuxuryBoxes = Int32.Parse(fields[12]);
+					mTeamInformationRecords[teamID].ClubSeats = Int32.Parse(fields[13]);
+					mTeamInformationRecords[teamID].CityName = fields[14];
+					mTeamInformationRecords[teamID].UpperDeckTickets = Int32.Parse(fields[15]);
+					mTeamInformationRecords[teamID].EndZoneTickets = Int32.Parse(fields[16]);
+					mTeamInformationRecords[teamID].MezzanineTickets = Int32.Parse(fields[17]);
+					mTeamInformationRecords[teamID].SidelineTickets = Int32.Parse(fields[18]);
+					mTeamInformationRecords[teamID].ClubSeatTickets = Int32.Parse(fields[19]);
+					mTeamInformationRecords[teamID].LuxuryBoxTickets = Int32.Parse(fields[20]);
+					mTeamInformationRecords[teamID].LostSalaryCapThisSeason = Int32.Parse(fields[21]);
+					mTeamInformationRecords[teamID].LostSalaryCapNextSeason = Int32.Parse(fields[22]);
 				}
 			}
 		}
@@ -1096,16 +90,17 @@ namespace DataReader
 			newEntry.Abbreviation = BinaryHelper.ExtractString(inFile,stringLength,"Abbreviation");
 			newEntry.ActivePlayerIDs = new int[kNumActivePlayers];
 			newEntry.PlayerStats = new PlayerGameStatsRecord[kNumActivePlayers];
-			newEntry.PlayerHistorical = new PlayerHistoricalRecord[kNumActivePlayers];
 			BinaryHelper.TracerWriteLine("Active Player IDs");
 			BinaryHelper.TracerIndent();
 			int i;
 			for (i = 0; i < newEntry.ActivePlayerIDs.Length; ++i)
 			{
 				BinaryHelper.ReadInt32(inFile, "UnknownIndex");
-				newEntry.ActivePlayerIDs[i] = BinaryHelper.ReadInt32(inFile, "Player ID "+i.ToString("D2"));
-				newEntry.PlayerStats[i] = FindPlayerGameStats(newEntry.ActivePlayerIDs[i], week);
-				newEntry.PlayerHistorical[i] = FindPlayerHistoricalRecord(newEntry.ActivePlayerIDs[i]);
+				newEntry.ActivePlayerIDs[i] = BinaryHelper.ReadInt32(inFile, "Player ID " + i.ToString("D2"));
+				newEntry.PlayerStats[i] = new PlayerGameStatsRecord();
+				newEntry.PlayerStats[i].PlayerID = newEntry.ActivePlayerIDs[i];
+				newEntry.PlayerStats[i].Week = (short)week;
+				newEntry.PlayerStats[i].Team = newEntry.TeamIndex;
 			}
 			BinaryHelper.TracerOutdent();
 			newEntry.DepthChartEntries = new short[kNumDepthChartEntries];
@@ -1666,29 +661,40 @@ namespace DataReader
 
 		private void WritePlayersOnField(GamePlay playData, System.IO.StreamWriter dumpFile)
 		{
+			int playerIndex;
 			for (short off = 0; off < 11; ++off)
 			{
-				PlayerHistoricalRecord playerRec = GetOffensivePlayerHistoricalFromPlay(gCurGameLog, playData, off);
-				if (playerRec != null)
+				playerIndex = -1;
+				int teamPlayerIndex = playData.OffensivePlayers[off];
+				if (teamPlayerIndex >= 0)
 				{
-					dumpFile.Write(",\"" + playerRec.LastName + "\"");
+					if (playData.Possession == 0)
+					{
+						playerIndex = gCurGameLog.HomeTeam.ActivePlayerIDs[teamPlayerIndex];
+					}
+					else
+					{
+						playerIndex = gCurGameLog.AwayTeam.ActivePlayerIDs[teamPlayerIndex];
+					}
 				}
-				else
-				{
-					dumpFile.Write(",");
-				}
+				dumpFile.Write("," + playerIndex);
 			}
 			for (short def = 0; def < 11; ++def)
 			{
-				PlayerHistoricalRecord playerRec = GetDefensivePlayerHistoricalFromPlay(gCurGameLog, playData, def);
-				if (playerRec != null)
+				playerIndex = -1;
+				int teamPlayerIndex = playData.OffensivePlayers[def];
+				if (teamPlayerIndex >= 0)
 				{
-					dumpFile.Write(",\"" + playerRec.LastName + "\"");
+					if (playData.Possession == 0)
+					{
+						playerIndex = gCurGameLog.AwayTeam.ActivePlayerIDs[teamPlayerIndex];
+					}
+					else
+					{
+						playerIndex = gCurGameLog.HomeTeam.ActivePlayerIDs[teamPlayerIndex];
+					}
 				}
-				else
-				{
-					dumpFile.Write(",");
-				}
+				dumpFile.Write("," + playerIndex);
 			}
 			dumpFile.WriteLine();
 		}
@@ -1767,10 +773,10 @@ namespace DataReader
 			BinaryHelper.TracerIndent();
 
 			newLog.PlayerOfTheGameID = BinaryHelper.ReadInt32(inFile, "PlayerOfTheGameID");
-			if (newLog.Year == mCurrentYear)
-			{
-				newLog.PlayerOfTheGameID = mPlayerActiveRecords[newLog.PlayerOfTheGameID].PlayerID;
-			}
+			//if (newLog.Year == mCurrentYear)
+			//{
+			//	newLog.PlayerOfTheGameID = mPlayerActiveRecords[newLog.PlayerOfTheGameID].PlayerID;
+			//}
 			short homeDriveCount = BinaryHelper.ReadInt16(inFile, "HomeDriveCount");
 			short awayDriveCount = BinaryHelper.ReadInt16(inFile, "AwayDriveCount");
 			newLog.HomeDrives = new GameDriveInfo[homeDriveCount];
@@ -1855,10 +861,7 @@ namespace DataReader
 				if (nextHeader == "PD06")
 				{
 					GamePlay playData = LoadPlayData(inFile);
-					if (newLog.Week > 5)
-					{
-						ExtractStatsFromPlay(newLog, playData);
-					}
+					ExtractStatsFromPlay(newLog, playData);
 					newLog.Plays.Add(playData);
 					++CurPlayID;
 				}
@@ -1915,11 +918,8 @@ namespace DataReader
 		}
 
 		private int CurPlayID = 0;
-		private void LoadGameList(string pathPrefix)
+		private void LoadGameList()
 		{
-			string gamePath = Path.GetDirectoryName(pathPrefix);
-			string gameID = Path.GetFileNameWithoutExtension(pathPrefix);
-
 			if (DumpInfoPlays)
 			{
 				gInfoPlayDumpFile = new System.IO.StreamWriter(System.IO.Path.Combine(WindowsUtilities.OutputLocation.Get(), "InfoPlays.csv"));
@@ -2069,19 +1069,35 @@ namespace DataReader
 			}
 
 			mAvailableGameWeeks = new List<GameWeekRecord>();
-			for (short year = (short)mStartingSeason; year <= mCurrentYear; ++year)
+			// Read all files that have {GameID}{Week}.{Year} as a format
+			// Want to process by year then by week
+			string[] gameFiles = System.IO.Directory.GetFiles(mSavedGamePath,mLeagueID+"*.*");
+			foreach (string curFile in gameFiles)
 			{
-				mGameListCurrentSeason = year;
-				for (short week = 1; week <= 26; ++week)
+				// game ID is 8, week is 1 or 2, 1 for the extension, 4 for the year. No other files follow this pattern/length,
+				// unless other people put them there, so we'll do some extra checking.
+				string fileName = System.IO.Path.GetFileName(curFile);
+				if (fileName.Length >= (8 + 1 + 1 + 4))
 				{
-					string logPath = Path.Combine(gamePath, gameID + week.ToString() + "." + year.ToString());
-					if (File.Exists(logPath))
+					// strip the period
+					string yearString = System.IO.Path.GetExtension(fileName).Substring(1);
+					short year = 0;
+					if (Int16.TryParse(yearString, out year))
 					{
-						GameWeekRecord newRec = LoadGameWeek(week, year, logPath);
-						mAvailableGameWeeks.Add(newRec);
+						if (year >= mStartingSeason)
+						{
+							string weekString = System.IO.Path.GetFileNameWithoutExtension(fileName).Substring(8);
+							short week;
+							if (Int16.TryParse(weekString, out week))
+							{
+								GameWeekRecord newRec = LoadGameWeek(week, year, curFile);
+								mAvailableGameWeeks.Add(newRec);
+							}
+						}
 					}
 				}
 			}
+			mAvailableGameWeeks.Sort(new GameWeekComparer());
 
 			if (gOnsideKickPlayDumpFile != null)
 			{
@@ -2141,46 +1157,6 @@ namespace DataReader
 				else
 				{
 					return gameLog.HomeTeam.PlayerStats[teamPlayerIndex];
-				}
-			}
-			else
-			{
-				return null;
-			}
-		}
-
-		PlayerHistoricalRecord GetOffensivePlayerHistoricalFromPlay(GameLog gameLog, GamePlay playData, short playPlayerIndex)
-		{
-			int teamPlayerIndex = playData.OffensivePlayers[playPlayerIndex];
-			if (teamPlayerIndex >= 0)
-			{
-				if (playData.Possession == 0)
-				{
-					return gameLog.HomeTeam.PlayerHistorical[teamPlayerIndex];
-				}
-				else
-				{
-					return gameLog.AwayTeam.PlayerHistorical[teamPlayerIndex];
-				}
-			}
-			else
-			{
-				return null;
-			}
-		}
-
-		PlayerHistoricalRecord GetDefensivePlayerHistoricalFromPlay(GameLog gameLog, GamePlay playData, short playPlayerIndex)
-		{
-			int teamPlayerIndex = playData.DefensivePlayers[playPlayerIndex];
-			if (teamPlayerIndex >= 0)
-			{
-				if (playData.Possession == 0)
-				{
-					return gameLog.AwayTeam.PlayerHistorical[teamPlayerIndex];
-				}
-				else
-				{
-					return gameLog.HomeTeam.PlayerHistorical[teamPlayerIndex];
 				}
 			}
 			else
@@ -2451,230 +1427,17 @@ namespace DataReader
 			}
 		}
 
-		PlayerGameStatsRecord FindPlayerGameStats(int activePlayerID, int week)
-		{
-			int seasonIndex = mGameListCurrentSeason - mStartingYear;
-			foreach (PlayerGameStatsRecord curRecord in mPlayerGameStatsRecords[seasonIndex])
-			{
-				if (curRecord.Week == week && curRecord.PlayerID == activePlayerID)
-				{
-					System.Diagnostics.Debug.Assert(curRecord.Year == mGameListCurrentSeason);
-					return curRecord;
-				}
-			}
-
-			return null;
-		}
-
-		PlayerHistoricalRecord FindPlayerHistoricalRecord(int playerID)
-		{
-			foreach (PlayerHistoricalRecord curRecord in mPlayerHistoricalRecords)
-			{
-				if (curRecord.PlayerID == playerID)
-				{
-					return curRecord;
-				}
-			}
-
-			return null;
-		}
-
 		private const int kTeamCount = 32;
 		private const int kSeasonGameCount = 350;
 		private const int kSeasonWeekCount = 26;	// 5 preseason + 17 season + 4 playoffs
 
 		private UniverseData mUniverseData;
 		private int mStartingSeason;
-		private short mGameListCurrentSeason;
+		private string mLeagueID;
+		private string mSavedGamePath;
+		private string mExportPath;
 
-		private short mStartingYear;
-		private short mCurrentYear;
-		private short mGameStage;
-		private short mCurrentWeek;
-		private short mFAStage;
-		private short mPlayersTeam;
-		private short mNumberOfTeams;
-		private short mSeasonsPlayed;
-		private int mSalaryCap;
-		private int mMinSalary;
-		private int mNextPlayerID;
-
-		public short StartingYear { get { return mStartingYear; } }
-		public short CurrentYear { get { return mCurrentYear; } }
-		public int SeasonsPlayed { get { return mSeasonsPlayed; } }
-		public short GameStage { get { return mGameStage; } }
-		public short CurrentWeek { get { return mCurrentWeek; } }
-		public short FAStage { get { return mFAStage; } }
-		public short PlayersTeam { get { return mPlayersTeam; } }
-		public short NumberOfTeams { get { return mNumberOfTeams; } }
-		public int SalaryCap { get { return mSalaryCap; } }
-		public int MinSalary { get { return mMinSalary; } }
-		public int NextPlayerID { get { return mNextPlayerID; } }
-
-		public class TeamRecord
-		{
-			public bool HumanControlled;
-			public int CapLossThisYear;
-			public int CapLossNextYear;
-		}
-		private TeamRecord[] mTeamRecords = new TeamRecord[kTeamCount];
-		public TeamRecord[] TeamRecords { get { return mTeamRecords; } }
-
-		public class DraftRound
-		{
-			public short[] PickTeam;
-		}
-		public class DraftYear
-		{
-			public DraftRound[] DraftRounds;
-		}
-		private DraftYear[] mDraftYears = new DraftYear[4];
-		public DraftYear[] DraftYears { get { return mDraftYears; } }
-
-		public class TransactionRecord
-		{
-			public int PlayerRec2Index;
-			public int Salary;
-			public short TransactionType;
-			public short Team1Index;
-			public short Team2Index;
-			public short Position;
-			public short Years;
-			public short Stage;
-		}
-		private const int kTransactionRecordCount = 10000;
-		private TransactionRecord[][] mTransactions;
-		public TransactionRecord[][] Transactions { get { return mTransactions; } }
-
-		public class EmailRecord
-		{
-			public short Flag;
-			public string From;
-			public string Subject;
-			public string Message;
-		}
-		private const int kEmailRecordCount = 60;
-		private EmailRecord[] mEmails = new EmailRecord[kEmailRecordCount];
-		public EmailRecord[] Emails { get { return mEmails; } }
-
-		private int mFreeAgentRecordCount;
-		private int mActivePlayerCount;
-		public const int MaxPlayerHistoricalYearCount = 20;
-		public class PlayerHistoricalRecord
-		{
-			public int PlayerID;
-			public short Position;
-			public string LastName;
-			public string FirstName;
-			public string NickName;
-			public short Experience;
-			public short Height;
-			public short Weight;
-			public short InHallOfFame;
-			public short HallOfFameYear;
-			public short HallOfFameVote;
-			public short BirthYear;
-			public short BirthMonth;
-			public short BirthDay;
-			public short College;
-			public short DraftRound;
-			public short DraftPick;
-			public short HomeTown;
-			public short DraftedBy;
-			public short YearDrafted;
-			public short PlayerOfTheGame;
-			public short ChampionshipRings;
-			public short PlayerOfTheWeekMentions;
-			public short PlayerOfTheWeekWins;
-			public short FourthQuarterHeroics;
-			public short QBWins;
-			public short QBLosses;
-			public short QBTies;
-			public short YearsInLeagueCount;
-			public short[] YearsInLeague;
-			public int[] YearDataIndex;
-		}
-		private PlayerHistoricalRecord[] mPlayerHistoricalRecords;
-		public PlayerHistoricalRecord[] PlayerHistoricalRecords { get { return mPlayerHistoricalRecords; } }
-
-		public const int MaxContractYears = 7;
-		public class PlayerActiveRecord
-		{
-			public int PlayerID;
-			public short Position;
-			public short Experience;
-			public short Number;
-			public short PositionGroup;
-			public short Team;
-			public short InjuryLength;
-			public short Loyalty;
-			public short PlaysToWin;
-			public short Personality;
-			public short Leadership;
-			public short Intelligence;
-			public short RedFlagMarker;
-			public short Volatility;
-			public short JoinedTeam;
-			public short UFAYear;
-			public short Popularity;
-			public short ContractLength;
-			public int[] Salary;
-			public int[] Bonus;
-			public short[] InterviewMarkers;
-		}
-		private PlayerActiveRecord[] mPlayerActiveRecords;
-		public PlayerActiveRecord[] PlayerActiveRecords { get { return mPlayerActiveRecords; } }
-
-		public class SeasonRecord
-		{
-			public short PlayerEval;
-			public short PlayerTeam;
-			public short Wins;
-			public short Losses;
-			public short Ties;
-			public short Year;
-		};
-		private SeasonRecord[] mSeasonRecords;
-		public SeasonRecord[] SeasonRecords { get { return mSeasonRecords; } }
-
-		public class FranchisePerformanceRecord
-		{
-			public short Year;
-			public short FranchiseValue;
-			public short ProfitScore;
-			public short PerformanceScore;
-			public short RosterScore;
-			public short Playoffs;
-			public short Wins;
-			public short Losses;
-			public short Ties;
-			public short Unknown;
-			public short PointsFor;
-			public short PointsAgainst;
-			public short ConfWins;
-			public short ConfLoss;
-			public short ConfTies;
-			public short DivWin;
-			public short DivLoss;
-			public short DivTie;
-			public short Attendance;
-			public short StadiumCapacity;
-			public long TVRevenue;
-			public long TicketRevenue;
-			public long SuiteRevenue;
-			public long PlayerSalaries;
-			public long PlayerBonuses;
-			public long StadiumPayment;
-			public long Concessions;
-			public long Parking;
-			public long Advertising;
-			public long Training;
-			public long Coaching;
-			public long Scouting;
-			public long Maintenance;
-		};
-		private FranchisePerformanceRecord[] mFranchisePerformanceRecords;
-		public FranchisePerformanceRecord[] FranchisePerformanceRecords { get { return mFranchisePerformanceRecords; } }
+		public int NumberOfTeams { get { return kTeamCount; } }
 
 		public class GameResultRecord
 		{
@@ -2707,60 +1470,6 @@ namespace DataReader
 			public short HomeReceptions;
 			public short HomeReceivingYards;
 		};
-		private GameResultRecord[] mGameResultRecords;
-		public GameResultRecord[] GameResultRecords { get { return mGameResultRecords; } }
-
-		public class TeamStadiumBlock
-		{
-			public short StadiumType;	// 0=Outdoor/Grass,1=Outdoor/Turf,2=Dome/Turf,3=RetRoof/Grass
-			public short YearStadiumBuilt;
-			public short TotalCapacity;
-			public short LuxuryBoxes;
-			public short ClubSeats;
-			public short Unknown1;
-			public short Unknown2;
-			public short FanLoyalty;
-			public short PublicSupportForStadium;
-			public short UpperDeckPrice;
-			public short EndZonePrice;
-			public short MezzaninePrice;
-			public short SidelinesPrice;
-			public short ClubSeatsPrice;
-			public short LuxuryBoxPrice;
-			public short Unknown3;
-			public short Unknown4;
-			public short ConstructionCompletionYear;
-			public short ConstructionType;	// 1 = renovation, 2 = new stadium
-			public short Unknown5;
-			public short ConstructionCapacity;
-			public short ConstructionLuxuryBoxes;
-			public short ConstructionClubSeats;
-			public short ConstructionStadiumType;
-			public short Unknown7;
-			public short PriorYearAttendance;
-		};
-		private TeamStadiumBlock[] mTeamStadiumBlocks;
-		public TeamStadiumBlock[] TeamStadiumBlocks { get { return mTeamStadiumBlocks; } }
-
-		public class TeamScheduleGameRecord
-		{
-			public short TeamIndex;
-			public short Week;
-			public short Away;
-			public short ConferenceGame;
-			public short DivisionGame;
-			public short Opponent;
-			public short Score;
-			public short OppScore;
-			public short Unknown1;
-			public short Attendance;
-			public short Unknown2;
-			public short Weather;	// ? Temp appears in here, but not the usual encoding
-			public short Unknown3;
-			public short Unknown4;
-		};
-		private TeamScheduleGameRecord[] mTeamScheduleGameRecords;
-		public TeamScheduleGameRecord[] TeamScheduleGameRecords { get { return mTeamScheduleGameRecords; } }
 
 		public class PlayerGameStatsRecord
 		{
@@ -3020,10 +1729,6 @@ namespace DataReader
 			public int SuccessfulRuns;
 			public int BadPassesCaught;
 		};
-		private const int kPlayerGamesPerSeason = 21;
-		public int PlayerGamesPerSeason { get { return kPlayerGamesPerSeason; } }
-		private PlayerGameStatsRecord[][] mPlayerGameStatsRecords;
-		public PlayerGameStatsRecord[][] PlayerGameStatsRecords { get { return mPlayerGameStatsRecords; } }
 
 		private const int kNumActivePlayers = 46;
 		private const int kNumDepthChartEntries = 107;
@@ -3035,7 +1740,6 @@ namespace DataReader
 			public string Abbreviation;
 			public int[] ActivePlayerIDs;
 			public PlayerGameStatsRecord[] PlayerStats;
-			public PlayerHistoricalRecord[] PlayerHistorical;
 			public short[] DepthChartEntries;
 		}
 
@@ -3440,5 +2144,48 @@ namespace DataReader
 		}
 		private List<GameWeekRecord> mAvailableGameWeeks;
 		public List<GameWeekRecord> AvailableGameWeeks { get { return mAvailableGameWeeks; } }
+
+		public class GameWeekComparer : Comparer<GameWeekRecord>
+		{
+			public override int Compare(GameWeekRecord rec1, GameWeekRecord rec2)
+			{
+				if (rec1.Year == rec2.Year)
+				{
+					return rec1.Week.CompareTo(rec2.Week);
+				}
+				else
+				{
+					return rec1.Year.CompareTo(rec2.Year);
+				}
+			}
+		}
+
+		public class TeamInformationRecord
+		{
+			public int Wins;
+			public int Losses;
+			public int Ties;
+			public int PlayoffAppearances;
+			public int BowlAppearances;
+			public int BowlWins;
+			public int PlayoffWins;
+			public int PlayoffLosses;
+			public string TurfType;
+			public int YearStadiumBuilt;
+			public int StadiumCapacity;
+			public int LuxuryBoxes;
+			public int ClubSeats;
+			public string CityName;
+			public int UpperDeckTickets;
+			public int EndZoneTickets;
+			public int MezzanineTickets;
+			public int SidelineTickets;
+			public int ClubSeatTickets;
+			public int LuxuryBoxTickets;
+			public int LostSalaryCapThisSeason;
+			public int LostSalaryCapNextSeason;
+		}
+		private TeamInformationRecord[] mTeamInformationRecords = new TeamInformationRecord[kTeamCount];
+		public TeamInformationRecord[] TeamInformationRecords { get { return mTeamInformationRecords; } }
 	}
 }
