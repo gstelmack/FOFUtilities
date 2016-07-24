@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2" default-lazy="true" namespace="DBUpdater.Tables" assembly="DBUpdater">
+	<class name="FofPlayerhistorical,DBUpdater" table="fof_playerhistorical" lazy="true">
+
+		<!-- Primary Key(s) -->
+		<id name="_Id" column="ID" type="Int32" unsaved-value="0">
+			<generator class="assigned"/>
+		</id>
+		
+		<!-- Properties -->
+		<property column="Position" type="Byte" name="_Position" not-null="true" />
+		<property column="LastName" type="String" name="_LastName" not-null="true" length="128" />
+		<property column="FirstName" type="String" name="_FirstName" not-null="true" length="128" />
+		<property column="NickName" type="String" name="_NickName" not-null="true" length="128" />
+		<property column="Experience" type="Byte" name="_Experience" not-null="true" />
+		<property column="Height" type="Byte" name="_Height" not-null="true" />
+		<property column="Weight" type="Int16" name="_Weight" not-null="true" />
+		<property column="InHallOfFame" type="Byte" name="_InHallOfFame" not-null="true" />
+		<property column="HallOfFameYear" type="Int16" name="_HallOfFameYear" not-null="true" />
+		<property column="HallOfFameVote" type="Byte" name="_HallOfFameVote" not-null="true" />
+		<property column="BirthYear" type="Int16" name="_BirthYear" not-null="true" />
+		<property column="BirthMonth" type="Byte" name="_BirthMonth" not-null="true" />
+		<property column="BirthDay" type="Byte" name="_BirthDay" not-null="true" />
+		<property column="College" type="Int16" name="_College" not-null="true" />
+		<property column="DraftRound" type="Byte" name="_DraftRound" not-null="true" />
+		<property column="DraftPick" type="Byte" name="_DraftPick" not-null="true" />
+		<property column="HomeTown" type="Int16" name="_HomeTown" not-null="true" />
+		<property column="DraftedBy" type="Byte" name="_DraftedBy" not-null="true" />
+		<property column="YearDraft" type="Int16" name="_YearDraft" not-null="true" />
+		<property column="YearRetired" type="Int16" name="_YearRetired" not-null="true" />
+		<property column="PoG" type="Int16" name="_Pog" not-null="true" />
+		<property column="Rings" type="Int16" name="_Rings" not-null="true" />
+		<property column="PoWMentions" type="Int16" name="_PowMentions" not-null="true" />
+		<property column="PoWWins" type="Int16" name="_PowWins" not-null="true" />
+		<property column="FourQHero" type="Int16" name="_FourqHero" not-null="true" />
+		<property column="QBWins" type="Int16" name="_QbWins" not-null="true" />
+		<property column="QBLosses" type="Int16" name="_QbLosses" not-null="true" />
+		<property column="QBTies" type="Int16" name="_QbTies" not-null="true" />
+		
+	</class>
+</hibernate-mapping>

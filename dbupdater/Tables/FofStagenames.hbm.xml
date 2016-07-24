@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2" default-lazy="true" namespace="DBUpdater.Tables" assembly="DBUpdater">
+	<class name="FofStagenames,DBUpdater" table="fof_stagenames" lazy="true">
+
+		<!-- Primary Key(s) -->
+		<id name="_Id" column="ID" type="Int32" unsaved-value="0">
+			<generator class="native"/>
+		</id>
+		
+		<!-- Properties -->
+		<property column="StageName" type="String" name="_StageName" not-null="true" length="45" />
+		<property column="StageIndex" type="Byte" name="_StageIndex" not-null="true" />
+		<property column="GameInfoStage" type="Byte" name="_GameInfoStage" not-null="true" />
+		<property column="GameInfoWeek" type="Byte" name="_GameInfoWeek" not-null="true" />
+		<property column="GameInfoFAStage" type="Byte" name="_GameInfofaStage" not-null="true" />
+		<property column="TransactionStage" type="Int16" name="_TransactionStage" not-null="true" />
+		
+	</class>
+</hibernate-mapping>

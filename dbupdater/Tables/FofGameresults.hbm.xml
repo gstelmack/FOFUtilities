@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2" default-lazy="true" namespace="DBUpdater.Tables" assembly="DBUpdater">
+	<class name="FofGameresults,DBUpdater" table="fof_gameresults" lazy="true">
+
+		<!-- Primary Key(s) -->
+		<id name="_Id" column="ID" type="Int32" unsaved-value="0">
+			<generator class="native"/>
+		</id>
+		
+		<!-- Properties -->
+		<property column="Year" type="Int16" name="_Year" not-null="true" />
+		<property column="Week" type="Byte" name="_Week" not-null="true" />
+		<property column="AwayScore" type="Byte" name="_AwayScore" not-null="true" />
+		<property column="AwayTeam" type="Byte" name="_AwayTeam" not-null="true" />
+		<property column="HomeScore" type="Byte" name="_HomeScore" not-null="true" />
+		<property column="HomeTeam" type="Byte" name="_HomeTeam" not-null="true" />
+		<property column="Attendance" type="Int32" name="_Attendance" not-null="true" />
+		<property column="Temperature" type="Int16" name="_Temperature" not-null="true" />
+		<property column="Precip" type="Byte" name="_Precip" not-null="true" />
+		<property column="Wind" type="Byte" name="_Wind" not-null="true" />
+		<property column="AwayPassingLeaderPlayerID" type="Int32" name="_AwayPassingLeaderPlayerid" not-null="true" />
+		<property column="HomePassingLeaderPlayerID" type="Int32" name="_HomePassingLeaderPlayerid" not-null="true" />
+		<property column="AwayRushingLeaderPlayerID" type="Int32" name="_AwayRushingLeaderPlayerid" not-null="true" />
+		<property column="HomeRushingLeaderPlayerID" type="Int32" name="_HomeRushingLeaderPlayerid" not-null="true" />
+		<property column="AwayReceivingLeaderPlayerID" type="Int32" name="_AwayReceivingLeaderPlayerid" not-null="true" />
+		<property column="HomeReceivingLeaderPlayerID" type="Int32" name="_HomeReceivingLeaderPlayerid" not-null="true" />
+		<property column="AwayPassAttempts" type="Byte" name="_AwayPassAttempts" not-null="true" />
+		<property column="AwayPassCompletions" type="Byte" name="_AwayPassCompletions" not-null="true" />
+		<property column="AwayPassYards" type="Int16" name="_AwayPassYards" not-null="true" />
+		<property column="HomePassAttempts" type="Byte" name="_HomePassAttempts" not-null="true" />
+		<property column="HomePassCompletions" type="Byte" name="_HomePassCompletions" not-null="true" />
+		<property column="HomePassYards" type="Int16" name="_HomePassYards" not-null="true" />
+		<property column="AwayRushAttempts" type="Byte" name="_AwayRushAttempts" not-null="true" />
+		<property column="AwayRushYards" type="Int16" name="_AwayRushYards" not-null="true" />
+		<property column="HomeRushAttempts" type="Byte" name="_HomeRushAttempts" not-null="true" />
+		<property column="HomeRushYards" type="Int16" name="_HomeRushYards" not-null="true" />
+		<property column="AwayReceptions" type="Byte" name="_AwayReceptions" not-null="true" />
+		<property column="AwayReceivingYards" type="Int16" name="_AwayReceivingYards" not-null="true" />
+		<property column="HomeReceptions" type="Byte" name="_HomeReceptions" not-null="true" />
+		<property column="HomeReceivingYards" type="Int16" name="_HomeReceivingYards" not-null="true" />
+		<property column="PlayerOfTheGame" type="Int32" name="_PlayerOfTheGame" not-null="true" />
+		<property column="HomeScreenAttempts" type="Byte" name="_HomeScreenAttempts" not-null="true" />
+		<property column="HomeScreenCompletions" type="Byte" name="_HomeScreenCompletions" not-null="true" />
+		<property column="HomeScreenYards" type="Int16" name="_HomeScreenYards" not-null="true" />
+		<property column="HomeShortAttempts" type="Byte" name="_HomeShortAttempts" not-null="true" />
+		<property column="HomeShortCompletions" type="Byte" name="_HomeShortCompletions" not-null="true" />
+		<property column="HomeShortYards" type="Int16" name="_HomeShortYards" not-null="true" />
+		<property column="HomeMediumAttempts" type="Byte" name="_HomeMediumAttempts" not-null="true" />
+		<property column="HomeMediumCompletions" type="Byte" name="_HomeMediumCompletions" not-null="true" />
+		<property column="HomeMediumYards" type="Int16" name="_HomeMediumYards" not-null="true" />
+		<property column="HomeLongAttempts" type="Byte" name="_HomeLongAttempts" not-null="true" />
+		<property column="HomeLongCompletions" type="Byte" name="_HomeLongCompletions" not-null="true" />
+		<property column="HomeLongYards" type="Int16" name="_HomeLongYards" not-null="true" />
+		<property column="HomeOtherAttempts" type="Byte" name="_HomeOtherAttempts" not-null="true" />
+		<property column="HomeOtherCompletions" type="Byte" name="_HomeOtherCompletions" not-null="true" />
+		<property column="HomeOtherYards" type="Int16" name="_HomeOtherYards" not-null="true" />
+		<property column="AwayScreenAttempts" type="Byte" name="_AwayScreenAttempts" not-null="true" />
+		<property column="AwayScreenCompletions" type="Byte" name="_AwayScreenCompletions" not-null="true" />
+		<property column="AwayScreenYards" type="Int16" name="_AwayScreenYards" not-null="true" />
+		<property column="AwayShortAttempts" type="Byte" name="_AwayShortAttempts" not-null="true" />
+		<property column="AwayShortCompletions" type="Byte" name="_AwayShortCompletions" not-null="true" />
+		<property column="AwayShortYards" type="Int16" name="_AwayShortYards" not-null="true" />
+		<property column="AwayMediumAttempts" type="Byte" name="_AwayMediumAttempts" not-null="true" />
+		<property column="AwayMediumCompletions" type="Byte" name="_AwayMediumCompletions" not-null="true" />
+		<property column="AwayMediumYards" type="Int16" name="_AwayMediumYards" not-null="true" />
+		<property column="AwayLongAttempts" type="Byte" name="_AwayLongAttempts" not-null="true" />
+		<property column="AwayLongCompletions" type="Byte" name="_AwayLongCompletions" not-null="true" />
+		<property column="AwayLongYards" type="Int16" name="_AwayLongYards" not-null="true" />
+		<property column="AwayOtherAttempts" type="Byte" name="_AwayOtherAttempts" not-null="true" />
+		<property column="AwayOtherCompletions" type="Byte" name="_AwayOtherCompletions" not-null="true" />
+		<property column="AwayOtherYards" type="Int16" name="_AwayOtherYards" not-null="true" />
+		<property column="HomeLeftRushAttempts" type="Byte" name="_HomeLeftRushAttempts" not-null="true" />
+		<property column="HomeLeftRushYards" type="Int16" name="_HomeLeftRushYards" not-null="true" />
+		<property column="HomeMiddleRushAttempts" type="Byte" name="_HomeMiddleRushAttempts" not-null="true" />
+		<property column="HomeMiddleRushYards" type="Int16" name="_HomeMiddleRushYards" not-null="true" />
+		<property column="HomeRightRushAttempts" type="Byte" name="_HomeRightRushAttempts" not-null="true" />
+		<property column="HomeRightRushYards" type="Int16" name="_HomeRightRushYards" not-null="true" />
+		<property column="HomeOtherRushAttempts" type="Byte" name="_HomeOtherRushAttempts" not-null="true" />
+		<property column="HomeOtherRushYards" type="Int16" name="_HomeOtherRushYards" not-null="true" />
+		<property column="AwayLeftRushAttempts" type="Byte" name="_AwayLeftRushAttempts" not-null="true" />
+		<property column="AwayLeftRushYards" type="Int16" name="_AwayLeftRushYards" not-null="true" />
+		<property column="AwayMiddleRushAttempts" type="Byte" name="_AwayMiddleRushAttempts" not-null="true" />
+		<property column="AwayMiddleRushYards" type="Int16" name="_AwayMiddleRushYards" not-null="true" />
+		<property column="AwayRightRushAttempts" type="Byte" name="_AwayRightRushAttempts" not-null="true" />
+		<property column="AwayRightRushYards" type="Int16" name="_AwayRightRushYards" not-null="true" />
+		<property column="AwayOtherRushAttempts" type="Byte" name="_AwayOtherRushAttempts" not-null="true" />
+		<property column="AwayOtherRushYards" type="Int16" name="_AwayOtherRushYards" not-null="true" />
+		<property column="HomeTimeOfPossession" type="Int16" name="_HomeTimeOfPossession" not-null="true" />
+		<property column="HomeRedZoneAttempts" type="Byte" name="_HomeRedZoneAttempts" not-null="true" />
+		<property column="HomeRedZoneTDs" type="Byte" name="_HomeRedZonetDs" not-null="true" />
+		<property column="HomeRedZoneFGs" type="Byte" name="_HomeRedZonefGs" not-null="true" />
+		<property column="AwayTimeOfPossession" type="Int16" name="_AwayTimeOfPossession" not-null="true" />
+		<property column="AwayRedZoneAttempts" type="Byte" name="_AwayRedZoneAttempts" not-null="true" />
+		<property column="AwayRedZoneTDs" type="Byte" name="_AwayRedZonetDs" not-null="true" />
+		<property column="AwayRedZoneFGs" type="Byte" name="_AwayRedZonefGs" not-null="true" />
+		<property column="TotalCapacity" type="Int32" name="_TotalCapacity" not-null="true" />
+		<property column="UpperDeckAttendance" type="Int32" name="_UpperDeckAttendance" not-null="true" />
+		<property column="UpperDeckCapacity" type="Int32" name="_UpperDeckCapacity" not-null="true" />
+		<property column="EndZoneAttendance" type="Int32" name="_EndZoneAttendance" not-null="true" />
+		<property column="EndZoneCapacity" type="Int32" name="_EndZoneCapacity" not-null="true" />
+		<property column="MezzanineAttendance" type="Int32" name="_MezzanineAttendance" not-null="true" />
+		<property column="MezzanineCapacity" type="Int32" name="_MezzanineCapacity" not-null="true" />
+		<property column="SidelineAttendance" type="Int32" name="_SidelineAttendance" not-null="true" />
+		<property column="SidelineCapacity" type="Int32" name="_SidelineCapacity" not-null="true" />
+		<property column="ClubAttendance" type="Int32" name="_ClubAttendance" not-null="true" />
+		<property column="ClubCapacity" type="Int32" name="_ClubCapacity" not-null="true" />
+		<property column="BoxAttendance" type="Int32" name="_BoxAttendance" not-null="true" />
+		<property column="BoxCapacity" type="Int32" name="_BoxCapacity" not-null="true" />
+		
+	</class>
+</hibernate-mapping>

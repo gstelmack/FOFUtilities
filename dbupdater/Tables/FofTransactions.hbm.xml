@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2" default-lazy="true" namespace="DBUpdater.Tables" assembly="DBUpdater">
+	<class name="FofTransactions,DBUpdater" table="fof_transactions" lazy="true">
+
+		<!-- Primary Key(s) -->
+		<id name="_Id" column="ID" type="Int32" unsaved-value="0">
+			<generator class="native"/>
+		</id>
+		
+		<!-- Properties -->
+		<property column="InSeasonIndex" type="Int32" name="_InSeasonIndex" not-null="true" />
+		<property column="PrimaryIndex" type="Int32" name="_PrimaryIndex" not-null="true" />
+		<property column="Salary" type="Int32" name="_Salary" not-null="true" />
+		<property column="Type" type="Byte" name="_Type" not-null="true" />
+		<property column="Team1ID" type="Int16" name="_Team1id" not-null="true" />
+		<property column="Team2ID" type="Int32" name="_Team2id" not-null="true" />
+		<property column="Position" type="Int16" name="_Position" not-null="true" />
+		<property column="Years" type="Int16" name="_Years" not-null="true" />
+		<property column="Stage" type="Int16" name="_Stage" not-null="true" />
+		<property column="Season" type="Int16" name="_Season" not-null="true" />
+		<property column="PlayerID" type="Int32" name="_Playerid" not-null="true" />
+		
+	</class>
+</hibernate-mapping>

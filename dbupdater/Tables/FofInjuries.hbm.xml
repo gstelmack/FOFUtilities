@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2" default-lazy="true" namespace="DBUpdater.Tables" assembly="DBUpdater">
+	<class name="FofInjuries,DBUpdater" table="fof_injuries" lazy="true">
+
+		<!-- Primary Key(s) -->
+		<id name="_Id" column="ID" type="Int16" unsaved-value="0">
+			<generator class="assigned"/>
+		</id>
+		
+		<!-- Properties -->
+		<property column="Name" type="String" name="_Name" not-null="true" length="128" />
+		
+	</class>
+</hibernate-mapping>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2" default-lazy="true" namespace="DBUpdater.Tables" assembly="DBUpdater">
+	<class name="FofTeams,DBUpdater" table="fof_teams" lazy="true">
+
+		<!-- Primary Key(s) -->
+		<id name="_Id" column="ID" type="Int16" unsaved-value="0">
+			<generator class="assigned"/>
+		</id>
+		
+		<!-- Properties -->
+		<property column="Nickname" type="String" name="_Nickname" not-null="true" length="20" />
+		<property column="CityName" type="String" name="_CityName" not-null="true" length="45" />
+		<property column="Abbrev" type="String" name="_Abbrev" not-null="true" length="3" />
+		<property column="CityID" type="Int16" name="_Cityid" not-null="true" />
+		<property column="Conference" type="Byte" name="_Conference" not-null="true" />
+		<property column="Division" type="Byte" name="_Division" not-null="true" />
+		<property column="CapLossThisYear" type="Int64" name="_CapLossThisYear" not-null="true" />
+		<property column="CapLossNextYear" type="Int64" name="_CapLossNextYear" not-null="true" />
+		
+	</class>
+</hibernate-mapping>

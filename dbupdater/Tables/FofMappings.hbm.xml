@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2" default-lazy="true" namespace="DBUpdater.Tables" assembly="DBUpdater">
+	<class name="FofMappings,DBUpdater" table="fof_mappings" lazy="true">
+
+		<!-- Primary Key(s) -->
+		<id name="_Id" column="ID" type="Int16" unsaved-value="0">
+			<generator class="assigned"/>
+		</id>
+		
+		<!-- Properties -->
+		<property column="Position" type="String" name="_Position" not-null="true" length="4" />
+		<property column="PositionGroup" type="String" name="_PositionGroup" not-null="true" length="3" />
+		<property column="TransactionType" type="String" name="_TransactionType" not-null="true" length="64" />
+		<property column="Precipitation" type="String" name="_Precipitation" not-null="true" length="10" />
+		<property column="PlayerStatus" type="String" name="_PlayerStatus" not-null="true" length="20" />
+		<property column="StaffRole" type="String" name="_StaffRole" not-null="true" length="20" />
+		<property column="Playoffs" type="String" name="_Playoffs" not-null="true" length="20" />
+		<property column="Ability" type="String" name="_Ability" not-null="true" length="12" />
+		<property column="StadiumType" type="String" name="_StadiumType" not-null="true" length="25" />
+		<property column="ConstructionType" type="String" name="_ConstructionType" not-null="true" length="15" />
+		<property column="DriveResult" type="String" name="_DriveResult" not-null="true" length="15" />
+		
+	</class>
+</hibernate-mapping>

@@ -1,0 +1,1 @@
+﻿ALTER TABLE `fof_playergamestats` ADD COLUMN  `AssistedTacklesForLoss` tinyint(3) unsigned NOT NULL AFTER `TacklesForLoss`;

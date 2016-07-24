@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources name="Cuervo Base">
+  <entry name="Player Numbers">
+    <substitution fofid="305" pkgid="102"/>
+    <substitution fofid="306" pkgid="103"/>
+  </entry>
+  <entry name="Positions Old">
+    <substitution fofid="302" pkgid="104"/>
+  </entry>
+  <entry name="Positions Pastel">
+    <substitution fofid="302" pkgid="105"/>
+  </entry>
+  <entry name="Ratings">
+    <substitution fofid="300" pkgid="101"/>
+  </entry>
+  <entry name="Buttons">
+    <substitution fofid="290" pkgid="107"/>
+    <substitution fofid="292" pkgid="107"/>
+    <substitution fofid="291" pkgid="108"/>
+  </entry>
+</resources>
