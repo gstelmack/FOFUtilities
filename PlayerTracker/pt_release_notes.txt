@@ -1,0 +1,21 @@
+﻿Version 8.0.0.0
+
+- Initial FOF8 support. Reads new save location, handles some file differences.
+
+Version 1.2.0.8
+
+- Add Height, Drafted Weight (or Starting Weight for players who don't have
+  draft records), and Peak Weight (weight when they hit their peak
+  development) to the main player display and all reports.
+
+Version 1.2.0.7
+
+- Can now filter the player list by position.
+
+Version 1.2.0.6
+
+- Added this Release Notes button.
+- Draft Analyzer scores for players are now shown in the main table and on 
+  the player card to help you adjust your Draft Analyzer weights. It will
+  use your current weights, so you must open Draft Analyzer and make sure
+  it is using the weights you want before running Player Tracker.

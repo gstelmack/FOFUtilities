@@ -191,16 +191,10 @@ namespace DraftAnalyzer
 			showCombineScoresToolStripMenuItem.Checked = false;
 			showCombineValuesToolStripMenuItem.Checked = true;
 
-			try
-			{
-				Text += " v" + System.Deployment.Application.ApplicationDeployment.CurrentDeployment.CurrentVersion;
-			}
-			catch
-			{
-				Text += " DEBUG";
-			}
+            Assembly a = typeof(DraftAnalyzerForm).Assembly;
+            Text += " v" + a.GetName().Version;
 
-			InitializeMaps();
+            InitializeMaps();
 			InitializeSorters();
 
 			mAttributeSortColumn = listViewDraftees.Columns.Count;
@@ -252,9 +246,9 @@ namespace DraftAnalyzer
 			FolderBrowserDialog dlg = new FolderBrowserDialog();
 			dlg.ShowNewFolderButton = false;
 			dlg.Description = "Select the League";
-			string appData = System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData);
-			dlg.RootFolder = Environment.SpecialFolder.ApplicationData;
-			dlg.SelectedPath = System.IO.Path.Combine(appData, "Solecismic Software", "Front Office Football Seven", "leaguedata");
+			string appData = System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData);
+			dlg.RootFolder = Environment.SpecialFolder.LocalApplicationData;
+			dlg.SelectedPath = System.IO.Path.Combine(appData, "Solecismic Software", "Front Office Football Eight", "leaguedata");
 			if (dlg.ShowDialog() == DialogResult.OK)
 			{
 				UnselectPlayer();
@@ -3768,7 +3762,7 @@ namespace DraftAnalyzer
 
         private void buttonReleaseNotes_Click(object sender, EventArgs e)
         {
-            System.Diagnostics.Process.Start("release_notes.txt");
+            System.Diagnostics.Process.Start("da_release_notes.txt");
         }
     }
 }

@@ -9,7 +9,7 @@ namespace DataReader
 	{
 		public UniverseData()
 		{
-			mSaveDirectory = Path.Combine(System.Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),"Solecismic Software\\Front Office Football Seven");
+			mSaveDirectory = Path.Combine(System.Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"Solecismic Software\\Front Office Football Eight");
 			mExportDirectory = Path.Combine(mSaveDirectory, "leaguedata");
 
 			if (mSaveDirectory != null && Directory.Exists(mSaveDirectory))

@@ -45,19 +45,13 @@ namespace PlayerTracker
 		{
 			InitializeComponent();
 
-			try
-			{
-				labelVersion.Content = " v" + System.Deployment.Application.ApplicationDeployment.CurrentDeployment.CurrentVersion;
-			}
-			catch
-			{
-				labelVersion.Content = " DEBUG";
-			}
+            System.Reflection.Assembly a = typeof(MainWindow).Assembly;
+            Title += " v" + a.GetName().Version;
 
-			CreateMaps();
+            CreateMaps();
 
-			string appData = System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData);
-			m_LeagueDataRootDir = System.IO.Path.Combine(appData, "Solecismic Software", "Front Office Football Seven", "leaguedata");
+			string appData = System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData);
+			m_LeagueDataRootDir = System.IO.Path.Combine(appData, "Solecismic Software", "Front Office Football Eight", "leaguedata");
 			foreach (string curLeague in System.IO.Directory.EnumerateDirectories(m_LeagueDataRootDir))
 			{
 				comboBoxLeagues.Items.Add(System.IO.Path.GetFileNameWithoutExtension(curLeague));
@@ -195,7 +189,7 @@ namespace PlayerTracker
 
 		private void buttonReleaseNotes_Click(object sender, RoutedEventArgs e)
 		{
-			System.Diagnostics.Process.Start("release_notes.txt");
+			System.Diagnostics.Process.Start("pt_release_notes.txt");
 		}
 
 		private void buttonExport_Click(object sender, RoutedEventArgs e)
@@ -421,7 +415,7 @@ namespace PlayerTracker
 					entry.Experience = Byte.Parse(tokens[3]);
 					entry.Position_Group = tokens[4];
 					entry.Team = Byte.Parse(tokens[5]);
-					entry.Loyalty = Byte.Parse(tokens[10]);
+					entry.Loyalty = Byte.Parse(tokens[9]);
 					entry.Play_for_Winner = Byte.Parse(tokens[10]);
 					entry.Personality_Strength = Byte.Parse(tokens[11]);
 					entry.Leadership = Byte.Parse(tokens[12]);
@@ -429,7 +423,16 @@ namespace PlayerTracker
 					rec.Red_Flag = Byte.Parse(tokens[14]);
 					entry.Mentor = Byte.Parse(tokens[15]);
 					entry.Volatility = Byte.Parse(tokens[16]);
-					entry.Popularity = Byte.Parse(tokens[20]);
+                    int popularity = Int32.Parse(tokens[20]);
+                    if (popularity < Byte.MinValue)
+                    {
+                        popularity = Byte.MinValue;
+                    }
+                    else if (popularity > Byte.MaxValue)
+                    {
+                        popularity = Byte.MaxValue;
+                    }
+                    entry.Popularity = (Byte)popularity;
 					rec.Entries.Add(entry);
 				}
 				inFile.Close();
