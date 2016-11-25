@@ -1,4 +1,8 @@
-﻿Version 1.2.0.8
+﻿Version 8.0.0.0
+
+- Initial FOF8 support. Reads new save location, handles some file differences.
+
+Version 1.2.0.8
 
 - Add Height, Drafted Weight (or Starting Weight for players who don't have
   draft records), and Peak Weight (weight when they hit their peak

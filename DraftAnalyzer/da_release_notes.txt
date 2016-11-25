@@ -1,4 +1,9 @@
-﻿8.0.0.0
+﻿8.0.0.1
+
+- Handle new pick format when pasting output from the in-game draft and marking players
+  as drafted.
+
+8.0.0.0
 
 - Initial FOF8 support, reads from new save location.
 

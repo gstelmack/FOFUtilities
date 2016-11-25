@@ -2096,8 +2096,12 @@ namespace DraftAnalyzer
 			}
 			else
 			{
-				int draftedOrderEnd = line.IndexOf(".");
-				int playerNameStart = line.IndexOf(" - ");
+                if (line.StartsWith("Pick #"))
+                {
+                    line = line.Substring(6);
+                }
+				int draftedOrderEnd = line.IndexOf(" - ");
+				int playerNameStart = line.IndexOf(" - ", draftedOrderEnd+3);
 				if (playerNameStart < 0)
 				{
 					MessageBox.Show("Could not find player name on drafted line" + Environment.NewLine + line, "Error Marking Drafted Players",
@@ -2108,6 +2112,7 @@ namespace DraftAnalyzer
 				{
 					Int32.TryParse(line.Substring(0, draftedOrderEnd), out draftedOrder);
 				}
+
 				playerNameStart += 3;
 				string[] fields = line.Substring(playerNameStart).Split(new string[] { ", " }, StringSplitOptions.RemoveEmptyEntries);
 				if (fields.Length < 4 || fields.Length > 5)
