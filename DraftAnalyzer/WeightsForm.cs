@@ -29,6 +29,7 @@ namespace DraftAnalyzer
 			return mDraftWeights.GetNoCombinePositionWeight(position);
 		}
 		public DataReader.DraftWeights.GlobalWeightData GlobalWeights { get { return mDraftWeights.GlobalWeights; } }
+        public DataReader.FOFData FOFData { get { return mDraftWeights.FOFData; } }
 
 		public WeightsForm(Dictionary<string, string[]> positionGroupAttributeNames)
 		{
@@ -78,7 +79,15 @@ namespace DraftAnalyzer
 			mCurrentPosition = "QB";
 			comboBoxPosition.Text = "QB";
 
-			mAppFolderName = WindowsUtilities.OutputLocation.Get();
+            foreach (DataReader.FOFData.DefensiveFront defFront in Enum.GetValues(typeof(DataReader.FOFData.DefensiveFront)))
+            {
+                if (defFront != DataReader.FOFData.DefensiveFront.Count)
+                {
+                    comboBoxDefensiveFront.Items.Add(DataReader.FOFData.DefensiveFrontName[(int)defFront]);
+                }
+            }
+
+            mAppFolderName = WindowsUtilities.OutputLocation.Get();
 
 			LoadData();
 			FillScreenFromPosition(mCurrentPosition);
@@ -160,6 +169,8 @@ namespace DraftAnalyzer
 			mDraftWeights.GlobalWeights.AvgDev = (int)numericUpDownAvgDev.Value;
 			mDraftWeights.GlobalWeights.DevWt = (int)numericUpDownDevWt.Value;
 			mDraftWeights.GlobalWeights.CombineThresholdPenalty = (int)numericUpDownCombineThreshold.Value;
+
+            mDraftWeights.GlobalWeights.DefensiveFront = (DataReader.FOFData.DefensiveFront)comboBoxDefensiveFront.SelectedIndex;
 		}
 
 		private void DisplayGlobalData()
@@ -190,7 +201,9 @@ namespace DraftAnalyzer
 					radioButtonAttributesUseMax.Checked = true;
 					break;
 			}
-		}
+
+            comboBoxDefensiveFront.SelectedItem = DataReader.FOFData.DefensiveFrontName[(int)mDraftWeights.GlobalWeights.DefensiveFront];
+        }
 
 		private void buttonCopyToGroup_Click(object sender, EventArgs e)
 		{

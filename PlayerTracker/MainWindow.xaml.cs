@@ -734,13 +734,15 @@ namespace PlayerTracker
 			labelDraftWeights.Content = "Comb: " + data.CombineScore.ToString("F1") + " Bars: " + data.AttributeScore.ToString("F1") + 
 				" Tot: " + data.OverallScore.ToString("F1");
 
-            string heightString = m_FOFData.GetHeightBandString(data.Pos, data.PlayerRecord.Height);
-            string dWeightString = m_FOFData.GetWeightBandString(data.Pos, data.StartWeight);
-            string pWeightString = m_FOFData.GetWeightBandString(data.Pos, data.PeakWeight);
+            string heightString = m_FOFData.GetHeightDifference(data.Pos, data.PlayerRecord.Height).ToString() + "\"";
+            var startIdealPos = m_FOFData.GetIdealPosition(data.Pos, data.StartWeight);
+            string dWeightString = m_FOFData.GetWeightDifference(startIdealPos.Position, data.StartWeight, startIdealPos.Formation).ToString() + "lbs";
+            var peakIdealPos = m_FOFData.GetIdealPosition(data.Pos, data.PeakWeight);
+            string pWeightString = m_FOFData.GetWeightDifference(peakIdealPos.Position, data.PeakWeight, peakIdealPos.Formation).ToString() + "lbs";
 
-            labelHeight.Content = "Ht: " + data.PlayerRecord.Height.ToString() + "\"" + " " + heightString;
-            labelDWeight.Content = "Draft Wt: " + data.StartWeight + " " + dWeightString;
-            labelPWeight.Content = "Peak Wt: " + data.PeakWeight + " " + pWeightString;
+            labelHeight.Content = "Ht: " + data.PlayerRecord.Height.ToString() + "\"" + " (" + heightString + ")";
+            labelDWeight.Content = "Draft Wt: " + data.StartWeight + " (" + startIdealPos.Display + " " + dWeightString + ")";
+            labelPWeight.Content = "Peak Wt: " + data.PeakWeight + " (" + peakIdealPos.Display + " " + pWeightString + ")";
 
 			int[] barIndices = m_FOFData.PositionGroupAttributes[data.PosGrp];
 			byte[] initialBars = new byte[barIndices.Length];

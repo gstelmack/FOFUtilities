@@ -1,4 +1,14 @@
-﻿8.0.0.1
+﻿8.1.0.0
+
+- Display difference from average height for position (if it matters).
+- Allow selection of a Defensive Front in the weights dialog, and use it to determine
+  how far off a player is from the ideal weight for the best position for that front.
+- Height / Weight adjustments use the height / weight difference numbers rather than
+  bands.
+- Rated position is back, showing what position the player is best suited, accounting
+  for size based on your suggested defensive front.
+
+8.0.0.1
 
 - Handle new pick format when pasting output from the in-game draft and marking players
   as drafted.

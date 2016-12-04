@@ -1,0 +1,699 @@
+//--------------------------------------
+//--- 010 Editor v3.0.5 Binary Template
+//
+// File:
+// Author:
+// Revision:
+// Purpose:
+//--------------------------------------
+
+#include "Structures.bt"
+
+enum<short> PLAY_TYPE
+{
+    Play_FG = 1,
+    Play_Kickoff = 2,
+    Play_OnsideKick = 3,
+    Play_Punt = 4,
+    Play_Rush = 5,
+    Play_Pass = 6,
+    Play_Info = 7
+};
+
+enum<short> OFFENSIVE_FORMATION 
+{
+    IFormNormal = 0,
+	IFormTEPairs = 1,
+    IFormWRToSlot = 2,
+    ProNormal = 3,
+	ProTEPairs = 4,
+    ProWRToSlot = 5,
+    WeakNormal = 6,
+    WeakTEPairs = 7,
+    WeakThreeWR = 8,
+    StrongNormal = 9,
+    StrongTEPairs = 10,
+    StrongThreeWR = 11,
+    SingleBackNormal = 12,
+    SingleBackTEPairs = 13,
+    SingleBackTripsWR = 14,
+    SingleBackFourWR = 15,
+    FiveWRSpread = 16,
+    GoalLineFormation = 17
+};
+
+enum<short> DEFENSIVE_ALIGNMENT
+{
+    ThreeFour = 0,
+    FourThree = 1
+};
+
+enum<short> DEFENSIVE_PERSONNEL
+{
+    Normal = 0,
+    Nickel = 1,
+    Dime = 2,
+    Prevent = 3,
+    GoalLinePersonnel = 4
+};
+
+enum<short> DEFENSIVE_COVERAGE
+{
+    OneDeepLooseMan = 0,
+    OneDeepBumpAndRun = 1,
+    TwoDeepLooseMan = 2,
+    TwoDeepBumpAndRun = 3,
+    ThreeDeepZone = 4,
+    FourDeepZone = 5,
+    StrongSideMan = 6,
+    WeakSideMan = 7
+};
+
+enum<short> DEFENSIVE_RUNPASS
+{
+    Run = 0,
+    Pass = 1
+};
+
+enum<short> RUNDIRECTION
+{
+    AroundLeftEnd=0,
+    OutsideLT=1,
+    InsideLT=2,
+    InsideLG=3,
+    InsideRG=4,
+    InsideRT=5,
+    OutsideRT=6,
+    AroundRightEnd=7,
+    KneelDown=8
+};
+
+enum<short> FIELDCONDITION
+{
+    FieldNormal=0,
+    FieldCold=1,
+    FieldHot=2,
+    FieldWet=3,
+    FieldSnowy=4,
+    FieldSoaked=5
+};
+
+enum<short> DEFENSEFAMILIAR
+{
+    DefenseNone=0,
+    DefenseVeryFamiliar=1,
+    DefenseExtremelyFamiliar=2
+};
+
+enum<short> INCOMPLETIONTYPE
+{
+    IncompletionDrop=0,
+    IncompletionMaybeAvoidingRush=1,
+    IncompletionPassDefended=2,
+    IncompletionBlockedAtTheLine=3,
+    IncompletionHurried=4
+};
+
+enum<short> DOUBLECOVERAGETYPE
+{
+    DoubleCoverageNone=0,
+    DoubleCoveragePrimary=1,
+    DoubleCoverageSecondary=2,
+    DoubleCoverageThrewAwayFrom=3
+};
+
+enum<short> PASSDISTANCE
+{
+    PassDistanceScreen=0,
+    PassDistance0To4=1,
+    PassDistance5To8=2,
+    PassDistance9To12=3,
+    PassDistance13To18=4,
+    PassDistance19To26=5,
+    PassDistance27To39=6,
+    PassDistance40Plus=7,
+    PassDistanceSpike=8
+};
+
+enum<short> INFOPLAYTYPE
+{
+    InfoPlayExtraPoint=0,
+    InfoPlayHomeTeamTimeOut=1,
+    InfoPlayAwayTeamTimeOut=2,
+    InfoPlayTwoMinuteWarning=3,
+    InfoPlayHomeTeamWonOvertimeCoinToss=4,
+    InfoPlayAwayTeamWonOvertimeCoinToss=5,
+    InfoPlay6=6,
+    InfoPlay7=7,
+    InfoPlayStartOfFirstQuarter=8,
+    InfoPlayStartOfSecondQuarter=9,
+    InfoPlayStartOfThirdQuarter=10,
+    InfoPlayStartOfFourthQuarter=11,
+    InfoPlayStartOfOvertime1=12,
+    InfoPlay13=13,
+    InfoPlay14=14,
+    InfoPlay15=15,
+    InfoPlay16=16,
+    InfoPlay17=17,
+    InfoPlay18=18,
+    InfoPlay19=19,
+    InfoPlay20=20
+};
+
+enum<short> FGPLAYTYPE
+{
+    FGPlayNoKick=0,
+    FGPlay1=1,
+    FGPlay2=2,
+    FGPlay3=3,
+    FGPlay4=4,
+    FGPlay5=5,
+    FGPlay6=6,
+    FGPlay7=7,
+    FGPlayKickSuccessful=8,
+    FGPlay9=9,
+    FGPlayKickFailed=10,
+    FGPlay11=11,
+    FGPlay12=12,
+    FGPlay13=13,
+    FGPlay14=14,
+    FGPlay15=15,
+    FGPlay16=16,
+    FGPlay17=17,
+    FGPlay18=18,
+    FGPlay19=19,
+    FGPlay20=20
+};
+
+enum<short> BADSNAPTYPE
+{
+    SnapGood=0,
+    SnapFromCenterBad=1,
+    SnapHolderBobbled=2
+};
+
+struct GAMEPLAYFORMATION
+{
+	OFFENSIVE_FORMATION OffensiveFormation;	
+	short OffensiveStrength;
+	DEFENSIVE_ALIGNMENT DefensiveAlignment;
+	DEFENSIVE_PERSONNEL DefensivePersonnel;
+	DEFENSIVE_COVERAGE DefensiveCoverage;
+	DEFENSIVE_RUNPASS DefensiveRunPass;
+	short DefensiveRunAggressive;
+	short DefensivePassAggressive;
+	short DefensiveBlitzing;    // 0-3, how many blitzing
+    // This array of 10 are boolean 0/1 flags for is that position blitzing?
+	// 0 = SLB-Outside
+	// 1 = SLB-Inside
+	// 2 = MLB/SILB
+	// 3 = WILB
+	// 4 = WLB-Outside(?) 4-3 Only
+	// 5 = WLB-Inside(?) 4-3 Only
+	// 6 = LCB
+	// 7 = RCB
+	// 8 = SS
+ 	// 9 = FS
+	short DefensiveBlitzers[10];
+};
+
+struct GAMEPLAYPENALTY {
+    short IsDefensivePenalty;   // 0-1 (1: Defensive Penalty on the play)
+    short IsOffensivePenalty;	// 0-1 (1: Offensive Penalty on the play)
+    short PenaltyYardage;       // 0-?? (Penalty Yardage)
+    short HappenedOnPK;		    // 0-1 (1: Happened on Punt/Kick) *** Not 100% sure
+    short ResultsInFirstDown;   // 0-1 (1: Results in a First Down) *** Not 100% sure
+    short ResultsInLossOfDown;   // 0-1 (1: Results in Loss of Down) *** Not 100% sure
+    short Unknown;
+    short Unknown;
+    short InEndZone;            // 0-1 (1: In End Zone)
+    short YardLineIfAccepted;   // 0-100 (Yard Line if Accepted)
+    short DownIfAccepted;       // 1-4 (Down if Accepted)
+    short YardsToGoIfAccepted;  // 1-?? (Yards To Go if Accepted)
+    short YardLineIfDeclined;   // 0-100 (Yard Line if Declined)
+    short DownIfDeclined;       // 1-4 (Down if Declined)
+    short YardsToGoIfDeclined;  // 1-?? (Yards To Go if Declined)
+    short Unknown;
+    short Unknown;
+    short Unknown;
+    short Unknown;
+    short PenaltyType;          // 1-70 (Penalty Type (big chart, not important here))
+    short IsDefensiveEndOfHalfPenalty;  // 0-1 (1: Defensive End of Half Penalty)
+    short Unknown;
+    short Unknown;
+    short Unknown;
+    short Unknown;
+    short Unknown;
+    short EffectOnPlay;         // 0-3 (0: No effect, 1: ???, 2: Added to end of play (i.e. intentional face mask), 3: Play doesn't happen (offsides)) *** Not sure on this
+};
+
+struct GAMEPLAYLINEUP {
+	// indexed 0-10, referred to by the play data, references sequence in
+    // GAMETEAMENTRY.ActivePlayerIDs (0-45, 46-89)
+	// Example:
+	// Rushing play may refer to the ballcarrier as 1 (meaning the RB)
+	// Offense GAMEPLAYLINEUP[1] is 36
+	// The Home Team's ActivePlayerIDs[36] is the player id for the ballcarrier
+	// The tackler might be 3 (which player this is depends on the
+    // formation, but let's say it's the RDE)
+	// Defense GAMEPLAYLINEUP[3] is 74
+	// The Away Team's ActivePlayerIDs[74-46] = ActivePlayerIDs[28] is
+    // the player id for the tackler
+
+	short Players[11];
+};
+
+struct PLAYINFODATA 
+{
+    short Minute;
+    short Second;
+    short InfoPlayData2;
+    short InfoPlayData3;
+    short WasKickOnExtraPoint;
+    short WasXPKickGood;
+    short WasXPKickBlocked;
+    short WasRunForTwo;
+    short TwoPointRunSuccessful;
+    short WasPassForTwo;             // Also scramble
+    short TwoPointPassSuccessful;
+    short InfoPlayData11;
+    short QBKeptTheBallForConversion;
+    BADSNAPTYPE XPBadSnapType;       // If kick missed, including block
+    INFOPLAYTYPE PlayType;
+    short BallCarrier;               // if run or QB keeper?
+    short InfoPlayData16;
+    short InfoPlayData17;
+    short PassReceiver;              // if throw for conversion
+    short PlayData2[44];
+};
+
+struct PLAYONSIDEDATA 
+{
+    short PlayData[63];
+};
+
+struct PLAYKICKOFFDATA 
+{
+    short Minute;
+    short Second;
+    short Always_Zero;
+    short Always_Zero;
+    short KickingTeam;
+    short PenaltyAccepted;
+    short ReturnYardLine;
+    short Unknown;   // 0-1 Range
+    short Unknown;   // 0, 9-10 Range (Could be returner?  Always matches 'Returner', except sometimes is 0)
+    short ReturnYards;
+    short FumbleOnReturn;
+    short Turnover;
+    short FumbleTouchdown;
+    short FumbleReturnYards;
+    short FumbleRecoverer;
+    short Always_Zero;
+    short Unknown;   // 0, 12-13 Range
+    short Tackler;
+    short Touchdown;
+    short Unknown;   // (-1)-10 Range
+    short KickoffYardLine;
+    short Unknown;   // Always 2
+    short Unknown;   // Always 1
+    short Unknown;   // Range: High negative values, 2-10
+    short Unknown;   // Range: High negative values, 2-10
+    short KickoffDistance;
+    short Touchback;
+    short Returner;
+    short FumbleRecoveryYardLine;
+    short Always_Zero2[34];
+};
+
+struct PLAYFGDATA 
+{
+    short Minute;
+    short Second;
+    short FGPlayData2;
+    short FGPlayData3;
+    short KickingTeam;
+    short KickNegatedByPenalty;
+    short KickingPlayer;            // 0 = no kick attempt (penalty), 3 = usual kicker position
+    short KickBlocked;
+    short WhoBlockedKick;
+    short WhoRecoveredKick;
+    short BlockedKickRecoveryYards;
+    short FGPlayData11;
+    short FGPlayData12;
+    short FGPlayData13;
+    short FGPlayData14;
+    short BlockedKickRecoveryYardLine;
+    short FGPlayData16;
+    short KickDistance;
+    short FGPlayData18;
+    short FGPlayData19;
+    short FGPlayData20;
+    short FGPlayData21;
+    FGPLAYTYPE FGPlayType;        // 0 = no kick, 8 = succeeded, 10 = failure of some sort
+    short FGPlayData23;
+    short FGPlayData24;
+    short FGPlayData25;
+    short FGPlayData26;
+    short FGPlayData27;
+    short KickBlockedDueToBadSnap;
+    short FGPlayData29;
+    short FGPlayData30;
+    short PlayData[32];
+};
+
+struct PLAYPUNTDATA 
+{
+    short PlayData[63];
+};
+
+struct PLAYRUSHDATA 
+{
+    short Minute;   // 0-15 (Minute)
+    short Seconds;  // 0-59 (Second)
+    short Always0;
+    short Always0;
+    short YardsGained;
+    short IsTouchdown;  //	0-1 (1: Touchdown)
+    short Rusher;       // 0-10 (Rusher, based on position in formation)
+    short IsFumble;     // 0-1 (1: Fumble)
+    short Tackler;      // 0-10 (Player Tackler, based on position in formation)
+    short FumbleRecoveryTeam;   // 0-1 (Fumble Recovered by which team)
+    short FumbleRecoveryYards;  // ??-?? (Fumble Return yards)
+    short FumbleRecoveredForTD; // 0-1 (1: Fumble Recovered for TD)
+    short FumbleRecoveryTackler;    // 0-10 (Tackler of Fumble Recover, based on position in formation)
+    short IsPenaltyAccepted;    // 0-1 (1: Accepted Penalty)
+    short FumbleRecoverer;      // 0-10 (Fumble Recoverer)
+    short TrueRushYardLine;     // ??-?? (True Yard Line: interesting piece of data, is how far a rush would have ended without an end zone.  So a run from the 1 yard line for a TD could have a value here of 117, meaning it would have been an 18-yard rush if somewhere else on the field.  Haven't done anything with this, but there's potential for figuring out a 'true' yards/carry)
+    short Unknown;
+    short IsForcedOOB;          // 0-1 (1: Forced OOB)
+    short IsSafety;             // 0-1 (1: Safety)
+    short AssistantTackler;     // 0-10 (Player Assisting on Tackle, based on position in formation)
+    short WasTackleAssisted;    // 0-1 (1: Assisted Tackle)
+    short KeyRunBlocker;        // 0-10 (0: No Key Run Block, 1-10: Player getting the KRB, based on position in formation)
+    short KeyRunBlockOpportunity;   // 0-10 (0: No Key Run Block Opportunity, 1-10: Player getting the KRBO, based on position in formation)
+    short Unknown;
+    short GameLogMessage1Type;  // Game Log Message Type re: Making a Move (" made a great move on ")
+    short GameLogMessage1Player;// Player referenced in Play24
+    short GameLogMessage2Type;  // Game Log Message re: Key Run Block (" ran over ")
+    short GameLogMessage2Player;// Player referenced in Play26
+    short GameLogMessage3Type;  // Game Log Message re: Failed Key Run Block (" to break up the play ")
+    short GameLogMessage3Player;// Player referenced in Play28
+    short PrePlayDown;          // 1-4 (Pre-Play Down)
+    short PrePlayYardsToGo;     // 1-?? (Pre-Play Yards To Go)
+    short PrePlayYardLine;      // 0-100 (Pre-Play Yard Line)
+    short PrePlayTeamPossession;// 0-1 (Pre-Play Possession)
+    short PostPlayDown;         // 1-4 (Post-Play Down)
+    short PostPlayYardsToGo;    // 1-?? (Post-Play Yards To Go)
+    short PostPlayYardLine;     // 0-100 (Post-Play Yard Line)
+    short IsTurnover;           // 0-1 (Turnover Indicator)
+    short Unknown;
+    short TurnoverOnDowns;      // 0-1 (1: Turnover on Downs)
+    short Unknown;              // (Believed SoleVision use)
+    short Unknown;              // (Believed SoleVision use)
+    RUNDIRECTION RunDirection;  // 0-9 (Run Direction, 0: around left end, 1: outside LT, 2: inside LT ... 7: around RE, 8: left reverse (finesse only), 9: right reverse (finesse only))
+    short IsFinesseRun;         // 0-1 (1: Finesse Run, different messages used)
+    FIELDCONDITION FieldCondition;  // 0-5 (Field Condition, 0: Norm, 1: cold, 2: hot, 3: wet, 4: snowy, 5: soaked - not always displayed, depends on play result)
+    DEFENSEFAMILIAR DefenseFamiliar;// 0-2 (Defense Familiar: 0: None, 1: very familiar, 2: extremely familiar - not always displayed, depends on play result)
+    short GameLogMessage4Type;  // Game Log Message re: Turnover on Downs
+    short Unknown1[16];
+};
+
+struct PLAYPASSDATA 
+{
+    short Minute;   // 0-15 (Minute)
+    short Seconds;  // 0-59 (Second)
+    short Always0;
+    short Always0;
+    short IsComplete;   // 0-1 (1: Completion)
+    short DesignedYardage; // ??-?? (Designed Yardage: i.e. either the yardage of the pass if complete, or what it would have been if incomplete (assumed, but likely))
+    short IsTouchdown;  // 0-1 (1: Touchdown)
+    short PassTarget;   // 1-10 (Pass Target, based on position in formation)
+    short Tackler;      // 0-10 (Player Tackler, based on position in formation)
+    short IsFumble;     // 0-1 (1: Fumble)
+    short FumbleRecoveryTeam;   // 0-1 (Fumble Recovered by which team)
+    short FumbleReturnYards;    // ??-?? (Fumble Return yards)
+    short FumbleRecoveryTackler;    // 0-10 (Tackler of Fumble Recover, based on position in formation)
+    short IsFumbleRecoveredForTD;   // 0-1 (1: Fumble Recovered for TD)
+    short FumbleRecoverer;  // 0-10 (Fumble Recoverer)
+    short IsInterception;   // 0-1 (1: Interception)
+    short InterceptingPlayer;   // 0-10 (Player Intercepting, based on position in formation)
+    short InterceptionReturnYards;  // ??-?? (Interception return yards)
+    short IsInterceptedForTD;   // 0-1 (1: Interception for touchdown)
+    short InterceptedTackler;   // 0-10 (Player tackling interceptor, based on position in formation)
+    short InterceptionYardLine; // 0-100 (Interception yard line)
+    short IsPenaltyAccepted;    // 0-1 (1: Accepted Penalty)
+    short IsDefensiveTD;    // 0-1 (1: Defensive TD)
+    short Unknown;
+    short Unknown;
+    short IsQBScramble;     // 0-1 (1: QB Scramble (NOTE: Statistically a run))
+    short QBScrambleYards;  // ??-?? (QB Scramble Yards)
+    short IsQBSacked;       // 0-1 (1: QB Sack)
+    short QBSackYards;      // ??-?? (QB Sack Yards)
+    short IsQBSackedForSafety;  // 0-1 (1: QB Sacked for Safety)
+    short SackingPlayer;    // 0-10 (Sacking Player, based on position in formation)
+    short IsForcedOOB;      // 0-1 (1: Forced OOB)
+    short InterceptedInEndZone; // 0-1 (1: Interception in End Zone)
+    short IsHalfSack;       // 0-1 (1: Halved Sack)
+    short AssistantSacker;  // 0-10 (Assistant Sacker, based on position in formation)
+    short AssistantTackler; // 0-10 (Assistant Tackler, based on position in formation)
+    short IsAssistedTackle; // 0-1 (1: Assisted Tackle)
+    short WhoAllowedQBSack; // 0-10 (QB Sack Allowed By, based on position in formation)
+    INCOMPLETIONTYPE IncompletionType;  // 0-4 (Incompletion Type, 0: Drop, 1: Incomplete (possibly evading rush with later key), 2: Pass Defended, 3: Blocked at the line, 4: Hurried)
+    short IsOverMiddleOfField;  // 0-1 (1: Over Middle of the Field)
+    short YardsAfterCatch;  // ??-?? (Yards After Catch)
+    short GameLogMessage1Type;  // Game Log Message re: Sack (" ran right past ")
+    short GameLogMessage2Type;  // Game Log Message re: Knockdown (" knocked the ball right out of his grasp ")
+    short GameLogMessage3Type;  // Game Log Message 
+    DOUBLECOVERAGETYPE DoubleCoverage;  // 0-3 (1: threw into double coverage (primary), 2: threw into double coverage (secondary), 3: threw away from double coverage)
+    short PrePlayDown;      // 1-4 (Pre-Play Down)
+    short PrePlayYardsToGo; // 1-?? (Pre-Play Yards To Go)
+    short PrePlayYardLine;  // 0-100 (Pre-Play Yard Line)
+    short PrePlayTeamPossession;    // 0-1 (Pre-Play Possession)
+    short PostPlayDown;     // 1-4 (Post-Play Down)
+    short PostPlayYardsToGo;    // 1-?? (Post-Play Yards to Go)
+    short PostPlayYardLine; // 0-100 (Post-Play Yard Line)
+    short IsTurnover;       // 0-1 (1: Turnover)
+    short Unknown;
+    short IsTurnoverOnDowns;    // 0-1 (1: Turnover on Downs)
+    short Unknown;
+    short Unknown;
+    short Unknown;
+    PASSDISTANCE PassDistance;      // 0-8 (Pass Distance, 0: Screen ... 8: Spike)
+    DEFENSEFAMILIAR DefenseFamiliar;// 0-2 (Defense Familiar: 0: None, 1: very familiar, 2: extremely familiar - not always displayed, depends on play result)
+    short EvadedRushToAvoidSafety;  // 0-1 (1: Evades Rush to avoid the safety)
+    FIELDCONDITION FieldCondition;  // 0-5 (Field Condition, 0: Norm, 1: cold, 2: hot, 3: wet, 4: snowy, 5: soaked - not always displayed, depends on play result)
+    short GameLogMessage4Type;  // Game Log Message re: Turnover on Downs
+};
+
+struct GAMEPLAYENTRY
+{
+//	Included for completeness, but is eaten up by the TEMPHEADER
+//	char Header[4];
+	short Quarter;
+	short Minutes;
+	short Seconds;
+	short Possession;
+	short Down;
+	short YardsToGo;
+	short YardLine;
+	short HomeTimeouts;
+	short AwayTimeouts;
+	PLAY_TYPE PlayType;
+
+	if (PlayType == 5 || PlayType == 6) {
+		GAMEPLAYFORMATION Formation;
+	} else {
+		short UnknownFormationData[19];
+	}
+
+	GAMEPLAYPENALTY Penalty;
+	short InjuryType;
+	short InjuredPlayer;
+
+    if (PlayType == 1 ) {
+        PLAYFGDATA PlayFGData;
+    } else if (PlayType == 2) {
+        PLAYKICKOFFDATA PlayKickoffData;
+    } else if (PlayType == 3) {
+        PLAYONSIDEDATA PlayOnsideData;
+    } else if (PlayType == 4) {
+        PLAYPUNTDATA PlayPuntData;
+    } else if (PlayType == 5) {
+        PLAYRUSHDATA PlayRushData;
+    } else if (PlayType == 6) {
+        PLAYPASSDATA PlayPassData;
+    } else {
+        PLAYINFODATA PlayInfoData;
+    }
+
+	GAMEPLAYLINEUP OffensiveRoster;
+	GAMEPLAYLINEUP DefensiveRoster;
+
+    short Filler[81];
+};
+
+struct GAMETIMESTAMP
+{
+    short Quarter;
+    short Minutes;
+    short Seconds;
+};
+
+enum<short> DRIVERESULT 
+{
+    UNK0=0,
+    Punt=1,
+    Downs=2,
+    Half=3,
+    Game=4,
+    Fumble=5,
+    Interception=6,
+    Safety=7,
+    FieldGoal=8,
+    Touchdown=9,
+    MissedFG=10
+};
+
+struct GAMEDRIVEINFO
+{
+    GAMETIMESTAMP DriveStart;
+    GAMETIMESTAMP DriveEnd;
+    short YardsFromGoalStart;
+    short Plays;
+    short YardsGained;
+    DRIVERESULT Result;
+};
+
+struct GAMEPASSINFOBASE
+{
+    short Attempts;
+    short Completions;
+    short Yardage;
+};
+
+struct GAMEPASSINFO 
+{
+    GAMEPASSINFOBASE screen;
+    GAMEPASSINFOBASE shortP;
+    GAMEPASSINFOBASE medium;
+    GAMEPASSINFOBASE longP;
+    GAMEPASSINFOBASE other;
+};
+struct GAMERUSHINFOBASE 
+{
+    short Attempts;
+    short Yardage;
+};
+struct GAMERUSHINFO
+{
+    GAMERUSHINFOBASE left;
+    GAMERUSHINFOBASE middle;
+    GAMERUSHINFOBASE right;
+    GAMERUSHINFOBASE none; 
+};
+
+struct GAMEPOSSINFO
+{
+    short TimeOfPossession;
+    short RedZoneAttempts;
+    short RedZoneTouchdowns;
+    short RedZoneFieldGoals;
+};
+
+struct GAMEENDENTRY
+{
+    // Included for completeness, but is eaten up by the TEMPHEADER
+    // char Header[4];
+    long PlayerOfTheGameActivePlayerIndex;
+    short HomeDriveCount;
+    short AwayDriveCount;
+    GAMEDRIVEINFO HomeDrives[HomeDriveCount];
+    GAMEDRIVEINFO AwayDrives[AwayDriveCount];
+    GAMEPASSINFO HomePassing;
+    GAMEPASSINFO AwayPassing;
+    GAMERUSHINFO HomeRushing;
+    GAMERUSHINFO AwayRushing;
+    GAMEPOSSINFO HomePossessions;
+    GAMEPOSSINFO AwayPossessions;
+};
+
+struct GAMEPLAYERENTRY
+{
+    long Unknown;   // Active Player Index?
+    long PlayerID;
+};
+
+struct GAMETEAMENTRY
+{
+	short TeamIndex;
+    short CityNameLength;
+    char CityName[CityNameLength];
+    short NicknameLength;
+    char Nickname[NicknameLength];
+    short AbbreviationLength;
+    char Abbreviation[AbbreviationLength];
+    GAMEPLAYERENTRY ActivePlayerIDs[46];
+    short DepthChartEntries[129];
+};
+
+struct TEMPHEADER
+{
+    char Header[4];
+};
+
+struct GAMEPLAYS
+{
+    while(true)
+    {
+        TEMPHEADER RowHeader;
+        if (RowHeader.Header == "PD08")
+        {
+            GAMEPLAYENTRY PlayEntry;
+        }
+        else if (RowHeader.Header == "ND08")
+        {
+            break;
+        }
+    }
+};
+
+struct GAMELOG
+{
+    char Header[4];
+    short Year;
+    short Week;
+    short LocationLength;
+    char Location[LocationLength];
+    short DescriptionLength;
+    char Description[DescriptionLength];
+    ATTENDANCE TotalAttendance;
+    short Unknown1;
+	ATTENDANCE UpperDeckAttendance;
+	ATTENDANCE UpperDeckCapacity;
+	ATTENDANCE EndZoneDeckAttendance;
+	ATTENDANCE EndZoneCapacity;
+	ATTENDANCE MezzanineAttendance;
+	ATTENDANCE MezzanineCapacity;
+	ATTENDANCE SidelineAttendance;
+	ATTENDANCE SidelineCapacity;
+	ATTENDANCE ClubAttendance;
+	ATTENDANCE ClubCapacity;
+	ATTENDANCE BoxAttendance;
+	ATTENDANCE BoxCapacity;
+    long Unknown2;
+	short Temperature;
+	short Weather;
+	ATTENDANCE TotalCapacity;
+	short WindStrength;
+    GAMETEAMENTRY HomeTeam;
+    GAMETEAMENTRY AwayTeam;
+    short CoinFlipResult;
+    GAMEPLAYS Plays;
+    GAMEENDENTRY EndEntry;
+};
+
+while (!FEof())
+{
+    GAMELOG Entry;
+}

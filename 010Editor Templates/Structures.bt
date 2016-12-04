@@ -1,0 +1,223 @@
+//--------------------------------------
+//--- 010 Editor v2.1.2 Binary Template
+//
+// File:
+// Author:
+// Revision:
+// Purpose:
+//--------------------------------------
+
+
+typedef long SALARY <read=SALARYRead, write=SALARYWrite>;
+typedef short ATTENDANCE <read=ATTENDANCERead, write=ATTENDANCEWrite>;
+typedef short POPULATION <read=POPULATIONRead, write=POPULATIONWrite>;
+typedef short INCOME <read=INCOMERead, write=INCOMEWrite>;
+typedef short POVERTYLEVEL <read=POVERTYLEVELRead, write=POVERTYLEVELWrite>;
+typedef short GROWTHRATE <read=GROWTHRATERead, write=GROWTHRATEWrite>;
+typedef short LUXURYBOXPRICE <read=LUXURYBOXPRICERead, write=LUXURYBOXPRICEWrite>;
+
+string SALARYRead( SALARY sal )
+{
+    short low16Bits = sal & 0x0000ffff;
+    short hi16Bits = (sal & 0xffff0000) >> 16;
+    long val = low16Bits + (hi16Bits * 32768);
+	string s;   
+	SPrintf( s, "%d", val*10000 );
+	return s;
+}
+
+void SALARYWrite( SALARY &sal, string s )
+{
+    long val = Atoi(s);
+    short low16Bits = val % 32768;
+    short hi16Bits = val / 32768;
+	sal = (SALARY)( (long)low16Bits + (long)(hi16Bits << 16) );
+}
+
+string LUXURYBOXPRICERead( LUXURYBOXPRICE lbp )
+{
+	string s;   
+	SPrintf( s, "%d", lbp*1000 );
+	return s;
+}
+
+void LUXURYBOXPRICEWrite(LUXURYBOXPRICE &lbp, string s )
+{
+	lbp = (LUXURYBOXPRICE)( Atoi( s ) / 1000 );
+}
+
+string POPULATIONRead( POPULATION pop )
+{
+	string s;   
+	SPrintf( s, "%d", pop*10000 );
+	return s;
+}
+
+void POPULATIONWrite( POPULATION &pop, string s )
+{
+	pop = (POPULATION)( Atoi( s ) / 10000 );
+}
+
+string ATTENDANCERead( ATTENDANCE att )
+{
+	string s;   
+	SPrintf( s, "%d", att*100 );
+	return s;
+}
+
+void ATTENDANCEWrite( ATTENDANCE &att, string s )
+{
+	att = (ATTENDANCE)( Atoi( s ) / 100 );
+}
+
+string INCOMERead( INCOME income )
+{
+	string s;   
+	SPrintf( s, "%d", income*100 );
+	return s;
+}
+
+void INCOMEWrite( INCOME &income, string s )
+{
+	income = (INCOME)( Atoi( s ) / 100 );
+}
+
+string POVERTYLEVELRead( POVERTYLEVEL pov )
+{
+	string s;   
+	SPrintf( s, "%f", ((double)pov)/10.0 );
+	return s;
+}
+
+void POVERTYLEVELWrite( POVERTYLEVEL &pov, string s )
+{
+	pov = (POVERTYLEVEL)( Atof( s ) * 10.0 );
+}
+
+string GROWTHRATERead( GROWTHRATE grow )
+{
+	string s;   
+	SPrintf( s, "%f", (((double)grow)-100.0)/10.0 );
+	return s;
+}
+
+void GROWTHRATEWrite( GROWTHRATE &grow, string s )
+{
+	grow = (GROWTHRATE)( (Atof( s ) + 100.0) * 10.0 );
+}
+
+typedef struct TRANSACTION
+{
+	long PlayerRec2Index;
+	SALARY Salary;
+	short TransactionType;
+	short Team1Index;
+	short Team2Index;
+	short Position;
+	short Years;
+	short Stage;
+};
+
+typedef struct PLAYER_GAME_RECORD
+{
+	short Year;
+	short Team;
+	short GamePlayed;
+	short GameStarted;
+	short PassAttempts;
+	short PassCompletions;
+	short PassYards;
+	short LongestPass;
+	short TDPasses;
+	short INTThrown;
+	short TimesSacked;
+	short SackedYards;
+	short RushAttempts;
+	short RushingYards;
+	short LongestRun;
+	short RushTD;
+	short Catches;
+	short ReceivingYards;
+	short LongestReception;
+	short ReceivingTDs;
+	short PassTargets;
+	short YardsAfterCatch;
+	short PassDrops;
+	short PuntReturns;
+	short PuntReturnYards;
+	short PuntReturnTDs;
+	short KickReturns;
+	short KickReturnYards;
+	short KickReturnTDs;
+	short Fumbles;
+	short FumbleRecoveries;
+	short ForcedFumbles;
+	short MiscTD;
+	short KeyRunBlock;
+	short KeyRunBlockOpportunites;
+	short SacksAllowed;
+	short Tackles;
+	short Assists;
+	short Sacks;
+	short INTs;
+	short INTReturnYards;
+	short INTReturnTDs;
+	short PassesDefended;
+	short PassesBlocked;
+	short QBHurries;
+	short PassesCaught;
+	short PassPlays;
+	short RunPlays;
+	short FGMade;
+	short FGAttempted;
+	short FGLong;
+	short PAT;
+	short PATAttempted;
+	short Punts;
+	short PuntYards;
+	short PuntLong;
+	short PuntIn20;
+	short Points;
+	short OpposingTeamID;
+	short ThirdDownRushes;
+	short ThirdDownRushConversions;
+	short ThirdDownPassAttempts;
+	short ThirdDownPassCompletions;
+	short ThirdDownPassConversions;
+	short ThirdDownReceivingTargets;
+	short ThirdDownReceivingCatches;
+	short ThirdDownReceivingConversions;
+	short FirstDownRushes;
+	short FirstDownPasses;
+	short FirstDownCatches;
+	short FG40PlusAttempts;
+	short FG40PlusMade;
+	short FG50PlusAttempts;
+	short FG50PlusMade;
+	short PuntNetYards;
+	short SpecialTeamsTackles;
+	short Unknown14;
+	short TimesKnockedDown;
+	short RedZoneRushes;
+	short RedZoneRushingYards;
+	short RedZonePassAttempts;
+	short RedZonePassCompletions;
+	short RedZonePassingYards;
+	short RedZoneReceivingTargets;
+	short RedZoneReceivingCatches;
+	short RedZoneReceivingYards;
+	short TotalTDs;
+	short TwoPointConversions;
+	short PancakeBlocks;
+	short QBKnockdowns;
+	short Unknown23;
+	short SpecialTeamsPlays;
+	short RushingGamesOver100Yards;
+	short ReceivingGamesOver100Yards;
+	short PassingGamesOver300Yards;
+	short RunsOf10YardsPlus;
+	short CatchesOf20YardsPlus;
+	short ThrowsOf20YardsPlus;
+	short AllPurposeYards;
+	short YardsFromScrimmage;
+};

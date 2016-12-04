@@ -56,6 +56,7 @@ namespace DataReader
 			public int DevWt = 10;
 			public int CombineThresholdPenalty = -100;
 			public AttributeUsage WhichAttributesToUse = AttributeUsage.UseAverage;
+            public FOFData.DefensiveFront DefensiveFront = FOFData.DefensiveFront.True34;
 		}
 
 		private FOFData mFOFData = new FOFData();
@@ -83,7 +84,7 @@ namespace DataReader
 		public GlobalWeightData GlobalWeights { get { return mGlobalWeights; } }
 		public FOFData FOFData { get { return mFOFData; } }
 
-		private const int kWeightsVersion = 6;
+		private const int kWeightsVersion = 7;
 
 		public DraftWeights()
 		{
@@ -134,8 +135,12 @@ namespace DataReader
 						mGlobalWeights.RedFlag = mGlobalWeights.Affinity;
 					}
 					mGlobalWeights.WhichAttributesToUse = (AttributeUsage)Enum.Parse(typeof(AttributeUsage), inFile.ReadString());
+                    if (version >= 7)
+                    {
+                        mGlobalWeights.DefensiveFront = (FOFData.DefensiveFront)Enum.Parse(typeof(FOFData.DefensiveFront), inFile.ReadString());
+                    }
 
-					while (inStream.Position < fileLength)
+                    while (inStream.Position < fileLength)
 					{
 						LoadPositionWeight(inFile);
 					}
@@ -168,6 +173,7 @@ namespace DataReader
 			outFile.Write(mGlobalWeights.DevWt);
 			outFile.Write(mGlobalWeights.CombineThresholdPenalty);
 			outFile.Write(mGlobalWeights.WhichAttributesToUse.ToString());
+            outFile.Write(mGlobalWeights.DefensiveFront.ToString());
 
 			SavePositionWeight(outFile, "QB");
 			SavePositionWeight(outFile, "RB");

@@ -1,4 +1,9 @@
-﻿Version 8.0.0.0
+﻿Version 8.1.0.0
+
+- Show ideal position and height / weight difference from the average height 
+  (if it matters) and ideal weight for that position.
+
+Version 8.0.0.0
 
 - Initial FOF8 support. Reads new save location, handles some file differences.
 
