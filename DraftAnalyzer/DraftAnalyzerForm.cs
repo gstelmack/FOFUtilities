@@ -16,6 +16,7 @@ namespace DraftAnalyzer
 		private System.Windows.Forms.Label[] mAttributeLabels = new System.Windows.Forms.Label[kMaxAttributeCounts];
 		private System.Windows.Forms.PictureBox[] mAttributePictureBoxes = new System.Windows.Forms.PictureBox[kMaxAttributeCounts];
 		private WeightsForm mWeightsForm;
+        private FOFData mFOFData;
 		private ChemistryForm mChemistryForm;
 		private int mAttributeSortColumn = 0;
 
@@ -208,6 +209,7 @@ namespace DraftAnalyzer
 			}
 
 			mWeightsForm = new WeightsForm(mPositionGroupAttributeNames);
+            mFOFData = mWeightsForm.FOFData;
 			mChemistryForm = new ChemistryForm();
 
 			string settingsPath = System.IO.Path.Combine(WindowsUtilities.OutputLocation.Get(), "DraftAnalyzer.ini");
@@ -654,19 +656,19 @@ namespace DraftAnalyzer
 			PositionRating posRating = CalculatePositionRating(data, data.mPosition);
 			data.mPositionRatings.Add(posRating);
 			CopyPosRatingToPlayerData(posRating, data);
-			string positionGroup = mPositionToPositionGroupMap[data.mPosition];
-			foreach (string clonePosition in mPositionToPositionGroupMap.Keys)
+            var sizeRanges = mFOFData.PositionSizeRangesMap[data.mPosition];
+			foreach (string clonePosition in sizeRanges.AlternatePositions)
 			{
-				if (clonePosition != data.mPosition && mPositionToPositionGroupMap[clonePosition] == positionGroup)
-				{
-					posRating = CalculatePositionRating(data, clonePosition);
-					data.mPositionRatings.Add(posRating);
-					if (posRating.OverallScore > data.mRating)
-					{
-						CopyPosRatingToPlayerData(posRating, data);
-					}
-				}
-			}
+				posRating = CalculatePositionRating(data, clonePosition);
+                if (posRating.OverallScore > 0)
+                {
+                    data.mPositionRatings.Add(posRating);
+                    if (posRating.OverallScore > data.mRating)
+                    {
+                        CopyPosRatingToPlayerData(posRating, data);
+                    }
+                }
+            }
 
 			PredictAttributesFromCombines(data);
 
@@ -983,7 +985,7 @@ namespace DraftAnalyzer
 			PositionGroupCombineData combineData = (PositionGroupCombineData)mPositionGroupCombineMap[mPositionToPositionGroupMap[position]];
 			if (data.mSolecismic != 0 && data.m40Time != 0.0 && data.mBench != 0 && data.mAgility != 0.0 && data.mBroadJump != 0)
 			{
-				DataReader.DraftWeights.PositionWeights posWeights = mWeightsForm.GetPositionWeight(position);
+                DraftWeights.PositionWeights posWeights = mWeightsForm.GetPositionWeight(position);
 				if (mWeightsForm.GlobalWeights.CombineThresholdPenalty != 0 && combineData.mSolecismicThreshold > 0 && data.mSolecismic < combineData.mSolecismicThreshold)
 				{
 					posRating.SolecismicRating = mWeightsForm.GlobalWeights.CombineThresholdPenalty;
@@ -1038,7 +1040,7 @@ namespace DraftAnalyzer
 			}
 			else
 			{
-				DataReader.DraftWeights.PositionWeights posWeights = mWeightsForm.GetNoCombinePositionWeight(position);
+                DraftWeights.PositionWeights posWeights = mWeightsForm.GetNoCombinePositionWeight(position);
 				if (combineData.mSolecismicStdDev != 0.0 && data.mSolecismic != 0)
 				{
 					if (mWeightsForm.GlobalWeights.CombineThresholdPenalty != 0 && combineData.mSolecismicThreshold > 0 && data.mSolecismic < combineData.mSolecismicThreshold)
@@ -1067,12 +1069,12 @@ namespace DraftAnalyzer
 
 		private PositionRating CalculatePositionRating(PlayerData data, string position)
 		{
-			PositionRating posRating = new PositionRating();
+			var posRating = new PositionRating();
 			posRating.Position = position;
 			CalculateCombineRating(data, position, posRating);
 
-			DataReader.DraftWeights.GlobalWeightData globalData = mWeightsForm.GlobalWeights;
-			DataReader.DraftWeights.PositionWeights posWeights = null;
+			var globalData = mWeightsForm.GlobalWeights;
+            DraftWeights.PositionWeights posWeights = null;
 			if (data.mSolecismic != 0 && data.m40Time != 0.0 && data.mBench != 0 && data.mAgility != 0.0 && data.mBroadJump != 0)
 			{
 				posWeights = mWeightsForm.GetPositionWeight(position);
@@ -1082,20 +1084,10 @@ namespace DraftAnalyzer
 				posWeights = mWeightsForm.GetNoCombinePositionWeight(position);
 			}
 
-			SizeBands heightBand = GetHeightBandIndex(position, data.mHeight);
-			SizeBands weightBand = GetWeightBandIndex(position, data.mWeight);
-			if (data.mPosition != position
-				&& (heightBand == SizeBands.TooSmall || weightBand == SizeBands.TooSmall || weightBand == SizeBands.TooBig)
-				)
-			{
-				posRating.SizeScore = -500.0;
-			}
-			else
-			{
-				int weightDiff = Math.Abs((int)weightBand - (int)SizeBands.Average);
-				int heightDiff = Math.Abs((int)heightBand - (int)SizeBands.Average);
-				posRating.SizeScore = -1.0 * (((double)weightDiff * ((double)globalData.Weight * 0.5)) + ((double)heightDiff * ((double)globalData.Height * 0.5)));
-			}
+            var heightDiff = mFOFData.GetHeightDifference(position, data.mHeight);
+            var weightDiff = mFOFData.GetWeightDifference(position, data.mWeight, globalData.DefensiveFront);
+            posRating.SizeScore = heightDiff * globalData.Height;
+            posRating.SizeScore -= Math.Abs(weightDiff) * globalData.Weight;
 
 			double attributesFactor = 0.0;
 			switch(globalData.WhichAttributesToUse)
@@ -1335,18 +1327,23 @@ namespace DraftAnalyzer
 				BuildMaskedPairsImage(data.mPositionGroup);
 				string detailsText = "";
 
+                var defensiveFront = mWeightsForm.GlobalWeights.DefensiveFront;
+                var idealPosition = mFOFData.GetIdealPosition(data.mPosition, data.mWeight);
+
 				detailsText += "Ht: ";
 				detailsText += (data.mHeight / 12).ToString();
 				detailsText += "' ";
 				detailsText += (data.mHeight % 12).ToString();
 				detailsText += "\"";
-				detailsText += " (" + kHeightBands[(int)GetHeightBandIndex(data.mPosition, data.mHeight)] + ")";
-				detailsText += Environment.NewLine;
+				detailsText += " (" + mFOFData.GetHeightDifference(data.mPosition, data.mHeight).ToString("+#;-#;0") + "\")";
+                detailsText += " (" + idealPosition.Display + " " + mFOFData.GetHeightDifference(idealPosition.Position, data.mHeight).ToString("+#;-#;0") + "\")";
+                detailsText += Environment.NewLine;
 				detailsText += "Wt: ";
 				detailsText += data.mWeight.ToString();
-				detailsText += " lbs.";
-				detailsText += " (" + kWeightBands[(int)GetWeightBandIndex(data.mPosition, data.mWeight)] + ")";
-				detailsText += Environment.NewLine;
+				detailsText += " lbs";
+				detailsText += " (" + mFOFData.GetWeightDifference(data.mPosition, data.mWeight, defensiveFront).ToString("+#;-#;0") + " lbs)";
+                detailsText += " (" + idealPosition.Display + " " + mFOFData.GetWeightDifference(idealPosition.Position, data.mWeight, idealPosition.Formation).ToString("+#;-#;0") + " lbs)";
+                detailsText += Environment.NewLine;
 				detailsText += "College: ";
 				detailsText += data.mCollege;
 				detailsText += Environment.NewLine;

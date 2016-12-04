@@ -29,6 +29,7 @@ namespace DraftAnalyzer
 			return mDraftWeights.GetNoCombinePositionWeight(position);
 		}
 		public DataReader.DraftWeights.GlobalWeightData GlobalWeights { get { return mDraftWeights.GlobalWeights; } }
+        public DataReader.FOFData FOFData { get { return mDraftWeights.FOFData; } }
 
 		public WeightsForm(Dictionary<string, string[]> positionGroupAttributeNames)
 		{

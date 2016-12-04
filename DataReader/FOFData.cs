@@ -576,14 +576,11 @@ namespace DataReader
             ideal.Formation = DefensiveFront.Count;
 
             var ranges = PositionSizeRangesMap[position];
-            if (ranges.AlternatePositions != null)
+            var curScore = UpdateIdealPosition(ranges, position, ideal, weight, int.MaxValue);
+            foreach (var checkPos in ranges.AlternatePositions)
             {
-                var curScore = UpdateIdealPosition(ranges, position, ideal, weight, int.MaxValue);
-                foreach (var checkPos in ranges.AlternatePositions)
-                {
-                    var checkRange = PositionSizeRangesMap[checkPos];
-                    curScore = UpdateIdealPosition(checkRange, checkPos, ideal, weight, curScore);
-                }
+                var checkRange = PositionSizeRangesMap[checkPos];
+                curScore = UpdateIdealPosition(checkRange, checkPos, ideal, weight, curScore);
             }
             return ideal;
         }
@@ -591,7 +588,7 @@ namespace DataReader
         public int GetWeightDifference(string position, int weight, DefensiveFront formation)
         {
             var ranges = PositionSizeRangesMap[position];
-            int weightDiff = 0;
+            int weightDiff = 500;
             if (ranges.IdealWeightOffense != 0)
             {
                 weightDiff = weight - ranges.IdealWeightOffense;
@@ -943,7 +940,7 @@ namespace DataReader
             newRanges.IdealWeightDefense[(int)DefensiveFront.Under43] = 0;
             newRanges.IdealWeightDefense[(int)DefensiveFront.Over43] = 0;
             newRanges.AverageHeight = 74;
-            newRanges.AlternatePositions = null;
+            newRanges.AlternatePositions = new string[] {};
             mPositionSizeRangesMap["QB"] = newRanges;
 
             newRanges = new PositionSizeRanges();
@@ -953,7 +950,7 @@ namespace DataReader
             newRanges.IdealWeightDefense[(int)DefensiveFront.Under43] = 0;
             newRanges.IdealWeightDefense[(int)DefensiveFront.Over43] = 0;
             newRanges.AverageHeight = 0;
-            newRanges.AlternatePositions = null;
+            newRanges.AlternatePositions = new string[] { };
             mPositionSizeRangesMap["RB"] = newRanges;
 
             newRanges = new PositionSizeRanges();
@@ -963,7 +960,7 @@ namespace DataReader
             newRanges.IdealWeightDefense[(int)DefensiveFront.Under43] = 0;
             newRanges.IdealWeightDefense[(int)DefensiveFront.Over43] = 0;
             newRanges.AverageHeight = 0;
-            newRanges.AlternatePositions = null;
+            newRanges.AlternatePositions = new string[] { };
             mPositionSizeRangesMap["FB"] = newRanges;
 
             newRanges = new PositionSizeRanges();
@@ -973,7 +970,7 @@ namespace DataReader
             newRanges.IdealWeightDefense[(int)DefensiveFront.Under43] = 0;
             newRanges.IdealWeightDefense[(int)DefensiveFront.Over43] = 0;
             newRanges.AverageHeight = 76;
-            newRanges.AlternatePositions = null;
+            newRanges.AlternatePositions = new string[] { };
             mPositionSizeRangesMap["TE"] = newRanges;
 
             newRanges = new PositionSizeRanges();
@@ -1053,7 +1050,7 @@ namespace DataReader
             newRanges.IdealWeightDefense[(int)DefensiveFront.Under43] = 0;
             newRanges.IdealWeightDefense[(int)DefensiveFront.Over43] = 0;
             newRanges.AverageHeight = 0;
-            newRanges.AlternatePositions = null;
+            newRanges.AlternatePositions = new string[] { };
             mPositionSizeRangesMap["P"] = newRanges;
 
             newRanges = new PositionSizeRanges();
@@ -1063,7 +1060,7 @@ namespace DataReader
             newRanges.IdealWeightDefense[(int)DefensiveFront.Under43] = 0;
             newRanges.IdealWeightDefense[(int)DefensiveFront.Over43] = 0;
             newRanges.AverageHeight = 0;
-            newRanges.AlternatePositions = null;
+            newRanges.AlternatePositions = new string[] { };
             mPositionSizeRangesMap["K"] = newRanges;
 
             newRanges = new PositionSizeRanges();
@@ -1213,7 +1210,7 @@ namespace DataReader
             newRanges.IdealWeightDefense[(int)DefensiveFront.Under43] = 0;
             newRanges.IdealWeightDefense[(int)DefensiveFront.Over43] = 0;
             newRanges.AverageHeight = 0;
-            newRanges.AlternatePositions = null;
+            newRanges.AlternatePositions = new string[] { };
             mPositionSizeRangesMap["LS"] = newRanges;
         }
     }
