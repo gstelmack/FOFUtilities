@@ -295,14 +295,11 @@ namespace DraftAnalyzer
 				using (System.IO.StreamWriter outFile = new System.IO.StreamWriter(dlg.FileName))
 				{
 					outFile.WriteLine("Name,Position,PositionGroup,College,Birthdate,Height,Weight," +
-						"HeightBand,WeightBand,"+
 						"Solecismic,40Time,Bench,Agility,BroadJump,PosDrill,Developed,Grade,Interviewed,Conflicts," +
 						"Affinities,Formations,OrgOrder,DesiredOrder,Drafted,DraftedOrder,Marked,DraftPosition," +
 						"RatedPosition,CombineSum,Rating");
 					foreach(PlayerData curData in mPlayerData)
 					{
-						SizeBands heightBand = GetHeightBandIndex(curData.mPosition, curData.mHeight);
-						SizeBands weightBand = GetWeightBandIndex(curData.mPosition, curData.mWeight);
 						outFile.Write("\"" + curData.mName + "\",");
 						outFile.Write("\"" + curData.mPosition + "\",");
 						outFile.Write("\"" + curData.mPositionGroup + "\",");
@@ -310,8 +307,6 @@ namespace DraftAnalyzer
 						outFile.Write("\"" + curData.mBirthDate + "\",");
 						outFile.Write(curData.mHeight + ",");
 						outFile.Write(curData.mWeight + ",");
-						outFile.Write("\"" + kHeightBands[(int)heightBand] + "\",");
-						outFile.Write("\"" + kWeightBands[(int)weightBand] + "\",");
 						outFile.Write(curData.mSolecismic + ",");
 						outFile.Write(curData.m40Time.ToString("F2") + ",");
 						outFile.Write(curData.mBench + ",");
@@ -514,7 +509,13 @@ namespace DraftAnalyzer
 				subItem.ForeColor = foreColor;
 				stage = "Add PositionGroup";
 				subItem.Tag = mPositionGroupOrderMap[data.mPositionGroup];
-				subItem = item.SubItems.Add(data.mGrade.ToString("F1"));
+                stage = "Rated Position";
+                subItem = item.SubItems.Add(data.mRatedPosition);
+                subItem.BackColor = backColor;
+                subItem.ForeColor = foreColor;
+                stage = "Add Rated PositionGroup";
+                subItem.Tag = mPositionGroupOrderMap[mPositionToPositionGroupMap[data.mRatedPosition]];
+                subItem = item.SubItems.Add(data.mGrade.ToString("F1"));
 				subItem.BackColor = backColor;
 				subItem.ForeColor = foreColor;
 				stage = "Solecismic Rating";
@@ -1424,104 +1425,6 @@ namespace DraftAnalyzer
 				}
 
 				textBoxDetails.Text = detailsText;
-			}
-		}
-
-		private enum SizeBands
-		{
-			TooSmall,
-			WellBelowAverage,
-			BelowAverage,
-			Average,
-			AboveAverage,
-			WellAboveAverage,
-			TooBig
-		}
-
-		private string[] kHeightBands =
-			{
-				"too short"
-				,"well below average"
-				,"below average"
-				,"about average"
-				,"above average"
-				,"well above average"
-				,"too tall"
-			};
-		private string[] kWeightBands =
-			{
-				"too light"
-				,"well below average"
-				,"below average"
-				,"about average"
-				,"above average"
-				,"well above average"
-				,"too heavy"
-			};
-
-		private SizeBands GetHeightBandIndex(string playerPosition, int height)
-		{
-			PositionSizeRanges posRange = mPositionSizeRangesMap[playerPosition];
-			if (height < posRange.MinHeight)
-			{
-				return SizeBands.TooSmall;
-			}
-			else if (height < (posRange.AverageHeight - 2))
-			{
-				return SizeBands.WellBelowAverage;
-			}
-			else if (height < posRange.AverageHeight)
-			{
-				return SizeBands.BelowAverage;
-			}
-			else if (height == posRange.AverageHeight)
-			{
-				return SizeBands.Average;
-			}
-			else if (height > (posRange.AverageHeight + 2))
-			{
-				return SizeBands.WellAboveAverage;
-			}
-			else if (height > posRange.AverageHeight)
-			{
-				return SizeBands.AboveAverage;
-			}
-			else
-			{
-				return SizeBands.TooBig;
-			}
-		}
-
-		private SizeBands GetWeightBandIndex(string playerPosition, int weight)
-		{
-			PositionSizeRanges posRange = mPositionSizeRangesMap[playerPosition];
-			if (weight <= posRange.MinWeight)
-			{
-				return SizeBands.TooSmall;
-			}
-			else if (weight <= posRange.WellBelowAverageWeightCap)
-			{
-				return SizeBands.WellBelowAverage;
-			}
-			else if (weight <= posRange.BelowAverageWeightCap)
-			{
-				return SizeBands.BelowAverage;
-			}
-			else if (weight <= posRange.AverageWeightCap)
-			{
-				return SizeBands.Average;
-			}
-			else if (weight <= posRange.AboveAverageWeightCap)
-			{
-				return SizeBands.AboveAverage;
-			}
-			else if (weight <= posRange.WellAboveAverageWeightCap)
-			{
-				return SizeBands.WellAboveAverage;
-			}
-			else
-			{
-				return SizeBands.TooBig;
 			}
 		}
 
@@ -2642,9 +2545,10 @@ namespace DraftAnalyzer
 			columnHeaderPositionDrill.Tag = WindowsUtilities.SortType.SortByDouble;
 			columnHeaderRating.Tag = WindowsUtilities.SortType.SortByDouble;
 			columnHeaderSolecismic.Tag = WindowsUtilities.SortType.SortByDouble;
-		}
+            columnHeaderRatedPosition.Tag = WindowsUtilities.SortType.SortByIntegerTag;
+        }
 
-		private void listViewDraftees_ColumnClick(object sender, ColumnClickEventArgs e)
+        private void listViewDraftees_ColumnClick(object sender, ColumnClickEventArgs e)
 		{
 			WindowsUtilities.SortTypeListViewItemSorter.UpdateSortColumn(listViewDraftees, e.Column, sortDraftedToBottomToolStripMenuItem.Checked);
 		}

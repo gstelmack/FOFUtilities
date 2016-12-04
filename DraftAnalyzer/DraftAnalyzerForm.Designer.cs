@@ -140,6 +140,7 @@ namespace DraftAnalyzer
             this.columnHeaderDraftOrder = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeaderDraftRound = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.buttonReleaseNotes = new System.Windows.Forms.Button();
+            this.columnHeaderRatedPosition = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.menuStripMain.SuspendLayout();
             this.contextMenuStripDraftees.SuspendLayout();
             this.tableLayoutPanelAttributes.SuspendLayout();
@@ -1046,6 +1047,7 @@ namespace DraftAnalyzer
             this.listViewDraftees.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeaderName,
             this.columnHeaderPosition,
+            this.columnHeaderRatedPosition,
             this.columnHeaderGrade,
             this.columnHeaderSolecismic,
             this.columnHeader40,
@@ -1168,6 +1170,11 @@ namespace DraftAnalyzer
             this.buttonReleaseNotes.Text = "Release Notes";
             this.buttonReleaseNotes.UseVisualStyleBackColor = true;
             this.buttonReleaseNotes.Click += new System.EventHandler(this.buttonReleaseNotes_Click);
+            // 
+            // columnHeaderRatedPosition
+            // 
+            this.columnHeaderRatedPosition.Text = "RPos";
+            this.columnHeaderRatedPosition.Width = 40;
             // 
             // DraftAnalyzerForm
             // 
@@ -1329,6 +1336,7 @@ namespace DraftAnalyzer
 		private System.Windows.Forms.ToolStripMenuItem sortByToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem colorChemistryGroupsToolStripMenuItem;
         private System.Windows.Forms.Button buttonReleaseNotes;
+        private System.Windows.Forms.ColumnHeader columnHeaderRatedPosition;
     }
 }
 
