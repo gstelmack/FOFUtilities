@@ -5,6 +5,8 @@
   how far off a player is from the ideal weight for the best position for that front.
 - Height / Weight adjustments use the height / weight difference numbers rather than
   bands.
+- Rated position is back, showing what position the player is best suited, accounting
+  for size based on your suggested defensive front.
 
 8.0.0.1
 
