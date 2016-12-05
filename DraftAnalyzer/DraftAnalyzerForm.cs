@@ -74,6 +74,7 @@ namespace DraftAnalyzer
 			public double BenchRating;
 			public double BroadJumpRating;
 			public double PositionDrillRating;
+            public int WeightDiff;
 		}
 
 		private class PlayerData
@@ -1086,9 +1087,9 @@ namespace DraftAnalyzer
 			}
 
             var heightDiff = mFOFData.GetHeightDifference(position, data.mHeight);
-            var weightDiff = mFOFData.GetWeightDifference(position, data.mWeight, globalData.DefensiveFront);
+            posRating.WeightDiff = Math.Abs(mFOFData.GetWeightDifference(position, data.mWeight, globalData.DefensiveFront));
             posRating.SizeScore = heightDiff * globalData.Height;
-            posRating.SizeScore -= Math.Abs(weightDiff) * globalData.Weight;
+            posRating.SizeScore -= (posRating.WeightDiff * globalData.Weight);
 
 			double attributesFactor = 0.0;
 			switch(globalData.WhichAttributesToUse)
@@ -1390,7 +1391,6 @@ namespace DraftAnalyzer
 				detailsText += " PDrl: ";
 				detailsText += data.mPositionDrillRating.ToString("F2");
 				detailsText += Environment.NewLine;
-				detailsText += Environment.NewLine;
 				detailsText += "Chem: ";
 				detailsText += data.mChemistryRating.ToString("F2");
 				detailsText += " Impr: ";
@@ -1401,6 +1401,10 @@ namespace DraftAnalyzer
 				detailsText += Environment.NewLine;
 				foreach (PositionRating posRating in data.mPositionRatings)
 				{
+                    if (posRating.WeightDiff > 40)
+                    {
+                        continue;
+                    }
 					detailsText += posRating.Position;
 					if (posRating.Position.Length < 4)
 					{
