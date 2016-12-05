@@ -1,4 +1,8 @@
-﻿8.1.0.0
+﻿8.1.1.0
+
+- Weight does not matter for QBs.
+
+8.1.0.0
 
 - Display difference from average height for position (if it matters).
 - Allow selection of a Defensive Front in the weights dialog, and use it to determine

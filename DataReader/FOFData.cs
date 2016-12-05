@@ -588,14 +588,24 @@ namespace DataReader
         public int GetWeightDifference(string position, int weight, DefensiveFront formation)
         {
             var ranges = PositionSizeRangesMap[position];
-            int weightDiff = 500;
+            int weightDiff = 0;
             if (ranges.IdealWeightOffense != 0)
             {
                 weightDiff = weight - ranges.IdealWeightOffense;
             }
-            else if (formation < DefensiveFront.Count && ranges.IdealWeightDefense[(int)formation] != 0)
+            else if (formation < DefensiveFront.Count)
             {
-                weightDiff = weight - ranges.IdealWeightDefense[(int)formation];
+                if (ranges.IdealWeightDefense[(int)formation] != 0)
+                {
+                    weightDiff = weight - ranges.IdealWeightDefense[(int)formation];
+                }
+                else if (ranges.IdealWeightDefense[(int)DefensiveFront.Eagle34] != 0
+                    || ranges.IdealWeightDefense[(int)DefensiveFront.Over43] != 0
+                    || ranges.IdealWeightDefense[(int)DefensiveFront.True34] != 0
+                    || ranges.IdealWeightDefense[(int)DefensiveFront.Under43] != 0)
+                {
+                    weightDiff = 500;
+                }
             }
 
             return weightDiff;
@@ -934,7 +944,7 @@ namespace DataReader
 
             mPositionSizeRangesMap = new Dictionary<string, PositionSizeRanges>();
             PositionSizeRanges newRanges = new PositionSizeRanges();
-            newRanges.IdealWeightOffense = 219;
+            newRanges.IdealWeightOffense = 0;
             newRanges.IdealWeightDefense[(int)DefensiveFront.True34] = 0;
             newRanges.IdealWeightDefense[(int)DefensiveFront.Eagle34] = 0;
             newRanges.IdealWeightDefense[(int)DefensiveFront.Under43] = 0;
