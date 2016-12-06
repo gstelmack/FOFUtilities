@@ -64,7 +64,6 @@ namespace DraftAnalyzer
 			public double CombineScore;
 			public double AttributeScore;
 			public double SizeScore;
-			public double ScoutImpressionScore;
 			public double ChemistryScore;
 			public double OverallScore;
 			public double DevelopmentScore;
@@ -113,7 +112,6 @@ namespace DraftAnalyzer
 			public double mRating;
 			public double mDevelopmentRating;
 			public double mChemistryRating;
-			public double mScoutImpressionRating;
 
 			public double mSolecismicRating;
 			public double mFortyRating;
@@ -152,26 +150,10 @@ namespace DraftAnalyzer
 			public double mPositionDrillThreshold;
 		}
 
-		private class PositionSizeRanges
-		{
-			public int MinWeight;
-			public int WellBelowAverageWeightCap;
-			public int BelowAverageWeightCap;
-			public int AverageWeightCap;
-			public int AboveAverageWeightCap;
-			public int WellAboveAverageWeightCap;
-
-			public int MinHeight;
-			// 2 inches to either side is Above/Below Average.
-			// Everything else is Significantly Above/Below.
-			public int AverageHeight;
-		}
-
 		private System.Collections.Hashtable mPositionGroupCombineMap = null;
 		private System.Collections.Generic.Dictionary<string, int> mPositionGroupOrderMap = null;
 		private System.Collections.Generic.SortedList<int, int> mDraftOrderList = null;	// Draft order is key, player data index is value.
 		private System.Collections.Generic.Dictionary<string, string> mPositionToPositionGroupMap = null;
-		private System.Collections.Generic.Dictionary<string, PositionSizeRanges> mPositionSizeRangesMap = null;
 		private Dictionary<string, double> m_PositionWeightsDefaultMap = new Dictionary<string, double>();
 
 		private System.Collections.ArrayList mPlayerData = null;
@@ -649,7 +631,6 @@ namespace DraftAnalyzer
 			data.mAgilityRating = posRating.AgilityRating;
 			data.mDevelopmentRating = posRating.DevelopmentScore;
 			data.mChemistryRating = posRating.ChemistryScore;
-			data.mScoutImpressionRating = posRating.ScoutImpressionScore;
 		}
 
 		private void CalculatePlayerData(PlayerData data)
@@ -799,16 +780,16 @@ namespace DraftAnalyzer
 			CalculateCombineStdDevs(data,out sole,out forty,out bench,out agility,out broadjump,out posDrill);
 
 			data.mCombinePrediction[0] = GeneratePredictedScore(agility);   // "Screen Passes"
-			data.mCombinePrediction[1] = -1;                                // "Short Passes",
+			data.mCombinePrediction[1] = GeneratePredictedScore(agility);   // "Short Passes",
 			data.mCombinePrediction[2] = GeneratePredictedScore(broadjump); // "Medium Passes",
 			data.mCombinePrediction[3] = GeneratePredictedScore(bench);	    // "Long Passes",
 			data.mCombinePrediction[4] = GeneratePredictedScore(bench); 	// "Deep Passes",
-			data.mCombinePrediction[5] = GeneratePredictedScore(broadjump);	// "Third Down Passing",
+			data.mCombinePrediction[5] = -1;	                            // "Third Down Passing",
 			data.mCombinePrediction[6] = GeneratePredictedScore(posDrill);  // "Accuracy",
 			data.mCombinePrediction[7] = GeneratePredictedScore(posDrill);	// "Timing",
-			data.mCombinePrediction[8] = GeneratePredictedScore(agility);	// "Sense Rush",
+			data.mCombinePrediction[8] = GeneratePredictedScore(sole);	    // "Sense Rush",
 			data.mCombinePrediction[9] = GeneratePredictedScore(sole);  	// "Read Defense",
-			data.mCombinePrediction[10] = -1;                           	// "Two Minute Offense",
+			data.mCombinePrediction[10] = GeneratePredictedScore(broadjump);// "Two Minute Offense",
 			data.mCombinePrediction[11] = GeneratePredictedScore(forty);	// "Scramble Frequency",
 			data.mCombinePrediction[12] = -1;           	                // "Kick Holding"
 		}
@@ -818,20 +799,20 @@ namespace DraftAnalyzer
 			double sole, forty, bench, agility, broadjump, posDrill;
 			CalculateCombineStdDevs(data,out sole,out forty,out bench,out agility,out broadjump,out posDrill);
 
-			data.mCombinePrediction[0] = GeneratePredictedScore(forty);     // 	"Breakaway Speed (Ft80)",
-			data.mCombinePrediction[1] = GeneratePredictedScore(bench);     // 	"Power Inside (Bp100)",
-			data.mCombinePrediction[2] = GeneratePredictedScore(agility);   // 	"Third Down Running (Ag33)",
-			data.mCombinePrediction[3] = GeneratePredictedScore(sole);	    // 	"Hole Recognition (So90)",
-			data.mCombinePrediction[4] = GeneratePredictedScore(agility); 	// 	"Elusiveness (Ag33)",
-			data.mCombinePrediction[5] = GeneratePredictedScore(((broadjump*5.0)+(forty*2.0))/7.0);	// 	"Speed to Outside (Bj50/Ft20)",
-			data.mCombinePrediction[6] = GeneratePredictedScore(posDrill);  // 	"Blitz Pickup (PD90)",
-			data.mCombinePrediction[7] = -1;	                            // 	"Avoid Drops",
-			data.mCombinePrediction[8] = GeneratePredictedScore(agility);	// 	"Getting Downfield (Ag33)",
-			data.mCombinePrediction[9] = -1;                                // 	"Route Running",
-			data.mCombinePrediction[10] = GeneratePredictedScore(posDrill); // 	"Third Down Catching (PD05)",
+			data.mCombinePrediction[0] = GeneratePredictedScore(forty);     // 	"Breakaway Speed",
+			data.mCombinePrediction[1] = GeneratePredictedScore(bench);     // 	"Power Inside",
+			data.mCombinePrediction[2] = GeneratePredictedScore((bench+agility+broadjump)/3.0);   // 	"Third Down Running",
+			data.mCombinePrediction[3] = GeneratePredictedScore(sole);	    // 	"Hole Recognition",
+			data.mCombinePrediction[4] = GeneratePredictedScore(agility); 	// 	"Elusiveness",
+			data.mCombinePrediction[5] = GeneratePredictedScore(forty);	    // 	"Speed to Outside",
+			data.mCombinePrediction[6] = GeneratePredictedScore(posDrill);  // 	"Blitz Pickup",
+            data.mCombinePrediction[7] = GeneratePredictedScore(agility);   // 	"Avoid Drops",
+            data.mCombinePrediction[8] = -1;	                            // 	"Getting Downfield",
+			data.mCombinePrediction[9] = GeneratePredictedScore((agility+posDrill)/2.0);    // 	"Route Running",
+			data.mCombinePrediction[10] = -1;                               // 	"Third Down Catching",
 			data.mCombinePrediction[11] = -1;                           	// 	"Punt Returns",
 			data.mCombinePrediction[12] = -1;           	                // 	"Kick Returns",
-			data.mCombinePrediction[13] = GeneratePredictedScore(broadjump);	// 	"Endurance (Bj50)",
+			data.mCombinePrediction[13] = GeneratePredictedScore(broadjump);// 	"Endurance",
 			data.mCombinePrediction[14] = -1;           	                // 	"Special Teams"
 		}
 
@@ -844,12 +825,12 @@ namespace DraftAnalyzer
 			data.mCombinePrediction[1] = -1;                                // 	"Pass Blocking",
 			data.mCombinePrediction[2] = -1;                                // 	"Blocking Strength",
 			data.mCombinePrediction[3] = GeneratePredictedScore(bench);	    // 	"Power Inside",
-			data.mCombinePrediction[4] = GeneratePredictedScore(((broadjump*3.0)+(agility*2.0))/5.0); // 	"Third Down Running",
-			data.mCombinePrediction[5] = GeneratePredictedScore(sole);  	//  "Hole Recognition",
+			data.mCombinePrediction[4] = GeneratePredictedScore((bench + agility + broadjump) / 3.0);   // 	"Third Down Running",
+            data.mCombinePrediction[5] = GeneratePredictedScore(sole);  	//  "Hole Recognition",
 			data.mCombinePrediction[6] = GeneratePredictedScore(posDrill);  // 	"Blitz Pickup",
-			data.mCombinePrediction[7] = -1;	                            // 	"Avoid Drops",
-			data.mCombinePrediction[8] = GeneratePredictedScore(posDrill);	// 	"Route Running",
-			data.mCombinePrediction[9] = -1;                                // 	"Third Down Catching",
+			data.mCombinePrediction[7] = GeneratePredictedScore(agility);   // 	"Avoid Drops",
+            data.mCombinePrediction[8] = GeneratePredictedScore((agility + posDrill) / 2.0);    // 	"Route Running",
+            data.mCombinePrediction[9] = -1;                                // 	"Third Down Catching",
 			data.mCombinePrediction[10] = -1;                               // 	"Endurance",
 			data.mCombinePrediction[11] = -1;                           	// 	"Special Teams"
 		} 
@@ -859,15 +840,15 @@ namespace DraftAnalyzer
 			double sole, forty, bench, agility, broadjump, posDrill;
 			CalculateCombineStdDevs(data, out sole, out forty, out bench, out agility, out broadjump, out posDrill);
 
-			data.mCombinePrediction[0] = GeneratePredictedScore(posDrill);  // 	"Avoid Drops (PD65)",
-			data.mCombinePrediction[1] = GeneratePredictedScore(agility);   // 	"Getting Downfield (Ag100)",
-			data.mCombinePrediction[2] = GeneratePredictedScore(sole);      // 	"Route Running (So50)",
+			data.mCombinePrediction[0] = GeneratePredictedScore((posDrill+agility+forty)/3.0);  // 	"Avoid Drops",
+			data.mCombinePrediction[1] = -1;                                // 	"Getting Downfield",
+			data.mCombinePrediction[2] = GeneratePredictedScore(sole);      // 	"Route Running",
 			data.mCombinePrediction[3] = -1;	                            // 	"Third Down Catching",
-			data.mCombinePrediction[4] = GeneratePredictedScore(forty); 	// 	"Big Play Receiving (Ft70)",
-			data.mCombinePrediction[5] = GeneratePredictedScore(bench); 	// 	"Courage (Bp100)",
-			data.mCombinePrediction[6] = GeneratePredictedScore(posDrill);  // 	"Adjust to Ball (PD35)",
-			data.mCombinePrediction[7] = GeneratePredictedScore(broadjump);	// 	"Punt Returns (Bj50)",
-			data.mCombinePrediction[8] = GeneratePredictedScore(broadjump);	// 	"Kick Returns (Bj50)",
+			data.mCombinePrediction[4] = GeneratePredictedScore(forty); 	// 	"Big Play Receiving",
+			data.mCombinePrediction[5] = GeneratePredictedScore(bench); 	// 	"Courage",
+			data.mCombinePrediction[6] = GeneratePredictedScore((posDrill+sole)/2.0);  // 	"Adjust to Ball",
+			data.mCombinePrediction[7] = GeneratePredictedScore(broadjump);	// 	"Punt Returns",
+			data.mCombinePrediction[8] = GeneratePredictedScore(broadjump);	// 	"Kick Returns",
 			data.mCombinePrediction[9] = -1;                             	// 	"Endurance",
 			data.mCombinePrediction[10] = -1;                           	// 	"Special Teams"
 		}
@@ -880,14 +861,14 @@ namespace DraftAnalyzer
 			data.mCombinePrediction[0] = GeneratePredictedScore(broadjump); //	"Run Blocking",
 			data.mCombinePrediction[1] = -1;                                //  "Pass Blocking",
 			data.mCombinePrediction[2] = GeneratePredictedScore(bench);     //	"Blocking Strength",
-			data.mCombinePrediction[3] = GeneratePredictedScore(posDrill);  //	"Avoid Drops",
-			data.mCombinePrediction[4] = GeneratePredictedScore((forty+agility)*0.5f);     //	"Getting Downfield",
-			data.mCombinePrediction[5] = GeneratePredictedScore(sole);      //	"Route Running",
-			data.mCombinePrediction[6] = GeneratePredictedScore(broadjump); //	"Third Down Catching",
-			data.mCombinePrediction[7] = GeneratePredictedScore(forty);     //	"Big Play Receiving",
-			data.mCombinePrediction[8] = -1;                                //	"Courage",
-			data.mCombinePrediction[9] = GeneratePredictedScore(posDrill);  //	"Adjust to Ball",
-			data.mCombinePrediction[10] = -1;                               //	"Endurance",
+			data.mCombinePrediction[3] = GeneratePredictedScore((posDrill + agility + forty) / 3.0);  // 	"Avoid Drops",
+            data.mCombinePrediction[4] = -1;                                // 	"Getting Downfield",
+            data.mCombinePrediction[5] = GeneratePredictedScore(sole);      // 	"Route Running",
+            data.mCombinePrediction[6] = -1;                                // 	"Third Down Catching",
+            data.mCombinePrediction[7] = GeneratePredictedScore(forty);     //	"Big Play Receiving",
+			data.mCombinePrediction[8] = GeneratePredictedScore(bench);     // 	"Courage",
+            data.mCombinePrediction[9] = GeneratePredictedScore((posDrill + sole) / 2.0);  // 	"Adjust to Ball",
+            data.mCombinePrediction[10] = -1;                               //	"Endurance",
 			data.mCombinePrediction[11] = -1;                               //	"Special Teams",
 			data.mCombinePrediction[12] = -1;                               //	"Long Snapping"
 		}
@@ -897,11 +878,10 @@ namespace DraftAnalyzer
 			double sole, forty, bench, agility, broadjump, posDrill;
 			CalculateCombineStdDevs(data, out sole, out forty, out bench, out agility, out broadjump, out posDrill);
 
-			data.mCombinePrediction[0] = GeneratePredictedScore(forty);     //	"Run Blocking (Ft100)",
-			data.mCombinePrediction[1] = GeneratePredictedScore(agility);   //	"Pass Blocking (Ag100)",
-			data.mCombinePrediction[2] = GeneratePredictedScore(bench);     //	"Blocking Strength (Bp100)",
-			data.mCombinePrediction[3] = GeneratePredictedScore(broadjump); //	"Endurance (Bj100)",
-			data.mCombinePrediction[4] = -1;                                //	"Long Snapping"
+			data.mCombinePrediction[0] = GeneratePredictedScore(forty);     //	"Run Blocking",
+			data.mCombinePrediction[1] = GeneratePredictedScore(agility);   //	"Pass Blocking",
+			data.mCombinePrediction[2] = GeneratePredictedScore(bench);     //	"Blocking Strength",
+			data.mCombinePrediction[3] = GeneratePredictedScore(broadjump); //	"Endurance",
 		}
 
 		void PredictDLAttributes(PlayerData data)
@@ -909,27 +889,31 @@ namespace DraftAnalyzer
 			double sole, forty, bench, agility, broadjump, posDrill;
 			CalculateCombineStdDevs(data, out sole, out forty, out bench, out agility, out broadjump, out posDrill);
 
-			data.mCombinePrediction[0] = GeneratePredictedScore(agility);   //	"Run Defense (Ag100)",
-			data.mCombinePrediction[1] = GeneratePredictedScore(forty);     //	"Pass Rush Technique (Ft100)",
-			data.mCombinePrediction[2] = GeneratePredictedScore(bench);     //	"Pass Rush Strength (Bp50)",
-			data.mCombinePrediction[3] = GeneratePredictedScore(sole);      //	"Play Diagnosis (So50)",
-			data.mCombinePrediction[4] = GeneratePredictedScore(bench);     //	"Punishing Hitter (Bp50)",
-			data.mCombinePrediction[5] = GeneratePredictedScore(broadjump); //	"Endurance (Bj100)"
-		}
+            data.mCombinePrediction[0] = GeneratePredictedScore(agility);   //	"Run Defense",
+            data.mCombinePrediction[1] = GeneratePredictedScore(forty);     //	"Pass Rush Technique",
+            data.mCombinePrediction[2] = -1;                                //	"Man-to-Man Defense",
+            data.mCombinePrediction[3] = -1;                                //	"Zone Defense",
+            data.mCombinePrediction[4] = GeneratePredictedScore(agility);   //	"Bump and Run Defense",
+            data.mCombinePrediction[5] = GeneratePredictedScore(bench);     //	"Pass Rush Strength",
+            data.mCombinePrediction[6] = GeneratePredictedScore(sole);      //	"Play Diagnosis",
+            data.mCombinePrediction[7] = GeneratePredictedScore(bench);     //	"Punishing Hitter",
+            data.mCombinePrediction[8] = GeneratePredictedScore(broadjump); //	"Endurance",
+            data.mCombinePrediction[9] = -1;                                //	"Special Teams"
+        }
 
-		void PredictLBAttributes(PlayerData data)
+        void PredictLBAttributes(PlayerData data)
 		{
 			double sole, forty, bench, agility, broadjump, posDrill;
 			CalculateCombineStdDevs(data, out sole, out forty, out bench, out agility, out broadjump, out posDrill);
 
-			data.mCombinePrediction[0] = GeneratePredictedScore(agility);   //	"Run Defense (Ag100)",
-			data.mCombinePrediction[1] = GeneratePredictedScore(forty);     //	"Pass Rush Technique (Ft100)",
-			data.mCombinePrediction[2] = GeneratePredictedScore(broadjump); //	"Man-to-Man Defense (Bj100)",
-			data.mCombinePrediction[3] = GeneratePredictedScore(posDrill);  //	"Zone Defense (PD50)",
-			data.mCombinePrediction[4] = GeneratePredictedScore(bench);     //	"Bump and Run Defense (Bp33)",
-			data.mCombinePrediction[5] = GeneratePredictedScore(bench);     //	"Pass Rush Strength (Bp33)",
-			data.mCombinePrediction[6] = GeneratePredictedScore(sole);      //	"Play Diagnosis (So50)",
-			data.mCombinePrediction[7] = GeneratePredictedScore(bench);     //	"Punishing Hitter (Bp33)",
+			data.mCombinePrediction[0] = GeneratePredictedScore(agility);   //	"Run Defense",
+			data.mCombinePrediction[1] = GeneratePredictedScore(forty);     //	"Pass Rush Technique",
+			data.mCombinePrediction[2] = GeneratePredictedScore(broadjump); //	"Man-to-Man Defense",
+			data.mCombinePrediction[3] = GeneratePredictedScore(posDrill);  //	"Zone Defense",
+			data.mCombinePrediction[4] = GeneratePredictedScore((agility + broadjump)/2.0);     //	"Bump and Run Defense",
+			data.mCombinePrediction[5] = GeneratePredictedScore(bench);     //	"Pass Rush Strength",
+			data.mCombinePrediction[6] = GeneratePredictedScore(sole);      //	"Play Diagnosis",
+			data.mCombinePrediction[7] = GeneratePredictedScore(bench);     //	"Punishing Hitter",
 			data.mCombinePrediction[8] = -1;                                //	"Endurance",
 			data.mCombinePrediction[9] = -1;                                //	"Special Teams"
 		}
@@ -939,15 +923,15 @@ namespace DraftAnalyzer
 			double sole, forty, bench, agility, broadjump, posDrill;
 			CalculateCombineStdDevs(data, out sole, out forty, out bench, out agility, out broadjump, out posDrill);
 
-			data.mCombinePrediction[0] = GeneratePredictedScore(agility);   //	"Run Defense (Ag100)",
-			data.mCombinePrediction[1] = GeneratePredictedScore(forty);     //	"Man-to-Man Defense (Ft50)",
-			data.mCombinePrediction[2] = GeneratePredictedScore((forty+posDrill)*0.5f);     //	"Zone Defense (Ft50PD50)",
-			data.mCombinePrediction[3] = GeneratePredictedScore(bench);     //	"Bump and Run Defense (Bp50)",
-			data.mCombinePrediction[4] = GeneratePredictedScore(sole);      //	"Play Diagnosis (So50)",
-			data.mCombinePrediction[5] = GeneratePredictedScore(bench);     //	"Punishing Hitter (Bp50)",
-			data.mCombinePrediction[6] = GeneratePredictedScore(posDrill);  //	"Interceptions (PD50)",
-			data.mCombinePrediction[7] = GeneratePredictedScore(broadjump); //	"Punt Returns (Bj50)",
-			data.mCombinePrediction[8] = GeneratePredictedScore(broadjump); //	"Kick Returns (Bj50)",
+			data.mCombinePrediction[0] = GeneratePredictedScore(agility);   //	"Run Defense",
+			data.mCombinePrediction[1] = GeneratePredictedScore(forty);     //	"Man-to-Man Defense",
+			data.mCombinePrediction[2] = GeneratePredictedScore((forty+posDrill)/2.0);    //	"Zone Defense",
+			data.mCombinePrediction[3] = GeneratePredictedScore((bench+agility)/2.0);     //	"Bump and Run Defense",
+			data.mCombinePrediction[4] = GeneratePredictedScore(sole);      //	"Play Diagnosis",
+			data.mCombinePrediction[5] = GeneratePredictedScore(bench);     //	"Punishing Hitter",
+			data.mCombinePrediction[6] = GeneratePredictedScore(posDrill);  //	"Interceptions",
+			data.mCombinePrediction[7] = GeneratePredictedScore(broadjump); //	"Punt Returns",
+			data.mCombinePrediction[8] = GeneratePredictedScore(broadjump); //	"Kick Returns",
 			data.mCombinePrediction[9] = -1;                                //	"Endurance",
 			data.mCombinePrediction[10] = -1;                               //	"Special Teams"
 		}
@@ -957,10 +941,10 @@ namespace DraftAnalyzer
 			double sole, forty, bench, agility, broadjump, posDrill;
 			CalculateCombineStdDevs(data, out sole, out forty, out bench, out agility, out broadjump, out posDrill);
 
-			data.mCombinePrediction[0] = GeneratePredictedScore(forty);     //	"Kicking Power (Ft100)",
-			data.mCombinePrediction[1] = GeneratePredictedScore(bench);     //	"Punt Hang Time (Bp100)",
-			data.mCombinePrediction[2] = GeneratePredictedScore(sole);      //	"Directional Punting (So50)",
-			data.mCombinePrediction[3] = GeneratePredictedScore(agility);   //	"Kick Holding"
+			data.mCombinePrediction[0] = GeneratePredictedScore(forty);     //	"Kicking Power",
+			data.mCombinePrediction[1] = GeneratePredictedScore(bench);     //	"Punt Hang Time",
+			data.mCombinePrediction[2] = GeneratePredictedScore(sole);      //	"Directional Punting",
+            data.mCombinePrediction[3] = -1;                                //	"Kick Holding"
 		}
 
 		void PredictKAttributes(PlayerData data)
@@ -968,10 +952,10 @@ namespace DraftAnalyzer
 			double sole, forty, bench, agility, broadjump, posDrill;
 			CalculateCombineStdDevs(data, out sole, out forty, out bench, out agility, out broadjump, out posDrill);
 
-			data.mCombinePrediction[0] = GeneratePredictedScore(sole);      //	"Kicking Accuracy (So50)",
-			data.mCombinePrediction[1] = GeneratePredictedScore(((bench*2.0)+broadjump)/3.0);   //	"Kicking Power (Bp100Bj50)",
-			data.mCombinePrediction[2] = GeneratePredictedScore(forty);     //	"Kickoff Distance (Ft100)",
-			data.mCombinePrediction[3] = GeneratePredictedScore(broadjump); //	"Kickoff Hang Time (Bj50)"
+			data.mCombinePrediction[0] = GeneratePredictedScore(sole);      //	"Kicking Accuracy",
+			data.mCombinePrediction[1] = GeneratePredictedScore((bench+broadjump)/3.0);   //	"Kicking Powe",
+			data.mCombinePrediction[2] = GeneratePredictedScore(forty);     //	"Kickoff Distance",
+			data.mCombinePrediction[3] = GeneratePredictedScore(bench);     //	"Kickoff Hang Time"
 		}
 
 		#endregion
@@ -1122,29 +1106,6 @@ namespace DraftAnalyzer
 			}
 			posRating.AttributeScore = attributesFactor;
 
-			double scoutFactor = 0.0;
-			//if (data.mImpression == "Very Overrated")
-			//{
-			//	scoutFactor -= (double)globalData.ScoutImpression;
-			//}
-			//else if (data.mImpression == "Very Underrated")
-			//{
-			//	scoutFactor += (double)globalData.ScoutImpression;
-			//}
-			//else if (data.mImpression == "Underrated")
-			//{
-			//	scoutFactor += ((double)globalData.ScoutImpression)*0.5;
-			//}
-			//else if (data.mImpression == "Overrated")
-			//{
-			//	scoutFactor -= ((double)globalData.ScoutImpression) * 0.5;
-			//}
-			//else if (data.mImpression == "Hard to Read")
-			//{
-			//	scoutFactor -= ((double)globalData.ScoutImpression) * 0.1;
-			//}
-			posRating.ScoutImpressionScore = scoutFactor;
-
 			double chemistryFactor = 0.0;
 			if (data.mConflicts.Length > 1)
 			{
@@ -1159,7 +1120,7 @@ namespace DraftAnalyzer
 			posRating.DevelopmentScore = (data.mPercentDeveloped - globalData.AvgDev) * ((double)globalData.DevWt / (double)globalData.AvgDev);
 
 			posRating.OverallScore = posRating.CombineScore + posRating.SizeScore + posRating.ChemistryScore +
-				posRating.AttributeScore + posRating.ScoutImpressionScore + posRating.DevelopmentScore;
+				posRating.AttributeScore + posRating.DevelopmentScore;
 			posRating.OverallScore *= posWeights.Weight;
 
 			return posRating;
@@ -1393,8 +1354,6 @@ namespace DraftAnalyzer
 				detailsText += Environment.NewLine;
 				detailsText += "Chem: ";
 				detailsText += data.mChemistryRating.ToString("F2");
-				detailsText += " Impr: ";
-				detailsText += data.mScoutImpressionRating.ToString("F2");
 				detailsText += " Dev: ";
 				detailsText += data.mDevelopmentRating.ToString("F2");
 				detailsText += Environment.NewLine;
@@ -2576,319 +2535,6 @@ namespace DraftAnalyzer
 			InitializeCombineMap();
 			InitializeAttributeNames();
 			InitializePositionToPositionGroupMap();
-			InitializePositionSizeRangesMap();
-		}
-
-		private void InitializePositionSizeRangesMap()
-		{
-			mPositionSizeRangesMap = new Dictionary<string, PositionSizeRanges>();
-			PositionSizeRanges newRanges = new PositionSizeRanges();
-			newRanges.MinWeight = 0;
-			newRanges.WellBelowAverageWeightCap = 210;
-			newRanges.BelowAverageWeightCap = 216;
-			newRanges.AverageWeightCap = 223;
-			newRanges.AboveAverageWeightCap = 232;
-			newRanges.WellAboveAverageWeightCap = 999;
-			newRanges.MinHeight = 0;
-			newRanges.AverageHeight = 74;
-			mPositionSizeRangesMap["QB"] = newRanges;
-
-			newRanges = new PositionSizeRanges();
-			newRanges.MinWeight = 0;
-			newRanges.WellBelowAverageWeightCap = 208;
-			newRanges.BelowAverageWeightCap = 214;
-			newRanges.AverageWeightCap = 221;
-			newRanges.AboveAverageWeightCap = 230;
-			newRanges.WellAboveAverageWeightCap = 265;
-			newRanges.MinHeight = 0;
-			newRanges.AverageHeight = 71;
-			mPositionSizeRangesMap["RB"] = newRanges;
-
-			newRanges = new PositionSizeRanges();
-			newRanges.MinWeight = 210;
-			newRanges.WellBelowAverageWeightCap = 232;
-			newRanges.BelowAverageWeightCap = 239;
-			newRanges.AverageWeightCap = 246;
-			newRanges.AboveAverageWeightCap = 256;
-			newRanges.WellAboveAverageWeightCap = 189;
-			newRanges.MinHeight = 0;
-			newRanges.AverageHeight = 72;
-			mPositionSizeRangesMap["FB"] = newRanges;
-
-			newRanges = new PositionSizeRanges();
-			newRanges.MinWeight = 210;
-			newRanges.WellBelowAverageWeightCap = 245;
-			newRanges.BelowAverageWeightCap = 252;
-			newRanges.AverageWeightCap = 260;
-			newRanges.AboveAverageWeightCap = 270;
-			newRanges.WellAboveAverageWeightCap = 289;
-			newRanges.MinHeight = 74;
-			newRanges.AverageHeight = 76;
-			mPositionSizeRangesMap["TE"] = newRanges;
-
-			newRanges = new PositionSizeRanges();
-			newRanges.MinWeight = 0;
-			newRanges.WellBelowAverageWeightCap = 188;
-			newRanges.BelowAverageWeightCap = 195;
-			newRanges.AverageWeightCap = 200;
-			newRanges.AboveAverageWeightCap = 208;
-			newRanges.WellAboveAverageWeightCap = 235;
-			newRanges.MinHeight = 70;
-			newRanges.AverageHeight = 72;
-			mPositionSizeRangesMap["FL"] = newRanges;
-
-			newRanges = new PositionSizeRanges();
-			newRanges.MinWeight = 0;
-			newRanges.WellBelowAverageWeightCap = 187;
-			newRanges.BelowAverageWeightCap = 193;
-			newRanges.AverageWeightCap = 198;
-			newRanges.AboveAverageWeightCap = 207;
-			newRanges.WellAboveAverageWeightCap = 235;
-			newRanges.MinHeight = 70;
-			newRanges.AverageHeight = 72;
-			mPositionSizeRangesMap["SE"] = newRanges;
-
-			newRanges = new PositionSizeRanges();
-			newRanges.MinWeight = 276;
-			newRanges.WellBelowAverageWeightCap = 298;
-			newRanges.BelowAverageWeightCap = 307;
-			newRanges.AverageWeightCap = 317;
-			newRanges.AboveAverageWeightCap = 329;
-			newRanges.WellAboveAverageWeightCap = 999;
-			newRanges.MinHeight = 0;
-			newRanges.AverageHeight = 77;
-			mPositionSizeRangesMap["LT"] = newRanges;
-
-			newRanges = new PositionSizeRanges();
-			newRanges.MinWeight = 270;
-			newRanges.WellBelowAverageWeightCap = 298;
-			newRanges.BelowAverageWeightCap = 305;
-			newRanges.AverageWeightCap = 315;
-			newRanges.AboveAverageWeightCap = 327;
-			newRanges.WellAboveAverageWeightCap = 999;
-			newRanges.MinHeight = 0;
-			newRanges.AverageHeight = 76;
-			mPositionSizeRangesMap["LG"] = newRanges;
-
-			newRanges = new PositionSizeRanges();
-			newRanges.MinWeight = 265;
-			newRanges.WellBelowAverageWeightCap = 279;
-			newRanges.BelowAverageWeightCap = 288;
-			newRanges.AverageWeightCap = 296;
-			newRanges.AboveAverageWeightCap = 308;
-			newRanges.WellAboveAverageWeightCap = 999;
-			newRanges.MinHeight = 0;
-			newRanges.AverageHeight = 75;
-			mPositionSizeRangesMap["C"] = newRanges;
-
-			newRanges = new PositionSizeRanges();
-			newRanges.MinWeight = 270;
-			newRanges.WellBelowAverageWeightCap = 301;
-			newRanges.BelowAverageWeightCap = 313;
-			newRanges.AverageWeightCap = 320;
-			newRanges.AboveAverageWeightCap = 332;
-			newRanges.WellAboveAverageWeightCap = 999;
-			newRanges.MinHeight = 0;
-			newRanges.AverageHeight = 75;
-			mPositionSizeRangesMap["RG"] = newRanges;
-
-			newRanges = new PositionSizeRanges();
-			newRanges.MinWeight = 276;
-			newRanges.WellBelowAverageWeightCap = 306;
-			newRanges.BelowAverageWeightCap = 315;
-			newRanges.AverageWeightCap = 325;
-			newRanges.AboveAverageWeightCap = 336;
-			newRanges.WellAboveAverageWeightCap = 999;
-			newRanges.MinHeight = 0;
-			newRanges.AverageHeight = 77;
-			mPositionSizeRangesMap["RT"] = newRanges;
-
-			newRanges = new PositionSizeRanges();
-			newRanges.MinWeight = 0;
-			newRanges.WellBelowAverageWeightCap = 201;
-			newRanges.BelowAverageWeightCap = 207;
-			newRanges.AverageWeightCap = 214;
-			newRanges.AboveAverageWeightCap = 222;
-			newRanges.WellAboveAverageWeightCap = 999;
-			newRanges.MinHeight = 0;
-			newRanges.AverageHeight = 74;
-			mPositionSizeRangesMap["P"] = newRanges;
-
-			newRanges = new PositionSizeRanges();
-			newRanges.MinWeight = 0;
-			newRanges.WellBelowAverageWeightCap = 191;
-			newRanges.BelowAverageWeightCap = 197;
-			newRanges.AverageWeightCap = 203;
-			newRanges.AboveAverageWeightCap = 211;
-			newRanges.WellAboveAverageWeightCap = 999;
-			newRanges.MinHeight = 0;
-			newRanges.AverageHeight = 72;
-			mPositionSizeRangesMap["K"] = newRanges;
-
-			newRanges = new PositionSizeRanges();
-			newRanges.MinWeight = 255;
-			newRanges.WellBelowAverageWeightCap = 266;
-			newRanges.BelowAverageWeightCap = 273;
-			newRanges.AverageWeightCap = 281;
-			newRanges.AboveAverageWeightCap = 292;
-			newRanges.WellAboveAverageWeightCap = 314;
-			newRanges.MinHeight = 72;
-			newRanges.AverageHeight = 76;
-			mPositionSizeRangesMap["LDE"] = newRanges;
-
-			newRanges = new PositionSizeRanges();
-			newRanges.MinWeight = 280;
-			newRanges.WellBelowAverageWeightCap = 287;
-			newRanges.BelowAverageWeightCap = 296;
-			newRanges.AverageWeightCap = 305;
-			newRanges.AboveAverageWeightCap = 317;
-			newRanges.WellAboveAverageWeightCap = 999;
-			newRanges.MinHeight = 72;
-			newRanges.AverageHeight = 75;
-			mPositionSizeRangesMap["LDT"] = newRanges;
-
-			newRanges = new PositionSizeRanges();
-			newRanges.MinWeight = 280;
-			newRanges.WellBelowAverageWeightCap = 289;
-			newRanges.BelowAverageWeightCap = 298;
-			newRanges.AverageWeightCap = 309;
-			newRanges.AboveAverageWeightCap = 320;
-			newRanges.WellAboveAverageWeightCap = 999;
-			newRanges.MinHeight = 72;
-			newRanges.AverageHeight = 75;
-			mPositionSizeRangesMap["NT"] = newRanges;
-
-			newRanges = new PositionSizeRanges();
-			newRanges.MinWeight = 280;
-			newRanges.WellBelowAverageWeightCap = 287;
-			newRanges.BelowAverageWeightCap = 296;
-			newRanges.AverageWeightCap = 304;
-			newRanges.AboveAverageWeightCap = 316;
-			newRanges.WellAboveAverageWeightCap = 999;
-			newRanges.MinHeight = 72;
-			newRanges.AverageHeight = 75;
-			mPositionSizeRangesMap["RDT"] = newRanges;
-
-			newRanges = new PositionSizeRanges();
-			newRanges.MinWeight = 255;
-			newRanges.WellBelowAverageWeightCap = 261;
-			newRanges.BelowAverageWeightCap = 269;
-			newRanges.AverageWeightCap = 277;
-			newRanges.AboveAverageWeightCap = 288;
-			newRanges.WellAboveAverageWeightCap = 314;
-			newRanges.MinHeight = 73;
-			newRanges.AverageHeight = 76;
-			mPositionSizeRangesMap["RDE"] = newRanges;
-
-			newRanges = new PositionSizeRanges();
-			newRanges.MinWeight = 220;
-			newRanges.WellBelowAverageWeightCap = 230;
-			newRanges.BelowAverageWeightCap = 237;
-			newRanges.AverageWeightCap = 244;
-			newRanges.AboveAverageWeightCap = 254;
-			newRanges.WellAboveAverageWeightCap = 275;
-			newRanges.MinHeight = 0;
-			newRanges.AverageHeight = 74;
-			mPositionSizeRangesMap["SLB"] = newRanges;
-
-			newRanges = new PositionSizeRanges();
-			newRanges.MinWeight = 225;
-			newRanges.WellBelowAverageWeightCap = 233;
-			newRanges.BelowAverageWeightCap = 240;
-			newRanges.AverageWeightCap = 247;
-			newRanges.AboveAverageWeightCap = 257;
-			newRanges.WellAboveAverageWeightCap = 280;
-			newRanges.MinHeight = 0;
-			newRanges.AverageHeight = 73;
-			mPositionSizeRangesMap["SILB"] = newRanges;
-
-			newRanges = new PositionSizeRanges();
-			newRanges.MinWeight = 225;
-			newRanges.WellBelowAverageWeightCap = 238;
-			newRanges.BelowAverageWeightCap = 242;
-			newRanges.AverageWeightCap = 249;
-			newRanges.AboveAverageWeightCap = 259;
-			newRanges.WellAboveAverageWeightCap = 280;
-			newRanges.MinHeight = 0;
-			newRanges.AverageHeight = 73;
-			mPositionSizeRangesMap["MLB"] = newRanges;
-
-			newRanges = new PositionSizeRanges();
-			newRanges.MinWeight = 225;
-			newRanges.WellBelowAverageWeightCap = 239;
-			newRanges.BelowAverageWeightCap = 243;
-			newRanges.AverageWeightCap = 250;
-			newRanges.AboveAverageWeightCap = 260;
-			newRanges.WellAboveAverageWeightCap = 280;
-			newRanges.MinHeight = 0;
-			newRanges.AverageHeight = 73;
-			mPositionSizeRangesMap["WILB"] = newRanges;
-
-			newRanges = new PositionSizeRanges();
-			newRanges.MinWeight = 220;
-			newRanges.WellBelowAverageWeightCap = 227;
-			newRanges.BelowAverageWeightCap = 234;
-			newRanges.AverageWeightCap = 241;
-			newRanges.AboveAverageWeightCap = 251;
-			newRanges.WellAboveAverageWeightCap = 270;
-			newRanges.MinHeight = 0;
-			newRanges.AverageHeight = 73;
-			mPositionSizeRangesMap["WLB"] = newRanges;
-
-			newRanges = new PositionSizeRanges();
-			newRanges.MinWeight = 0;
-			newRanges.WellBelowAverageWeightCap = 182;
-			newRanges.BelowAverageWeightCap = 188;
-			newRanges.AverageWeightCap = 193;
-			newRanges.AboveAverageWeightCap = 201;
-			newRanges.WellAboveAverageWeightCap = 225;
-			newRanges.MinHeight = 69;
-			newRanges.AverageHeight = 71;
-			mPositionSizeRangesMap["LCB"] = newRanges;
-
-			newRanges = new PositionSizeRanges();
-			newRanges.MinWeight = 0;
-			newRanges.WellBelowAverageWeightCap = 183;
-			newRanges.BelowAverageWeightCap = 189;
-			newRanges.AverageWeightCap = 194;
-			newRanges.AboveAverageWeightCap = 202;
-			newRanges.WellAboveAverageWeightCap = 225;
-			newRanges.MinHeight = 69;
-			newRanges.AverageHeight = 71;
-			mPositionSizeRangesMap["RCB"] = newRanges;
-
-			newRanges = new PositionSizeRanges();
-			newRanges.MinWeight = 0;
-			newRanges.WellBelowAverageWeightCap = 197;
-			newRanges.BelowAverageWeightCap = 203;
-			newRanges.AverageWeightCap = 210;
-			newRanges.AboveAverageWeightCap = 218;
-			newRanges.WellAboveAverageWeightCap = 235;
-			newRanges.MinHeight = 70;
-			newRanges.AverageHeight = 72;
-			mPositionSizeRangesMap["SS"] = newRanges;
-
-			newRanges = new PositionSizeRanges();
-			newRanges.MinWeight = 0;
-			newRanges.WellBelowAverageWeightCap = 195;
-			newRanges.BelowAverageWeightCap = 201;
-			newRanges.AverageWeightCap = 210;
-			newRanges.AboveAverageWeightCap = 218;
-			newRanges.WellAboveAverageWeightCap = 235;
-			newRanges.MinHeight = 70;
-			newRanges.AverageHeight = 72;
-			mPositionSizeRangesMap["FS"] = newRanges;
-
-			newRanges = new PositionSizeRanges();
-			newRanges.MinWeight = 210;
-			newRanges.WellBelowAverageWeightCap = 245;
-			newRanges.BelowAverageWeightCap = 252;
-			newRanges.AverageWeightCap = 278;
-			newRanges.AboveAverageWeightCap = 308;
-			newRanges.WellAboveAverageWeightCap = 999;
-			newRanges.MinHeight = 0;
-			newRanges.AverageHeight = 75;
-			mPositionSizeRangesMap["LS"] = newRanges;
 		}
 
 		private void InitializePositionToPositionGroupMap()
@@ -3005,18 +2651,18 @@ namespace DraftAnalyzer
 			// QB
 			string[] attributeNames = new string[]
 			{
-				"Screen Passes (Ag25)",
-				"Short Passes",
-				"Medium Passes (Bj66)",
-				"Long Passes (Bp50)",
-				"Deep Passes (Bp50)",
-				"Third Down Passing (Bj33)",
-				"Accuracy (PD50)",
-				"Timing (PD50)",
-				"Sense Rush (Ag75)",
-				"Read Defense (So10)",
+				"Screen Passes (Ag)",
+				"Short Passes (Ag)",
+				"Medium Passes (Bj)",
+				"Long Passes (Bp)",
+				"Deep Passes (Bp)",
+				"Third Down Passing",
+				"Accuracy (PD)",
+				"Timing (PD)",
+				"Sense Rush (So)",
+				"Read Defense (So)",
 				"Two Minute Offense",
-				"Scramble Frequency (Ft85)",
+				"Scramble Frequency (Ft)",
 				"Kick Holding"
 			};
 			bool[] attributesNotMasked = new bool[]
@@ -3041,20 +2687,20 @@ namespace DraftAnalyzer
 			// RB
 			attributeNames = new string[]
 			{
-				"Breakaway Speed (Ft80)",
-				"Power Inside (Bp100)",
-				"Third Down Running (Ag33)",
-				"Hole Recognition (So90)",
-				"Elusiveness (Ag33)",
-				"Speed to Outside (Bj50/Ft20)",
-				"Blitz Pickup (PD90)",
-				"Avoid Drops",
-				"Getting Downfield (Ag33)",
-				"Route Running",
-				"Third Down Catching (PD05)",
+				"Breakaway Speed (Ft)",
+				"Power Inside (Bp)",
+				"Third Down Running (BpAgBj)",
+				"Hole Recognition (So)",
+				"Elusiveness (Ag)",
+				"Speed to Outside (Ft)",
+				"Blitz Pickup (PD)",
+				"Avoid Drops (Ag)",
+				"Getting Downfield",
+				"Route Running (SoPD)",
+				"Third Down Catching",
 				"Punt Returns",
 				"Kick Returns",
-				"Endurance (Bj50)",
+				"Endurance (Bj)",
 				"Special Teams"
 			};
 			attributesNotMasked = new bool[]
@@ -3081,15 +2727,15 @@ namespace DraftAnalyzer
 			// FB
 			attributeNames = new string[]
 			{
-				"Run Blocking (Bj50)",
+				"Run Blocking (Bj)",
 				"Pass Blocking",
 				"Blocking Strength",
-				"Power Inside (Bp100)",
-				"Third Down Running (Ag33Bj50)",
-				"Hole Recognition (So50)",
-				"Blitz Pickup (PD50)",
-				"Avoid Drops",
-				"Route Running (PD50)",
+				"Power Inside (Bp)",
+				"Third Down Running (BpAgBj)",
+				"Hole Recognition (So)",
+				"Blitz Pickup (PD)",
+				"Avoid Drops (Ag)",
+				"Route Running (SoPD)",
 				"Third Down Catching",
 				"Endurance",
 				"Special Teams"
@@ -3115,19 +2761,18 @@ namespace DraftAnalyzer
 			// TE
 			attributeNames = new string[]
 			{
-				"Run Blocking (Bj50)",
+				"Run Blocking (Bj)",
 				"Pass Blocking",
-				"Blocking Strength (Bp100)",
-				"Avoid Drops (PD50)",
-				"Getting Downfield (Ft50Ag100)",
-				"Route Running (So50)",
-				"Third Down Catching (Bj50)",
-				"Big Play Receiving (Ft50)",
-				"Courage",
-				"Adjust to Ball (PD50)",
+				"Blocking Strength",
+				"Avoid Drops (FtAgPD)",
+				"Getting Downfield",
+				"Route Running (So)",
+				"Third Down Catching (Bj)",
+				"Big Play Receiving (Ft)",
+				"Courage (Bp)",
+				"Adjust to Ball (SoPD)",
 				"Endurance",
-				"Special Teams",
-				"Long Snapping"
+				"Special Teams"
 			};
 			attributesNotMasked = new bool[]
 			{
@@ -3142,8 +2787,7 @@ namespace DraftAnalyzer
 				false, //"Courage",
 				false, //"Adjust to Ball (PD50)",
 				false, //"Endurance",
-				false, //"Special Teams",
-				false //"Long Snapping"
+				false, //"Special Teams"
 			};
 			mPositionGroupAttributeNames.Add("TE", attributeNames);
 			mPositionGroupAttributeNotMasked.Add("TE", attributesNotMasked);
@@ -3151,15 +2795,15 @@ namespace DraftAnalyzer
 			// WR
 			attributeNames = new string[]
 			{
-				"Avoid Drops (PD65)",
-				"Getting Downfield (Ag100)",
-				"Route Running (So50)",
+                "Avoid Drops (FtAgPD)",
+                "Getting Downfield",
+                "Route Running (So)",
 				"Third Down Catching",
-				"Big Play Receiving (Ft70)",
-				"Courage (Bp100)",
-				"Adjust to Ball (PD35)",
-				"Punt Returns (Bj50)",
-				"Kick Returns (Bj50)",
+				"Big Play Receiving (Ft)",
+				"Courage (Bp)",
+                "Adjust to Ball (SoPD)",
+                "Punt Returns (Bj)",
+				"Kick Returns (Bj)",
 				"Endurance",
 				"Special Teams"
 			};
@@ -3183,19 +2827,17 @@ namespace DraftAnalyzer
 			// C
 			attributeNames = new string[]
 			{
-				"Run Blocking (Ft100)",
-				"Pass Blocking (Ag100)",
-				"Blocking Strength (Bp100)",
-				"Endurance (Bj100)",
-				"Long Snapping"
+				"Run Blocking (Ft)",
+				"Pass Blocking (Ag)",
+				"Blocking Strength (Bp)",
+				"Endurance (Bj)"
 			};
 			attributesNotMasked = new bool[]
 			{
 				false, //"Run Blocking (Ft100)",
 				false, //"Pass Blocking (Ag100)",
 				true, //"Blocking Strength (Bp100)",
-				false, //"Endurance (Bj100)",
-				false //"Long Snapping"
+				false, //"Endurance (Bj100)"
 			};
 			mPositionGroupAttributeNames.Add("C", attributeNames);
 			mPositionGroupAttributeNotMasked.Add("C", attributesNotMasked);
@@ -3203,11 +2845,11 @@ namespace DraftAnalyzer
 			// G
 			attributeNames = new string[]
 			{
-				"Run Blocking (Ft100)",
-				"Pass Blocking (Ag100)",
-				"Blocking Strength (Bp100)",
-				"Endurance (Bj100)"
-			};
+                "Run Blocking (Ft)",
+                "Pass Blocking (Ag)",
+                "Blocking Strength (Bp)",
+                "Endurance (Bj)"
+            };
 			attributesNotMasked = new bool[]
 			{
 				false, //"Run Blocking (Ft100)",
@@ -3221,11 +2863,11 @@ namespace DraftAnalyzer
 			// T
 			attributeNames = new string[]
 			{
-				"Run Blocking (Ft100)",
-				"Pass Blocking (Ag100)",
-				"Blocking Strength (Bp100)",
-				"Endurance (Bj100)"
-			};
+                "Run Blocking (Ft)",
+                "Pass Blocking (Ag)",
+                "Blocking Strength (Bp)",
+                "Endurance (Bj)"
+            };
 			attributesNotMasked = new bool[]
 			{
 				false, //"Run Blocking (Ft100)",
@@ -3239,9 +2881,9 @@ namespace DraftAnalyzer
 			// P
 			attributeNames = new string[]
 			{
-				"Punt Power (Ft100)",
-				"Punt Hang Time (Bp100)",
-				"Directional Punting (So50)",
+				"Punt Power (Ft)",
+				"Punt Hang Time (Bp)",
+				"Directional Punting (So)",
 				"Kick Holding"
 			};
 			attributesNotMasked = new bool[]
@@ -3257,10 +2899,10 @@ namespace DraftAnalyzer
 			// K
 			attributeNames = new string[]
 			{
-				"Kicking Accuracy (So50)",
-				"Kicking Power (Bp100Bj50)",
-				"Kickoff Distance (Ft100)",
-				"Kickoff Hang Time (Bj50)"
+				"Kicking Accuracy (So)",
+				"Kicking Power (BpBj)",
+				"Kickoff Distance (Ft)",
+				"Kickoff Hang Time (Bp)"
 			};
 			attributesNotMasked = new bool[]
 			{
@@ -3275,21 +2917,29 @@ namespace DraftAnalyzer
 			// DE
 			attributeNames = new string[]
 			{
-				"Run Defense (Ag100)",
-				"Pass Rush Technique (Ft100)",
-				"Pass Rush Strength (Bp50)",
-				"Play Diagnosis (So50)",
-				"Punishing Hitter (Bp50)",
-				"Endurance (Bj100)"
-			};
+                "Run Defense (Ag)",
+                "Pass Rush Technique (Ft)",
+                "Man-to-Man Defense",
+                "Zone Defense",
+                "Bump and Run Defense (Ag)",
+                "Pass Rush Strength (Bp)",
+                "Play Diagnosis (So)",
+                "Punishing Hitter (Bp)",
+                "Endurance (Bj)",
+                "Special Teams"
+            };
 			attributesNotMasked = new bool[]
 			{
-				false, //"Run Defense (Ag100)",
+                false, //"Run Defense (Ag100)",
 				false, //"Pass Rush Technique (Ft100)",
-				true, //"Pass Rush Strength (Bp50)",
+				false, //"Man-to-Man Defense (Bj100)",
+				false, //"Zone Defense (PD50)",
+				false, //"Bump and Run Defense (Bp33)",
+				true, //"Pass Rush Strength (Bp33)",
 				false, //"Play Diagnosis (So50)",
-				true, //"Punishing Hitter (Bp50)",
-				false //"Endurance (Bj100)"
+				true, //"Punishing Hitter (Bp33)",
+				false, //"Endurance",
+				false //"Special Teams"
 			};
 			mPositionGroupAttributeNames.Add("DE", attributeNames);
 			mPositionGroupAttributeNotMasked.Add("DE", attributesNotMasked);
@@ -3297,21 +2947,29 @@ namespace DraftAnalyzer
 			// DT
 			attributeNames = new string[]
 			{
-				"Run Defense (Ag100)",
-				"Pass Rush Technique (Ft100)",
-				"Pass Rush Strength (Bp50)",
-				"Play Diagnosis (So50)",
-				"Punishing Hitter (Bp50)",
-				"Endurance (Bj100)"
-			};
+                "Run Defense (Ag)",
+                "Pass Rush Technique (Ft)",
+                "Man-to-Man Defense",
+                "Zone Defense",
+                "Bump and Run Defense (Ag)",
+                "Pass Rush Strength (Bp)",
+                "Play Diagnosis (So)",
+                "Punishing Hitter (Bp)",
+                "Endurance (Bj)",
+                "Special Teams"
+            };
 			attributesNotMasked = new bool[]
 			{
-				false, //"Run Defense (Ag100)",
+                false, //"Run Defense (Ag100)",
 				false, //"Pass Rush Technique (Ft100)",
-				true, //"Pass Rush Strength (Bp50)",
+				false, //"Man-to-Man Defense (Bj100)",
+				false, //"Zone Defense (PD50)",
+				false, //"Bump and Run Defense (Bp33)",
+				true, //"Pass Rush Strength (Bp33)",
 				false, //"Play Diagnosis (So50)",
-				true, //"Punishing Hitter (Bp50)",
-				false //"Endurance (Bj100)"
+				true, //"Punishing Hitter (Bp33)",
+				false, //"Endurance",
+				false //"Special Teams"
 			};
 			mPositionGroupAttributeNames.Add("DT", attributeNames);
 			mPositionGroupAttributeNotMasked.Add("DT", attributesNotMasked);
@@ -3319,14 +2977,14 @@ namespace DraftAnalyzer
 			// ILB
 			attributeNames = new string[]
 			{
-				"Run Defense (Ag100)",
-				"Pass Rush Technique (Ft100)",
-				"Man-to-Man Defense (Bj100)",
-				"Zone Defense (PD50)",
-				"Bump and Run Defense (Bp33)",
-				"Pass Rush Strength (Bp33)",
-				"Play Diagnosis (So50)",
-				"Punishing Hitter (Bp33)",
+				"Run Defense (Ag)",
+				"Pass Rush Technique (Ft)",
+				"Man-to-Man Defense (Bj)",
+				"Zone Defense (PD)",
+				"Bump and Run Defense (AgBj)",
+				"Pass Rush Strength (Bp)",
+				"Play Diagnosis (So)",
+				"Punishing Hitter (Bp)",
 				"Endurance",
 				"Special Teams"
 			};
@@ -3349,17 +3007,17 @@ namespace DraftAnalyzer
 			// OLB
 			attributeNames = new string[]
 			{
-				"Run Defense (Ag100)",
-				"Pass Rush Technique (Ft100)",
-				"Man-to-Man Defense (Bj100)",
-				"Zone Defense (PD50)",
-				"Bump and Run Defense (Bp33)",
-				"Pass Rush Strength (Bp33)",
-				"Play Diagnosis (So50)",
-				"Punishing Hitter (Bp33)",
-				"Endurance",
-				"Special Teams"
-			};
+                "Run Defense (Ag)",
+                "Pass Rush Technique (Ft)",
+                "Man-to-Man Defense (Bj)",
+                "Zone Defense (PD)",
+                "Bump and Run Defense (AgBj)",
+                "Pass Rush Strength (Bp)",
+                "Play Diagnosis (So)",
+                "Punishing Hitter (Bp)",
+                "Endurance",
+                "Special Teams"
+            };
 			attributesNotMasked = new bool[]
 			{
 				false, //"Run Defense (Ag100)",
@@ -3379,15 +3037,15 @@ namespace DraftAnalyzer
 			// CB
 			attributeNames = new string[]
 			{
-				"Run Defense (Ag100)",
-				"Man-to-Man Defense (Ft50)",
-				"Zone Defense (Ft50PD50)",
-				"Bump and Run Defense (Bp50)",
-				"Play Diagnosis (So50)",
-				"Punishing Hitter (Bp50)",
-				"Interceptions (PD50)",
-				"Punt Returns (Bj50)",
-				"Kick Returns (Bj50)",
+				"Run Defense (Ag)",
+				"Man-to-Man Defense (Ft)",
+				"Zone Defense (FtPD)",
+				"Bump and Run Defense (BpAg)",
+				"Play Diagnosis (So)",
+				"Punishing Hitter (Bp)",
+				"Interceptions (PD)",
+				"Punt Returns (Bj)",
+				"Kick Returns (Bj)",
 				"Endurance",
 				"Special Teams"
 			};
@@ -3411,18 +3069,18 @@ namespace DraftAnalyzer
 			// S
 			attributeNames = new string[]
 			{
-				"Run Defense (Ag100)",
-				"Man-to-Man Defense (Ft50)",
-				"Zone Defense (Ft50PD50)",
-				"Bump and Run Defense (Bp50)",
-				"Play Diagnosis (So50)",
-				"Punishing Hitter (Bp50)",
-				"Interceptions (PD50)",
-				"Punt Returns (Bj50)",
-				"Kick Returns (Bj50)",
-				"Endurance",
-				"Special Teams"
-			};
+                "Run Defense (Ag)",
+                "Man-to-Man Defense (Ft)",
+                "Zone Defense (FtPD)",
+                "Bump and Run Defense (BpAg)",
+                "Play Diagnosis (So)",
+                "Punishing Hitter (Bp)",
+                "Interceptions (PD)",
+                "Punt Returns (Bj)",
+                "Kick Returns (Bj)",
+                "Endurance",
+                "Special Teams"
+            };
 			attributesNotMasked = new bool[]
 			{
 				false, //"Run Defense (Ag100)",

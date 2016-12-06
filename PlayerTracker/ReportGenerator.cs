@@ -354,6 +354,10 @@ namespace PlayerTracker
 			for (int attNum = 0; attNum < attributeIndices.Length; ++attNum)
 			{
 				int attIndex = attributeIndices[attNum];
+                if (rec.DraftLowBars[attIndex] == 255 || rec.DraftHighBars[attIndex] == 255)
+                {
+                    continue;
+                }
 				switch (globalData.WhichAttributesToUse)
 				{
 					case DataReader.DraftWeights.AttributeUsage.UseMin:
