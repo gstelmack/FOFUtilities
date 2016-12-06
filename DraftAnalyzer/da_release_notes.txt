@@ -1,4 +1,9 @@
-﻿8.1.1.0
+﻿8.1.2.0
+
+- Added all defensive bars for defensive linemen.
+- Updated combine correlations for FOF8.
+
+8.1.1.0
 
 - Weight does not matter for QBs.
 

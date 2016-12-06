@@ -413,10 +413,10 @@ namespace DataReader
 			DataReader.DraftWeights.PositionWeightInputs newWeightInput = new DataReader.DraftWeights.PositionWeightInputs();
 			newWeightInput.Weight = 1.137;
 			newWeightInput.Dash = 0;
-			newWeightInput.Solecismic = 10;
-			newWeightInput.Bench = 20;
+			newWeightInput.Solecismic = 20;
+			newWeightInput.Bench = 10;
 			newWeightInput.Agility = 10;
-			newWeightInput.BroadJump = 20;
+			newWeightInput.BroadJump = 15;
 			newWeightInput.PositionDrill = 15;
 			InitializeAttributeWeights("QB", newWeightInput);
 			newWeightInput.Attributes[0] = 20; //"Screen Passes (Ag25)",
@@ -694,11 +694,15 @@ namespace DataReader
 			InitializeAttributeWeights("LDE", newWeightInput);
 			newWeightInput.Attributes[0] = 25; //"Run Defense (Ag100)",
 			newWeightInput.Attributes[1] = 18; //"Pass Rush Technique (Ft100)",
-			newWeightInput.Attributes[2] = 16;//"Pass Rush Strength (Bp50)",
-			newWeightInput.Attributes[3] = 6; //"Play Diagnosis (So50)",
-			newWeightInput.Attributes[4] = 3; //"Punishing Hitter (Bp50)",
-			newWeightInput.Attributes[5] = 6; //"Endurance (Bj100)"
-			mPositionWeightsInputMap.Add("LDE", newWeightInput);
+            newWeightInput.Attributes[2] = 0; //"Man-to-Man Defense (Bj100)",
+            newWeightInput.Attributes[3] = 0; //"Zone Defense (PD50)",
+            newWeightInput.Attributes[4] = 0;  //"Bump and Run Defense (Bp33)",
+            newWeightInput.Attributes[5] = 16;//"Pass Rush Strength (Bp50)",
+			newWeightInput.Attributes[6] = 6; //"Play Diagnosis (So50)",
+			newWeightInput.Attributes[7] = 3; //"Punishing Hitter (Bp50)",
+			newWeightInput.Attributes[8] = 6; //"Endurance (Bj100)"
+            newWeightInput.Attributes[9] = 0; //"Special Teams"
+            mPositionWeightsInputMap.Add("LDE", newWeightInput);
 			mPositionWeightsMap["LDE"] = BuildWeightFromInput(newWeightInput);
 			mNoCombinePositionWeightsMap["LDE"] = BuildNoCombineWeightFromInput(newWeightInput);
 
@@ -711,13 +715,17 @@ namespace DataReader
 			newWeightInput.BroadJump = 5;
 			newWeightInput.PositionDrill = 0;
 			InitializeAttributeWeights("RDE", newWeightInput);
-			newWeightInput.Attributes[0] = 25; //"Run Defense (Ag100)",
-			newWeightInput.Attributes[1] = 18; //"Pass Rush Technique (Ft100)",
-			newWeightInput.Attributes[2] = 16;//"Pass Rush Strength (Bp50)",
-			newWeightInput.Attributes[3] = 6; //"Play Diagnosis (So50)",
-			newWeightInput.Attributes[4] = 3; //"Punishing Hitter (Bp50)",
-			newWeightInput.Attributes[5] = 6; //"Endurance (Bj100)"
-			mPositionWeightsInputMap.Add("RDE", newWeightInput);
+            newWeightInput.Attributes[0] = 25; //"Run Defense (Ag100)",
+            newWeightInput.Attributes[1] = 18; //"Pass Rush Technique (Ft100)",
+            newWeightInput.Attributes[2] = 0; //"Man-to-Man Defense (Bj100)",
+            newWeightInput.Attributes[3] = 0; //"Zone Defense (PD50)",
+            newWeightInput.Attributes[4] = 0;  //"Bump and Run Defense (Bp33)",
+            newWeightInput.Attributes[5] = 16;//"Pass Rush Strength (Bp50)",
+            newWeightInput.Attributes[6] = 6; //"Play Diagnosis (So50)",
+            newWeightInput.Attributes[7] = 3; //"Punishing Hitter (Bp50)",
+            newWeightInput.Attributes[8] = 6; //"Endurance (Bj100)"
+            newWeightInput.Attributes[9] = 0; //"Special Teams"
+            mPositionWeightsInputMap.Add("RDE", newWeightInput);
 			mPositionWeightsMap["RDE"] = BuildWeightFromInput(newWeightInput);
 			mNoCombinePositionWeightsMap["RDE"] = BuildNoCombineWeightFromInput(newWeightInput);
 
@@ -730,13 +738,17 @@ namespace DataReader
 			newWeightInput.BroadJump = 5;
 			newWeightInput.PositionDrill = 0;
 			InitializeAttributeWeights("LDT", newWeightInput);
-			newWeightInput.Attributes[0] = 25; //"Run Defense (Ag100)",
-			newWeightInput.Attributes[1] = 10; //"Pass Rush Technique (Ft100)",
-			newWeightInput.Attributes[2] = 13;//"Pass Rush Strength (Bp50)",
-			newWeightInput.Attributes[3] = 4;  //"Play Diagnosis (So50)",
-			newWeightInput.Attributes[4] = 2; //"Punishing Hitter (Bp50)",
-			newWeightInput.Attributes[5] = 6; //"Endurance (Bj100)"
-			mPositionWeightsInputMap.Add("LDT", newWeightInput);
+            newWeightInput.Attributes[0] = 25; //"Run Defense (Ag100)",
+            newWeightInput.Attributes[1] = 10; //"Pass Rush Technique (Ft100)",
+            newWeightInput.Attributes[2] = 0; //"Man-to-Man Defense (Bj100)",
+            newWeightInput.Attributes[3] = 0; //"Zone Defense (PD50)",
+            newWeightInput.Attributes[4] = 0;  //"Bump and Run Defense (Bp33)",
+            newWeightInput.Attributes[5] = 13;//"Pass Rush Strength (Bp50)",
+            newWeightInput.Attributes[6] = 4; //"Play Diagnosis (So50)",
+            newWeightInput.Attributes[7] = 2; //"Punishing Hitter (Bp50)",
+            newWeightInput.Attributes[8] = 6; //"Endurance (Bj100)"
+            newWeightInput.Attributes[9] = 0; //"Special Teams"
+            mPositionWeightsInputMap.Add("LDT", newWeightInput);
 			mPositionWeightsMap["LDT"] = BuildWeightFromInput(newWeightInput);
 			mNoCombinePositionWeightsMap["LDT"] = BuildNoCombineWeightFromInput(newWeightInput);
 
@@ -749,13 +761,17 @@ namespace DataReader
 			newWeightInput.BroadJump = 5;
 			newWeightInput.PositionDrill = 0;
 			InitializeAttributeWeights("RDT", newWeightInput);
-			newWeightInput.Attributes[0] = 25; //"Run Defense (Ag100)",
-			newWeightInput.Attributes[1] = 10; //"Pass Rush Technique (Ft100)",
-			newWeightInput.Attributes[2] = 13;//"Pass Rush Strength (Bp50)",
-			newWeightInput.Attributes[3] = 4;  //"Play Diagnosis (So50)",
-			newWeightInput.Attributes[4] = 2; //"Punishing Hitter (Bp50)",
-			newWeightInput.Attributes[5] = 6; //"Endurance (Bj100)"
-			mPositionWeightsInputMap.Add("RDT", newWeightInput);
+            newWeightInput.Attributes[0] = 25; //"Run Defense (Ag100)",
+            newWeightInput.Attributes[1] = 10; //"Pass Rush Technique (Ft100)",
+            newWeightInput.Attributes[2] = 0; //"Man-to-Man Defense (Bj100)",
+            newWeightInput.Attributes[3] = 0; //"Zone Defense (PD50)",
+            newWeightInput.Attributes[4] = 0;  //"Bump and Run Defense (Bp33)",
+            newWeightInput.Attributes[5] = 13;//"Pass Rush Strength (Bp50)",
+            newWeightInput.Attributes[6] = 4; //"Play Diagnosis (So50)",
+            newWeightInput.Attributes[7] = 2; //"Punishing Hitter (Bp50)",
+            newWeightInput.Attributes[8] = 6; //"Endurance (Bj100)"
+            newWeightInput.Attributes[9] = 0; //"Special Teams"
+            mPositionWeightsInputMap.Add("RDT", newWeightInput);
 			mPositionWeightsMap["RDT"] = BuildWeightFromInput(newWeightInput);
 			mNoCombinePositionWeightsMap["RDT"] = BuildNoCombineWeightFromInput(newWeightInput);
 
@@ -768,13 +784,17 @@ namespace DataReader
 			newWeightInput.BroadJump = 5;
 			newWeightInput.PositionDrill = 0;
 			InitializeAttributeWeights("NT", newWeightInput);
-			newWeightInput.Attributes[0] = 25; //"Run Defense (Ag100)",
-			newWeightInput.Attributes[1] = 10; //"Pass Rush Technique (Ft100)",
-			newWeightInput.Attributes[2] = 13;//"Pass Rush Strength (Bp50)",
-			newWeightInput.Attributes[3] = 4;  //"Play Diagnosis (So50)",
-			newWeightInput.Attributes[4] = 2; //"Punishing Hitter (Bp50)",
-			newWeightInput.Attributes[5] = 6; //"Endurance (Bj100)"
-			mPositionWeightsInputMap.Add("NT", newWeightInput);
+            newWeightInput.Attributes[0] = 25; //"Run Defense (Ag100)",
+            newWeightInput.Attributes[1] = 10; //"Pass Rush Technique (Ft100)",
+            newWeightInput.Attributes[2] = 0; //"Man-to-Man Defense (Bj100)",
+            newWeightInput.Attributes[3] = 0; //"Zone Defense (PD50)",
+            newWeightInput.Attributes[4] = 0;  //"Bump and Run Defense (Bp33)",
+            newWeightInput.Attributes[5] = 13;//"Pass Rush Strength (Bp50)",
+            newWeightInput.Attributes[6] = 4; //"Play Diagnosis (So50)",
+            newWeightInput.Attributes[7] = 2; //"Punishing Hitter (Bp50)",
+            newWeightInput.Attributes[8] = 6; //"Endurance (Bj100)"
+            newWeightInput.Attributes[9] = 0; //"Special Teams"
+            mPositionWeightsInputMap.Add("NT", newWeightInput);
 			mPositionWeightsMap["NT"] = BuildWeightFromInput(newWeightInput);
 			mNoCombinePositionWeightsMap["NT"] = BuildNoCombineWeightFromInput(newWeightInput);
 

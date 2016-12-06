@@ -1,4 +1,10 @@
-﻿Version 8.1.0.0
+﻿Version 8.1.1.0
+
+- Added all defensive bars for defensive linemen.
+- Updated combine correlations for FOF8.
+- Fixed bad draft values for players that were drafted before tracking began.
+
+Version 8.1.0.0
 
 - Show ideal position and height / weight difference from the average height 
   (if it matters) and ideal weight for that position.
