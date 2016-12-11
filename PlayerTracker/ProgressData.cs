@@ -28,7 +28,7 @@ namespace PlayerTracker
 	[Serializable]
 	public class ProgressData
 	{
-		const ushort kCurrentVersion = 2;
+		const ushort kCurrentVersion = 3;
 		public Dictionary<uint,PlayerRecord> PlayerRecords = new Dictionary<uint,PlayerRecord>();
 		public List<StageData> StageRecords = new List<StageData>();
 

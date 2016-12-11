@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Windows.Media;
 
 namespace PlayerTracker
 {
@@ -172,6 +170,12 @@ namespace PlayerTracker
 						listData.TeamIndex = entry.Team;
                         listData.PeakWeight = peakWeight;
                         listData.StartWeight = startWeight;
+                        listData.CombineSolecismic = entry.Solecismic;
+                        listData.CombineAgility = entry.Agility;
+                        listData.CombineBench = entry.Strength;
+                        listData.CombineBroadJump = entry.Jump;
+                        listData.CombineForty = entry.Dash;
+                        listData.CombinePositionDrill = entry.Position_Specific;
 						listData.PlayerRecord = rec;
 						for (int i = 0; i < (int)DataReader.FOFData.ScoutBars.Count; ++i)
 						{
@@ -186,14 +190,64 @@ namespace PlayerTracker
 					{
 						lastOvr = entry.CurOverall;
 						lastFut = entry.FutOverall;
-					}
+    				}
 				}
 			}
 
 			return playerList;
 		}
 
-		private void CalculateCombineRating(PlayerListData data, string position)
+        private void ColorCombine(ushort value, int combineIndex, int positionIndex, out SolidColorBrush foreground)
+        {
+            foreground = Brushes.Black;
+            int redIndex = combineIndex * 3;
+            int blueIndex = redIndex + 1;
+            int greenIndex = blueIndex + 1;
+            if (positionIndex >= m_FOFData.CombineThresholds.GetLength(0))
+            {
+                foreground = Brushes.Black;
+            }
+            else if (combineIndex == 0 || combineIndex == 3)
+            {
+                if (value <= m_FOFData.CombineColors[positionIndex, redIndex])
+                {
+                    foreground = Brushes.Red;
+                }
+                else if (value <= m_FOFData.CombineColors[positionIndex, blueIndex])
+                {
+                    foreground = Brushes.Blue;
+                }
+                else if (value >= m_FOFData.CombineColors[positionIndex, greenIndex])
+                {
+                    foreground = Brushes.DarkSeaGreen;
+                }
+                else
+                {
+                    foreground = Brushes.Black;
+                }
+            }
+            else
+            {
+                if (value >= m_FOFData.CombineColors[positionIndex, redIndex])
+                {
+                    foreground = Brushes.Red;
+                }
+                else if (value >= m_FOFData.CombineColors[positionIndex, blueIndex])
+                {
+                    foreground = Brushes.Blue;
+                }
+                else if (value <= m_FOFData.CombineColors[positionIndex, greenIndex])
+                {
+                    foreground = Brushes.DarkSeaGreen;
+                }
+                else
+                {
+                    foreground = Brushes.Black;
+                }
+            }
+        }
+
+        private void CalculateCombineRating(PlayerListData data, string position)
 		{
 			PlayerRecord rec = m_ProgressData.PlayerRecords[data.ID];
 
@@ -204,11 +258,24 @@ namespace PlayerTracker
 			data.BroadJumpRating = 0.0;
 			data.PositionDrillRating = 0.0;
 
+            SolidColorBrush foreground;
 			string positionGroup = m_FOFData.PositionToPositionGroupMap[position];
 
 			int positionIndex = m_FOFData.PositionGroupOrderMap[positionGroup];
+            ColorCombine(data.CombineSolecismic, (int)DataReader.FOFData.CombineOrder.Solecismic, positionIndex, out foreground);
+            data.SolecismicForeground = foreground;
+            ColorCombine(data.CombineAgility, (int)DataReader.FOFData.CombineOrder.Agility, positionIndex, out foreground);
+            data.AgilityForeground = foreground;
+            ColorCombine(data.CombineBench, (int)DataReader.FOFData.CombineOrder.Bench, positionIndex, out foreground);
+            data.BenchForeground = foreground;
+            ColorCombine(data.CombineBroadJump, (int)DataReader.FOFData.CombineOrder.BroadJump, positionIndex, out foreground);
+            data.BroadJumpForeground = foreground;
+            ColorCombine(data.CombineForty, (int)DataReader.FOFData.CombineOrder.Dash, positionIndex, out foreground);
+            data.FortyForeground = foreground;
+            ColorCombine(data.CombinePositionDrill, (int)DataReader.FOFData.CombineOrder.PositionDrill, positionIndex, out foreground);
+            data.PositionDrillForeground = foreground;
 
-			if (rec.Solecismic == Byte.MaxValue)
+            if (rec.Solecismic == Byte.MaxValue)
 			{
 				// Do nothing, no combines, leave at 0
 			}
@@ -227,7 +294,8 @@ namespace PlayerTracker
 				{
 					data.SolecismicRating = ((((double)rec.Solecismic) - average) / stdDev) * posWeights.Solecismic;
 				}
-				combineIndex = (int)DataReader.FOFData.CombineOrder.Dash;
+
+                combineIndex = (int)DataReader.FOFData.CombineOrder.Dash;
 				threshold = m_FOFData.CombineThresholds[positionIndex, combineIndex];
 				average = m_FOFData.CombineAverages[positionIndex, combineIndex];
 				stdDev = -m_FOFData.CombineStandardDeviations[positionIndex, combineIndex];
@@ -239,7 +307,8 @@ namespace PlayerTracker
 				{
 					data.FortyRating = ((((double)rec.Dash / 100.0) - average) / stdDev) * posWeights.Dash;
 				}
-				combineIndex = (int)DataReader.FOFData.CombineOrder.Bench;
+
+                combineIndex = (int)DataReader.FOFData.CombineOrder.Bench;
 				threshold = m_FOFData.CombineThresholds[positionIndex, combineIndex];
 				average = m_FOFData.CombineAverages[positionIndex, combineIndex];
 				stdDev = m_FOFData.CombineStandardDeviations[positionIndex, combineIndex];
@@ -251,7 +320,8 @@ namespace PlayerTracker
 				{
 					data.BenchRating = ((((double)rec.Strength) - average) / stdDev) * posWeights.Bench;
 				}
-				combineIndex = (int)DataReader.FOFData.CombineOrder.Agility;
+
+                combineIndex = (int)DataReader.FOFData.CombineOrder.Agility;
 				threshold = m_FOFData.CombineThresholds[positionIndex, combineIndex];
 				average = m_FOFData.CombineAverages[positionIndex, combineIndex];
 				stdDev = -m_FOFData.CombineStandardDeviations[positionIndex, combineIndex];
@@ -263,7 +333,8 @@ namespace PlayerTracker
 				{
 					data.AgilityRating = ((((double)rec.Agility / 100.0) - average) / stdDev) * posWeights.Agility;
 				}
-				combineIndex = (int)DataReader.FOFData.CombineOrder.BroadJump;
+
+                combineIndex = (int)DataReader.FOFData.CombineOrder.BroadJump;
 				threshold = m_FOFData.CombineThresholds[positionIndex, combineIndex];
 				average = m_FOFData.CombineAverages[positionIndex, combineIndex];
 				stdDev = m_FOFData.CombineStandardDeviations[positionIndex, combineIndex];
@@ -275,7 +346,8 @@ namespace PlayerTracker
 				{
 					data.BroadJumpRating = ((((double)rec.Jump) - average) / stdDev) * posWeights.BroadJump;
 				}
-				combineIndex = (int)DataReader.FOFData.CombineOrder.PositionDrill;
+
+                combineIndex = (int)DataReader.FOFData.CombineOrder.PositionDrill;
 				threshold = m_FOFData.CombineThresholds[positionIndex, combineIndex];
 				average = m_FOFData.CombineAverages[positionIndex, combineIndex];
 				stdDev = m_FOFData.CombineStandardDeviations[positionIndex, combineIndex];
@@ -290,8 +362,8 @@ namespace PlayerTracker
 						data.PositionDrillRating = ((((double)rec.Position_Specific) - average) / stdDev) * posWeights.PositionDrill;
 					}
 				}
-			}
-			else
+            }
+            else
 			{
 				int combineIndex = (int)DataReader.FOFData.CombineOrder.Solecismic;
 				ushort threshold = m_FOFData.CombineThresholds[positionIndex, combineIndex];
@@ -309,7 +381,8 @@ namespace PlayerTracker
 						data.SolecismicRating = ((((double)rec.Solecismic) - average) / stdDev) * posWeights.Solecismic;
 					}
 				}
-				combineIndex = (int)DataReader.FOFData.CombineOrder.Solecismic;
+
+                combineIndex = (int)DataReader.FOFData.CombineOrder.PositionDrill;
 				threshold = m_FOFData.CombineThresholds[positionIndex, combineIndex];
 				average = m_FOFData.CombineAverages[positionIndex, combineIndex];
 				stdDev = m_FOFData.CombineStandardDeviations[positionIndex, combineIndex];
@@ -324,8 +397,8 @@ namespace PlayerTracker
 						data.PositionDrillRating = ((((double)rec.Position_Specific) - average) / stdDev) * posWeights.PositionDrill;
 					}
 				}
-			}
-			data.CombineScore = data.SolecismicRating + data.FortyRating + data.AgilityRating + data.BenchRating + data.BroadJumpRating + data.PositionDrillRating;
+            }
+            data.CombineScore = data.SolecismicRating + data.FortyRating + data.AgilityRating + data.BenchRating + data.BroadJumpRating + data.PositionDrillRating;
 		}
 
 		private void CalculatePositionRating(PlayerListData data)

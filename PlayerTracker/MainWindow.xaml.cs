@@ -69,8 +69,6 @@ namespace PlayerTracker
 			}
 
 			listViewPlayers.ItemsSource = m_PlayerList;
-			CollectionView view = (CollectionView)CollectionViewSource.GetDefaultView(listViewPlayers.ItemsSource);
-			view.SortDescriptions.Add(new SortDescription("Size", ListSortDirection.Descending));
 
 			comboBoxPosition.Items.Add("QB");
 			comboBoxPosition.Items.Add("RB");
@@ -401,8 +399,10 @@ namespace PlayerTracker
 			}
 			using (System.IO.StreamReader inFile = new System.IO.StreamReader(filePath))
 			{
-				inFile.ReadLine();	// skip the header line
-				while (!inFile.EndOfStream)
+				string headerLine = inFile.ReadLine();
+                string[] headers = headerLine.Split(commaDelim);
+
+                while (!inFile.EndOfStream)
 				{
 					string inLine = inFile.ReadLine();
 					string[] tokens = inLine.Split(commaDelim);
@@ -433,6 +433,12 @@ namespace PlayerTracker
                         popularity = Byte.MaxValue;
                     }
                     entry.Popularity = (Byte)popularity;
+                    entry.Solecismic = Byte.Parse(tokens[228]);
+                    entry.Dash = UInt16.Parse(tokens[229]);
+                    entry.Strength = Byte.Parse(tokens[230]);
+                    entry.Agility = UInt16.Parse(tokens[231]);
+                    entry.Jump = Byte.Parse(tokens[232]);
+                    entry.Position_Specific = Byte.Parse(tokens[233]);
 					rec.Entries.Add(entry);
 				}
 				inFile.Close();
@@ -1056,8 +1062,32 @@ namespace PlayerTracker
 			{
 				view.CustomSort = new DescendingOverallScoreSorter();
 			}
-			else
-			{
+            else if (header == "Dash")
+            {
+                view.CustomSort = new AscendingFortySorter();
+            }
+            else if (header == "Sol")
+            {
+                view.CustomSort = new DescendingSolecismicSorter();
+            }
+            else if (header == "Agil")
+            {
+                view.CustomSort = new AscendingAgilitySorter();
+            }
+            else if (header == "Drill")
+            {
+                view.CustomSort = new DescendingPositionDrillSorter();
+            }
+            else if (header == "Jump")
+            {
+                view.CustomSort = new DescendingBroadJumpSorter();
+            }
+            else if (header == "Bench")
+            {
+                view.CustomSort = new DescendingBenchSorter();
+            }
+            else
+            {
 				view.SortDescriptions.Add(new SortDescription(header, ListSortDirection.Descending));
 			}
 			view.Refresh();

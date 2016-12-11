@@ -23,7 +23,13 @@ namespace PlayerTracker
 		public byte Mentor = Byte.MaxValue;
 		public byte Volatility = Byte.MaxValue;
 		public byte Popularity = Byte.MaxValue;
-		public byte[] CurBars = new byte[(int)DataReader.FOFData.ScoutBars.Count];
+        public ushort Dash = UInt16.MaxValue;
+        public byte Solecismic = Byte.MaxValue;
+        public byte Strength = Byte.MaxValue;
+        public ushort Agility = UInt16.MaxValue;
+        public byte Jump = Byte.MaxValue;
+        public byte Position_Specific = Byte.MaxValue;
+        public byte[] CurBars = new byte[(int)DataReader.FOFData.ScoutBars.Count];
 		public byte[] FutBars = new byte[(int)DataReader.FOFData.ScoutBars.Count];
 		public byte CurOverall = Byte.MaxValue;
 		public byte FutOverall = Byte.MaxValue;
@@ -48,9 +54,15 @@ namespace PlayerTracker
 			outFile.Write(FutBars);
 			outFile.Write(CurOverall);
 			outFile.Write(FutOverall);
-		}
+            outFile.Write(Dash);
+            outFile.Write(Solecismic);
+            outFile.Write(Strength);
+            outFile.Write(Agility);
+            outFile.Write(Jump);
+            outFile.Write(Position_Specific);
+        }
 
-		public void Read(System.IO.BinaryReader inFile, ushort version)
+        public void Read(System.IO.BinaryReader inFile, ushort version)
 		{
 			StageIndex = inFile.ReadUInt16();
 			Position = inFile.ReadString();
@@ -70,8 +82,17 @@ namespace PlayerTracker
 			FutBars = inFile.ReadBytes((int)DataReader.FOFData.ScoutBars.Count);
 			CurOverall = inFile.ReadByte();
 			FutOverall = inFile.ReadByte();
-		}
-	}
+            if (version >= 3)
+            {
+                Dash = inFile.ReadUInt16();
+                Solecismic = inFile.ReadByte();
+                Strength = inFile.ReadByte();
+                Agility = inFile.ReadUInt16();
+                Jump = inFile.ReadByte();
+                Position_Specific = inFile.ReadByte();
+            }
+        }
+    }
 
 	[Serializable]
 	public class PlayerRecord

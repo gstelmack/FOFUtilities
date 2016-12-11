@@ -1,4 +1,8 @@
-﻿Version 8.1.1.0
+﻿Version 8.1.2.0
+
+- Display and color current combine numbers on the main player list.
+
+Version 8.1.1.0
 
 - Added all defensive bars for defensive linemen.
 - Updated combine correlations for FOF8.
