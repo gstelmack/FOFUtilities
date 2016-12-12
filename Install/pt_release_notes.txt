@@ -1,4 +1,11 @@
-﻿Version 8.1.1.0
+﻿Version 8.1.2.0
+
+- Display and color current combine numbers on the main player list.
+- Display and color height / weight on the main player list based on the
+  selected Defensive Front.
+- Fixed a bug where 43 Over and 43 Under were flipped in some output.
+
+Version 8.1.1.0
 
 - Added all defensive bars for defensive linemen.
 - Updated combine correlations for FOF8.
