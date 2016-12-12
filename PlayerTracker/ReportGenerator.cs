@@ -23,6 +23,7 @@ namespace PlayerTracker
 		public ushort DraftYear = ushort.MaxValue;
 		public int StageIndex = -1;
 		public string Position = "";
+        public DataReader.FOFData.DefensiveFront DefensiveFront = DataReader.FOFData.DefensiveFront.True34;
 		private DataReader.FOFData m_FOFData = new DataReader.FOFData();
 		private DataReader.DraftWeights m_Weights;
 
@@ -152,7 +153,7 @@ namespace PlayerTracker
 						PlayerListData listData = new PlayerListData();
 						listData.Name = rec.Last_Name + ", " + rec.First_Name;
                         listData.Pos = entry.Position;
-						listData.PosGrp = entry.Position_Group;
+						listData.PosGrp = m_FOFData.PositionToPositionGroupMap[entry.Position];
 						listData.PosOrder = m_FOFData.PositionGroupOrderMap[listData.PosGrp];
 						listData.PlayerRecord = rec;
 						listData.PresentCur = (byte)curOvr;
@@ -169,6 +170,7 @@ namespace PlayerTracker
 						listData.RecentChange = curFut - lastFut;
 						listData.TeamIndex = entry.Team;
                         listData.PeakWeight = peakWeight;
+                        listData.CurWeight = entry.Weight;
                         listData.StartWeight = startWeight;
                         listData.CombineSolecismic = entry.Solecismic;
                         listData.CombineAgility = entry.Agility;
@@ -184,6 +186,7 @@ namespace PlayerTracker
 							listData.PeakBars[i] = peakBars[i];
 						}
 						CalculatePositionRating(listData);
+                        ColorSize(listData);
 						playerList.Add(listData);
 					}
 					if (entry.CurOverall != Byte.MaxValue)
@@ -197,6 +200,40 @@ namespace PlayerTracker
 			return playerList;
 		}
 
+        private void ColorSize(PlayerListData data)
+        {
+            var heightDiff = m_FOFData.GetHeightDifference(data.Pos, data.PlayerRecord.Height);
+            if (heightDiff <= -2)
+            {
+                data.HeightForeground = Brushes.DarkSeaGreen;
+            }
+            else if (heightDiff > 3)
+            {
+                data.HeightForeground = Brushes.Red;
+            }
+            else if (heightDiff > 1)
+            {
+                data.HeightForeground = Brushes.Blue;
+            }
+
+            var weightDiff = Math.Abs(m_FOFData.GetWeightDifference(data.Pos, data.CurWeight, DefensiveFront));
+            if (weightDiff < 4)
+            {
+                data.WeightForeground = Brushes.Red;
+            }
+            else if (weightDiff < 8)
+            {
+                data.WeightForeground = Brushes.Blue;
+            }
+            else if (weightDiff < 15)
+            {
+                data.WeightForeground = Brushes.Black;
+            }
+            else
+            {
+                data.WeightForeground = Brushes.DarkSeaGreen;
+            }
+        }
         private void ColorCombine(ushort value, int combineIndex, int positionIndex, out SolidColorBrush foreground)
         {
             foreground = Brushes.Black;

@@ -491,8 +491,8 @@ namespace DataReader
         {
             "T34",
             "E34",
-            "O43",
             "U43",
+            "O43",
             ""
         };
 
@@ -500,8 +500,8 @@ namespace DataReader
         {
             "True 34",
             "34 Eagle",
-            "43 Over",
             "43 Under",
+            "43 Over",
             ""
         };
 

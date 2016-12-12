@@ -87,7 +87,10 @@ namespace PlayerTracker
 			comboBoxPosition.Items.Add("CB");
 			comboBoxPosition.Items.Add("S");
 			comboBoxPosition.Items.Add("LS");
-		}
+
+            comboBoxDefensiveFront.ItemsSource = Enum.GetValues(typeof(DataReader.FOFData.DefensiveFront)).Cast<DataReader.FOFData.DefensiveFront>();
+            comboBoxDefensiveFront.SelectedItem = DataReader.FOFData.DefensiveFront.True34;
+        }
 
 		private void comboBoxLeagues_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
@@ -528,6 +531,7 @@ namespace PlayerTracker
 		};
 
 		PlayerDisplayType m_DisplayType = PlayerDisplayType.Team;
+        DataReader.FOFData.DefensiveFront m_DefensiveFront = DataReader.FOFData.DefensiveFront.True34;
 
 		private void comboBoxTeam_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
@@ -536,7 +540,17 @@ namespace PlayerTracker
 			UpdatePlayerList();
 		}
 
-		private void comboBoxDraftYear_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void comboBoxDefensiveFront_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            m_DefensiveFront = (DataReader.FOFData.DefensiveFront)comboBoxDefensiveFront.SelectedItem;
+            if (m_ReportGenerator != null)
+            {
+                ClearPlayerView();
+                UpdatePlayerList();
+            }
+        }
+
+        private void comboBoxDraftYear_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
 			m_DisplayType = PlayerDisplayType.DraftYear;
 			ClearPlayerView();
@@ -605,6 +619,7 @@ namespace PlayerTracker
 					m_ReportGenerator.Type = ReportGenerator.ReportType.Position;
 					break;
 			}
+            m_ReportGenerator.DefensiveFront = m_DefensiveFront;
 			m_ReportGenerator.StageIndex = m_StageIndex;
 
 			List<PlayerListData> reportPlayers = m_ReportGenerator.Generate();
@@ -627,7 +642,7 @@ namespace PlayerTracker
 			PlayerListData data = (PlayerListData)listViewPlayers.SelectedItem;
 			PlayerRecord rec = m_ProgressData.PlayerRecords[data.ID];
 			string exp = data.Exp.TrimStart(new char[] { '0' });
-			labelPlayer.Content = data.Name + ", " + data.PosGrp + ", " + exp + "yrs";
+			labelPlayer.Content = data.Name + ", " + data.Pos + ", " + exp + "yrs";
 			if (rec.Draft_Round > 0)
 			{
 				labelPlayer.Content += "    " + rec.Draft_Year + " " + rec.Draft_Round + "(" + rec.Drafted_Position + ") by " + m_Teams[rec.Drafted_By];
@@ -740,15 +755,17 @@ namespace PlayerTracker
 			labelDraftWeights.Content = "Comb: " + data.CombineScore.ToString("F1") + " Bars: " + data.AttributeScore.ToString("F1") + 
 				" Tot: " + data.OverallScore.ToString("F1");
 
-            string heightString = m_FOFData.GetHeightDifference(data.Pos, data.PlayerRecord.Height).ToString() + "\"";
+            string heightString = m_FOFData.GetHeightDifference(data.Pos, data.PlayerRecord.Height).ToString("+#;-#;0") + "\"";
             var startIdealPos = m_FOFData.GetIdealPosition(data.Pos, data.StartWeight);
-            string dWeightString = m_FOFData.GetWeightDifference(startIdealPos.Position, data.StartWeight, startIdealPos.Formation).ToString() + "lbs";
-            var peakIdealPos = m_FOFData.GetIdealPosition(data.Pos, data.PeakWeight);
-            string pWeightString = m_FOFData.GetWeightDifference(peakIdealPos.Position, data.PeakWeight, peakIdealPos.Formation).ToString() + "lbs";
+            string dWeightDiffString = m_FOFData.GetWeightDifference(data.Pos, data.StartWeight, m_DefensiveFront).ToString("+#;-#;0") + "lbs";
+            string dWeightString = m_FOFData.GetWeightDifference(startIdealPos.Position, data.StartWeight, startIdealPos.Formation).ToString("+#;-#;0") + "lbs";
+            var peakIdealPos = m_FOFData.GetIdealPosition(data.Pos, data.CurWeight);
+            string pWeightDiffString = m_FOFData.GetWeightDifference(data.Pos, data.CurWeight, m_DefensiveFront).ToString("+#;-#;0") + "lbs";
+            string pWeightString = m_FOFData.GetWeightDifference(peakIdealPos.Position, data.CurWeight, peakIdealPos.Formation).ToString("+#;-#;0") + "lbs";
 
             labelHeight.Content = "Ht: " + data.PlayerRecord.Height.ToString() + "\"" + " (" + heightString + ")";
-            labelDWeight.Content = "Draft Wt: " + data.StartWeight + " (" + startIdealPos.Display + " " + dWeightString + ")";
-            labelPWeight.Content = "Peak Wt: " + data.PeakWeight + " (" + peakIdealPos.Display + " " + pWeightString + ")";
+            labelDWeight.Content = "Draft Wt: " + data.StartWeight + " (" + dWeightDiffString +  ") (" + startIdealPos.Display + " " + dWeightString + ")";
+            labelPWeight.Content = "Cur Wt: " + data.CurWeight + " (" + pWeightDiffString + ") (" + peakIdealPos.Display + " " + pWeightString + ")";
 
 			int[] barIndices = m_FOFData.PositionGroupAttributes[data.PosGrp];
 			byte[] initialBars = new byte[barIndices.Length];
@@ -1050,7 +1067,15 @@ namespace PlayerTracker
 			{
 				view.SortDescriptions.Add(new SortDescription(header, ListSortDirection.Ascending));
 			}
-			else if (header == "Comb")
+            else if (header == "Ht")
+            {
+                view.CustomSort = new DescendingHeightSorter();
+            }
+            else if (header == "Wt")
+            {
+                view.CustomSort = new DescendingWeightSorter();
+            }
+            else if (header == "Comb")
 			{
 				view.CustomSort = new DescendingCombineScoreSorter();
 			}
@@ -1193,5 +1218,5 @@ namespace PlayerTracker
 			m_DraftLabels[13] = labelDraft13;
 			m_DraftLabels[14] = labelDraft14;
 		}
-	}
+    }
 }

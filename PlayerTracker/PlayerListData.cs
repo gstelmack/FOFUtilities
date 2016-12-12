@@ -74,10 +74,10 @@ namespace PlayerTracker
             {
                 int feet = PlayerRecord.Height / 12;
                 int inches = PlayerRecord.Height % 12;
-                return feet.ToString() + "'" + inches.ToString("\"");
+                return feet.ToString() + "'" + inches.ToString() + "\"";
             }
         }
-        public string Weight => PlayerRecord.Weight.ToString();
+        public string Weight => CurWeight.ToString();
 
         public byte PresentCur;
 		public byte PresentFut;
@@ -112,21 +112,24 @@ namespace PlayerTracker
         private SolidColorBrush m_BenchForeground = Brushes.Black;
         private SolidColorBrush m_BroadJumpForeground = Brushes.Black;
         private SolidColorBrush m_PositionDrillForeground = Brushes.Black;
+        private SolidColorBrush m_HeightForeground = Brushes.Black;
+        private SolidColorBrush m_WeightForeground = Brushes.Black;
         public SolidColorBrush SolecismicForeground { get { return m_SolecismicForeground; } set { m_SolecismicForeground = value; } }
         public SolidColorBrush FortyForeground { get { return m_FortyForeground; } set { m_FortyForeground = value; } }
         public SolidColorBrush AgilityForeground { get { return m_AgilityForeground; } set { m_AgilityForeground = value; } }
         public SolidColorBrush BenchForeground { get { return m_BenchForeground; } set { m_BenchForeground = value; } }
         public SolidColorBrush BroadJumpForeground { get { return m_BroadJumpForeground; } set { m_BroadJumpForeground = value; } }
         public SolidColorBrush PositionDrillForeground { get { return m_PositionDrillForeground; } set { m_PositionDrillForeground = value; } }
-        public SolidColorBrush HeightForeground;
-        public SolidColorBrush WeightForeground;
-		public PlayerRecord PlayerRecord;
+        public SolidColorBrush HeightForeground { get { return m_HeightForeground; } set { m_HeightForeground = value; } }
+        public SolidColorBrush WeightForeground { get { return m_WeightForeground; } set { m_WeightForeground = value; } }
+        public PlayerRecord PlayerRecord;
 		public byte TeamIndex;
 		public byte[] CurrentBars = new byte[(int)DataReader.FOFData.ScoutBars.Count];
 		public byte[] FutureBars = new byte[(int)DataReader.FOFData.ScoutBars.Count];
 		public byte[] PeakBars = new byte[(int)DataReader.FOFData.ScoutBars.Count];
         public ushort StartWeight;
         public ushort PeakWeight;
+        public ushort CurWeight;
         public string Pos;
 	}
 
@@ -259,6 +262,28 @@ namespace PlayerTracker
             var rhs = (PlayerListData)y;
 
             return rhs.CombinePositionDrill.CompareTo(lhs.CombinePositionDrill);
+        }
+    }
+
+    public class DescendingHeightSorter : System.Collections.IComparer
+    {
+        public int Compare(object x, object y)
+        {
+            var lhs = (PlayerListData)x;
+            var rhs = (PlayerListData)y;
+
+            return rhs.PlayerRecord.Height.CompareTo(lhs.PlayerRecord.Height);
+        }
+    }
+
+    public class DescendingWeightSorter : System.Collections.IComparer
+    {
+        public int Compare(object x, object y)
+        {
+            var lhs = (PlayerListData)x;
+            var rhs = (PlayerListData)y;
+
+            return rhs.CurWeight.CompareTo(lhs.CurWeight);
         }
     }
 
