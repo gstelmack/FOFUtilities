@@ -77,11 +77,11 @@ namespace DraftAnalyzer
             this.textBoxPositionWeight = new System.Windows.Forms.TextBox();
             this.labelWeight = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
-            this.label8 = new System.Windows.Forms.Label();
-            this.label9 = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
             this.buttonCopyToGroup = new System.Windows.Forms.Button();
             this.groupBoxGlobal = new System.Windows.Forms.GroupBox();
+            this.comboBoxDefensiveFront = new System.Windows.Forms.ComboBox();
+            this.label21 = new System.Windows.Forms.Label();
             this.numericUpDownCombineThreshold = new System.Windows.Forms.NumericUpDown();
             this.label20 = new System.Windows.Forms.Label();
             this.numericUpDownDevWt = new System.Windows.Forms.NumericUpDown();
@@ -99,8 +99,6 @@ namespace DraftAnalyzer
             this.numericUpDownConflict = new System.Windows.Forms.NumericUpDown();
             this.numericUpDownAffinity = new System.Windows.Forms.NumericUpDown();
             this.label12 = new System.Windows.Forms.Label();
-            this.numericUpDownWeight = new System.Windows.Forms.NumericUpDown();
-            this.numericUpDownHeight = new System.Windows.Forms.NumericUpDown();
             this.numericUpDownCombine = new System.Windows.Forms.NumericUpDown();
             this.numericUpDownAttributes = new System.Windows.Forms.NumericUpDown();
             this.label13 = new System.Windows.Forms.Label();
@@ -113,8 +111,10 @@ namespace DraftAnalyzer
             this.buttonLoad = new System.Windows.Forms.Button();
             this.buttonFOFDefaults = new System.Windows.Forms.Button();
             this.buttonAllOnes = new System.Windows.Forms.Button();
-            this.label21 = new System.Windows.Forms.Label();
-            this.comboBoxDefensiveFront = new System.Windows.Forms.ComboBox();
+            this.trackBarHeightFactor = new System.Windows.Forms.TrackBar();
+            this.trackBarWeightFactor = new System.Windows.Forms.TrackBar();
+            this.label8 = new System.Windows.Forms.Label();
+            this.label9 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.trackBarDash)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackBarBench)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackBarSolecismic)).BeginInit();
@@ -146,18 +146,18 @@ namespace DraftAnalyzer
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownRedFlag)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownConflict)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownAffinity)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownWeight)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownHeight)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownCombine)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownAttributes)).BeginInit();
             this.groupBox1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBarHeightFactor)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBarWeightFactor)).BeginInit();
             this.SuspendLayout();
             // 
             // buttonOK
             // 
             this.buttonOK.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.buttonOK.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.buttonOK.Location = new System.Drawing.Point(657, 435);
+            this.buttonOK.Location = new System.Drawing.Point(657, 504);
             this.buttonOK.Name = "buttonOK";
             this.buttonOK.Size = new System.Drawing.Size(75, 23);
             this.buttonOK.TabIndex = 0;
@@ -169,7 +169,7 @@ namespace DraftAnalyzer
             // 
             this.buttonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.buttonCancel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.buttonCancel.Location = new System.Drawing.Point(657, 464);
+            this.buttonCancel.Location = new System.Drawing.Point(657, 533);
             this.buttonCancel.Name = "buttonCancel";
             this.buttonCancel.Size = new System.Drawing.Size(75, 23);
             this.buttonCancel.TabIndex = 1;
@@ -200,7 +200,7 @@ namespace DraftAnalyzer
             // label1
             // 
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(331, 9);
+            this.label1.Location = new System.Drawing.Point(331, 84);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(114, 22);
             this.label1.TabIndex = 140;
@@ -210,7 +210,7 @@ namespace DraftAnalyzer
             // label2
             // 
             this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label2.Location = new System.Drawing.Point(331, 31);
+            this.label2.Location = new System.Drawing.Point(331, 106);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(114, 22);
             this.label2.TabIndex = 141;
@@ -220,7 +220,7 @@ namespace DraftAnalyzer
             // label3
             // 
             this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label3.Location = new System.Drawing.Point(331, 53);
+            this.label3.Location = new System.Drawing.Point(331, 128);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(114, 22);
             this.label3.TabIndex = 142;
@@ -230,7 +230,7 @@ namespace DraftAnalyzer
             // label4
             // 
             this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label4.Location = new System.Drawing.Point(331, 75);
+            this.label4.Location = new System.Drawing.Point(331, 150);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(114, 22);
             this.label4.TabIndex = 143;
@@ -240,7 +240,7 @@ namespace DraftAnalyzer
             // label5
             // 
             this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label5.Location = new System.Drawing.Point(331, 97);
+            this.label5.Location = new System.Drawing.Point(331, 172);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(114, 22);
             this.label5.TabIndex = 144;
@@ -250,7 +250,7 @@ namespace DraftAnalyzer
             // label6
             // 
             this.label6.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label6.Location = new System.Drawing.Point(331, 119);
+            this.label6.Location = new System.Drawing.Point(331, 194);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(114, 22);
             this.label6.TabIndex = 145;
@@ -260,7 +260,7 @@ namespace DraftAnalyzer
             // labelAttribute1
             // 
             this.labelAttribute1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelAttribute1.Location = new System.Drawing.Point(210, 159);
+            this.labelAttribute1.Location = new System.Drawing.Point(210, 228);
             this.labelAttribute1.Name = "labelAttribute1";
             this.labelAttribute1.Size = new System.Drawing.Size(235, 22);
             this.labelAttribute1.TabIndex = 146;
@@ -270,7 +270,7 @@ namespace DraftAnalyzer
             // labelAttribute2
             // 
             this.labelAttribute2.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelAttribute2.Location = new System.Drawing.Point(210, 181);
+            this.labelAttribute2.Location = new System.Drawing.Point(210, 250);
             this.labelAttribute2.Name = "labelAttribute2";
             this.labelAttribute2.Size = new System.Drawing.Size(235, 22);
             this.labelAttribute2.TabIndex = 147;
@@ -280,7 +280,7 @@ namespace DraftAnalyzer
             // labelAttribute3
             // 
             this.labelAttribute3.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelAttribute3.Location = new System.Drawing.Point(210, 203);
+            this.labelAttribute3.Location = new System.Drawing.Point(210, 272);
             this.labelAttribute3.Name = "labelAttribute3";
             this.labelAttribute3.Size = new System.Drawing.Size(235, 22);
             this.labelAttribute3.TabIndex = 148;
@@ -290,7 +290,7 @@ namespace DraftAnalyzer
             // labelAttribute4
             // 
             this.labelAttribute4.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelAttribute4.Location = new System.Drawing.Point(210, 225);
+            this.labelAttribute4.Location = new System.Drawing.Point(210, 294);
             this.labelAttribute4.Name = "labelAttribute4";
             this.labelAttribute4.Size = new System.Drawing.Size(235, 22);
             this.labelAttribute4.TabIndex = 149;
@@ -300,7 +300,7 @@ namespace DraftAnalyzer
             // labelAttribute5
             // 
             this.labelAttribute5.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelAttribute5.Location = new System.Drawing.Point(210, 247);
+            this.labelAttribute5.Location = new System.Drawing.Point(210, 316);
             this.labelAttribute5.Name = "labelAttribute5";
             this.labelAttribute5.Size = new System.Drawing.Size(235, 22);
             this.labelAttribute5.TabIndex = 150;
@@ -310,7 +310,7 @@ namespace DraftAnalyzer
             // labelAttribute6
             // 
             this.labelAttribute6.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelAttribute6.Location = new System.Drawing.Point(210, 269);
+            this.labelAttribute6.Location = new System.Drawing.Point(210, 338);
             this.labelAttribute6.Name = "labelAttribute6";
             this.labelAttribute6.Size = new System.Drawing.Size(235, 22);
             this.labelAttribute6.TabIndex = 151;
@@ -320,7 +320,7 @@ namespace DraftAnalyzer
             // labelAttribute7
             // 
             this.labelAttribute7.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelAttribute7.Location = new System.Drawing.Point(210, 291);
+            this.labelAttribute7.Location = new System.Drawing.Point(210, 360);
             this.labelAttribute7.Name = "labelAttribute7";
             this.labelAttribute7.Size = new System.Drawing.Size(235, 22);
             this.labelAttribute7.TabIndex = 152;
@@ -330,7 +330,7 @@ namespace DraftAnalyzer
             // labelAttribute8
             // 
             this.labelAttribute8.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelAttribute8.Location = new System.Drawing.Point(210, 313);
+            this.labelAttribute8.Location = new System.Drawing.Point(210, 382);
             this.labelAttribute8.Name = "labelAttribute8";
             this.labelAttribute8.Size = new System.Drawing.Size(235, 22);
             this.labelAttribute8.TabIndex = 153;
@@ -340,7 +340,7 @@ namespace DraftAnalyzer
             // labelAttribute9
             // 
             this.labelAttribute9.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelAttribute9.Location = new System.Drawing.Point(210, 335);
+            this.labelAttribute9.Location = new System.Drawing.Point(210, 404);
             this.labelAttribute9.Name = "labelAttribute9";
             this.labelAttribute9.Size = new System.Drawing.Size(235, 22);
             this.labelAttribute9.TabIndex = 154;
@@ -350,7 +350,7 @@ namespace DraftAnalyzer
             // labelAttribute10
             // 
             this.labelAttribute10.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelAttribute10.Location = new System.Drawing.Point(210, 357);
+            this.labelAttribute10.Location = new System.Drawing.Point(210, 426);
             this.labelAttribute10.Name = "labelAttribute10";
             this.labelAttribute10.Size = new System.Drawing.Size(235, 22);
             this.labelAttribute10.TabIndex = 155;
@@ -360,7 +360,7 @@ namespace DraftAnalyzer
             // labelAttribute11
             // 
             this.labelAttribute11.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelAttribute11.Location = new System.Drawing.Point(210, 379);
+            this.labelAttribute11.Location = new System.Drawing.Point(210, 448);
             this.labelAttribute11.Name = "labelAttribute11";
             this.labelAttribute11.Size = new System.Drawing.Size(235, 22);
             this.labelAttribute11.TabIndex = 156;
@@ -370,7 +370,7 @@ namespace DraftAnalyzer
             // labelAttribute12
             // 
             this.labelAttribute12.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelAttribute12.Location = new System.Drawing.Point(210, 401);
+            this.labelAttribute12.Location = new System.Drawing.Point(210, 470);
             this.labelAttribute12.Name = "labelAttribute12";
             this.labelAttribute12.Size = new System.Drawing.Size(235, 22);
             this.labelAttribute12.TabIndex = 157;
@@ -380,7 +380,7 @@ namespace DraftAnalyzer
             // labelAttribute13
             // 
             this.labelAttribute13.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelAttribute13.Location = new System.Drawing.Point(210, 423);
+            this.labelAttribute13.Location = new System.Drawing.Point(210, 492);
             this.labelAttribute13.Name = "labelAttribute13";
             this.labelAttribute13.Size = new System.Drawing.Size(235, 22);
             this.labelAttribute13.TabIndex = 158;
@@ -390,7 +390,7 @@ namespace DraftAnalyzer
             // labelAttribute14
             // 
             this.labelAttribute14.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelAttribute14.Location = new System.Drawing.Point(210, 445);
+            this.labelAttribute14.Location = new System.Drawing.Point(210, 514);
             this.labelAttribute14.Name = "labelAttribute14";
             this.labelAttribute14.Size = new System.Drawing.Size(235, 22);
             this.labelAttribute14.TabIndex = 159;
@@ -400,7 +400,7 @@ namespace DraftAnalyzer
             // labelAttribute15
             // 
             this.labelAttribute15.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelAttribute15.Location = new System.Drawing.Point(210, 467);
+            this.labelAttribute15.Location = new System.Drawing.Point(210, 536);
             this.labelAttribute15.Name = "labelAttribute15";
             this.labelAttribute15.Size = new System.Drawing.Size(235, 22);
             this.labelAttribute15.TabIndex = 160;
@@ -410,7 +410,7 @@ namespace DraftAnalyzer
             // trackBarDash
             // 
             this.trackBarDash.AutoSize = false;
-            this.trackBarDash.Location = new System.Drawing.Point(451, 9);
+            this.trackBarDash.Location = new System.Drawing.Point(451, 84);
             this.trackBarDash.Maximum = 20;
             this.trackBarDash.Name = "trackBarDash";
             this.trackBarDash.Size = new System.Drawing.Size(200, 22);
@@ -420,7 +420,7 @@ namespace DraftAnalyzer
             // trackBarBench
             // 
             this.trackBarBench.AutoSize = false;
-            this.trackBarBench.Location = new System.Drawing.Point(451, 53);
+            this.trackBarBench.Location = new System.Drawing.Point(451, 128);
             this.trackBarBench.Maximum = 20;
             this.trackBarBench.Name = "trackBarBench";
             this.trackBarBench.Size = new System.Drawing.Size(200, 22);
@@ -430,7 +430,7 @@ namespace DraftAnalyzer
             // trackBarSolecismic
             // 
             this.trackBarSolecismic.AutoSize = false;
-            this.trackBarSolecismic.Location = new System.Drawing.Point(451, 31);
+            this.trackBarSolecismic.Location = new System.Drawing.Point(451, 106);
             this.trackBarSolecismic.Maximum = 20;
             this.trackBarSolecismic.Name = "trackBarSolecismic";
             this.trackBarSolecismic.Size = new System.Drawing.Size(200, 22);
@@ -440,7 +440,7 @@ namespace DraftAnalyzer
             // trackBarBroadJump
             // 
             this.trackBarBroadJump.AutoSize = false;
-            this.trackBarBroadJump.Location = new System.Drawing.Point(451, 97);
+            this.trackBarBroadJump.Location = new System.Drawing.Point(451, 172);
             this.trackBarBroadJump.Maximum = 20;
             this.trackBarBroadJump.Name = "trackBarBroadJump";
             this.trackBarBroadJump.Size = new System.Drawing.Size(200, 22);
@@ -450,7 +450,7 @@ namespace DraftAnalyzer
             // trackBarAgility
             // 
             this.trackBarAgility.AutoSize = false;
-            this.trackBarAgility.Location = new System.Drawing.Point(451, 75);
+            this.trackBarAgility.Location = new System.Drawing.Point(451, 150);
             this.trackBarAgility.Maximum = 20;
             this.trackBarAgility.Name = "trackBarAgility";
             this.trackBarAgility.Size = new System.Drawing.Size(200, 22);
@@ -460,7 +460,7 @@ namespace DraftAnalyzer
             // trackBarAttribute1
             // 
             this.trackBarAttribute1.AutoSize = false;
-            this.trackBarAttribute1.Location = new System.Drawing.Point(451, 159);
+            this.trackBarAttribute1.Location = new System.Drawing.Point(451, 228);
             this.trackBarAttribute1.Maximum = 25;
             this.trackBarAttribute1.Name = "trackBarAttribute1";
             this.trackBarAttribute1.Size = new System.Drawing.Size(200, 22);
@@ -470,7 +470,7 @@ namespace DraftAnalyzer
             // trackBarPositionDrill
             // 
             this.trackBarPositionDrill.AutoSize = false;
-            this.trackBarPositionDrill.Location = new System.Drawing.Point(451, 119);
+            this.trackBarPositionDrill.Location = new System.Drawing.Point(451, 194);
             this.trackBarPositionDrill.Maximum = 20;
             this.trackBarPositionDrill.Name = "trackBarPositionDrill";
             this.trackBarPositionDrill.Size = new System.Drawing.Size(200, 22);
@@ -480,7 +480,7 @@ namespace DraftAnalyzer
             // trackBarAttribute3
             // 
             this.trackBarAttribute3.AutoSize = false;
-            this.trackBarAttribute3.Location = new System.Drawing.Point(451, 203);
+            this.trackBarAttribute3.Location = new System.Drawing.Point(451, 272);
             this.trackBarAttribute3.Maximum = 25;
             this.trackBarAttribute3.Name = "trackBarAttribute3";
             this.trackBarAttribute3.Size = new System.Drawing.Size(200, 22);
@@ -490,7 +490,7 @@ namespace DraftAnalyzer
             // trackBarAttribute2
             // 
             this.trackBarAttribute2.AutoSize = false;
-            this.trackBarAttribute2.Location = new System.Drawing.Point(451, 181);
+            this.trackBarAttribute2.Location = new System.Drawing.Point(451, 250);
             this.trackBarAttribute2.Maximum = 25;
             this.trackBarAttribute2.Name = "trackBarAttribute2";
             this.trackBarAttribute2.Size = new System.Drawing.Size(200, 22);
@@ -500,7 +500,7 @@ namespace DraftAnalyzer
             // trackBarAttribute4
             // 
             this.trackBarAttribute4.AutoSize = false;
-            this.trackBarAttribute4.Location = new System.Drawing.Point(451, 225);
+            this.trackBarAttribute4.Location = new System.Drawing.Point(451, 294);
             this.trackBarAttribute4.Maximum = 25;
             this.trackBarAttribute4.Name = "trackBarAttribute4";
             this.trackBarAttribute4.Size = new System.Drawing.Size(200, 22);
@@ -510,7 +510,7 @@ namespace DraftAnalyzer
             // trackBarAttribute5
             // 
             this.trackBarAttribute5.AutoSize = false;
-            this.trackBarAttribute5.Location = new System.Drawing.Point(451, 247);
+            this.trackBarAttribute5.Location = new System.Drawing.Point(451, 316);
             this.trackBarAttribute5.Maximum = 25;
             this.trackBarAttribute5.Name = "trackBarAttribute5";
             this.trackBarAttribute5.Size = new System.Drawing.Size(200, 22);
@@ -520,7 +520,7 @@ namespace DraftAnalyzer
             // trackBarAttribute6
             // 
             this.trackBarAttribute6.AutoSize = false;
-            this.trackBarAttribute6.Location = new System.Drawing.Point(451, 269);
+            this.trackBarAttribute6.Location = new System.Drawing.Point(451, 338);
             this.trackBarAttribute6.Maximum = 25;
             this.trackBarAttribute6.Name = "trackBarAttribute6";
             this.trackBarAttribute6.Size = new System.Drawing.Size(200, 22);
@@ -530,7 +530,7 @@ namespace DraftAnalyzer
             // trackBarAttribute7
             // 
             this.trackBarAttribute7.AutoSize = false;
-            this.trackBarAttribute7.Location = new System.Drawing.Point(451, 291);
+            this.trackBarAttribute7.Location = new System.Drawing.Point(451, 360);
             this.trackBarAttribute7.Maximum = 25;
             this.trackBarAttribute7.Name = "trackBarAttribute7";
             this.trackBarAttribute7.Size = new System.Drawing.Size(200, 22);
@@ -540,7 +540,7 @@ namespace DraftAnalyzer
             // trackBarAttribute8
             // 
             this.trackBarAttribute8.AutoSize = false;
-            this.trackBarAttribute8.Location = new System.Drawing.Point(451, 313);
+            this.trackBarAttribute8.Location = new System.Drawing.Point(451, 382);
             this.trackBarAttribute8.Maximum = 25;
             this.trackBarAttribute8.Name = "trackBarAttribute8";
             this.trackBarAttribute8.Size = new System.Drawing.Size(200, 22);
@@ -550,7 +550,7 @@ namespace DraftAnalyzer
             // trackBarAttribute10
             // 
             this.trackBarAttribute10.AutoSize = false;
-            this.trackBarAttribute10.Location = new System.Drawing.Point(451, 357);
+            this.trackBarAttribute10.Location = new System.Drawing.Point(451, 426);
             this.trackBarAttribute10.Maximum = 25;
             this.trackBarAttribute10.Name = "trackBarAttribute10";
             this.trackBarAttribute10.Size = new System.Drawing.Size(200, 22);
@@ -560,7 +560,7 @@ namespace DraftAnalyzer
             // trackBarAttribute9
             // 
             this.trackBarAttribute9.AutoSize = false;
-            this.trackBarAttribute9.Location = new System.Drawing.Point(451, 335);
+            this.trackBarAttribute9.Location = new System.Drawing.Point(451, 404);
             this.trackBarAttribute9.Maximum = 25;
             this.trackBarAttribute9.Name = "trackBarAttribute9";
             this.trackBarAttribute9.Size = new System.Drawing.Size(200, 22);
@@ -570,7 +570,7 @@ namespace DraftAnalyzer
             // trackBarAttribute13
             // 
             this.trackBarAttribute13.AutoSize = false;
-            this.trackBarAttribute13.Location = new System.Drawing.Point(451, 423);
+            this.trackBarAttribute13.Location = new System.Drawing.Point(451, 492);
             this.trackBarAttribute13.Maximum = 25;
             this.trackBarAttribute13.Name = "trackBarAttribute13";
             this.trackBarAttribute13.Size = new System.Drawing.Size(200, 22);
@@ -580,7 +580,7 @@ namespace DraftAnalyzer
             // trackBarAttribute11
             // 
             this.trackBarAttribute11.AutoSize = false;
-            this.trackBarAttribute11.Location = new System.Drawing.Point(451, 379);
+            this.trackBarAttribute11.Location = new System.Drawing.Point(451, 448);
             this.trackBarAttribute11.Maximum = 25;
             this.trackBarAttribute11.Name = "trackBarAttribute11";
             this.trackBarAttribute11.Size = new System.Drawing.Size(200, 22);
@@ -590,7 +590,7 @@ namespace DraftAnalyzer
             // trackBarAttribute14
             // 
             this.trackBarAttribute14.AutoSize = false;
-            this.trackBarAttribute14.Location = new System.Drawing.Point(451, 445);
+            this.trackBarAttribute14.Location = new System.Drawing.Point(451, 514);
             this.trackBarAttribute14.Maximum = 25;
             this.trackBarAttribute14.Name = "trackBarAttribute14";
             this.trackBarAttribute14.Size = new System.Drawing.Size(200, 22);
@@ -600,7 +600,7 @@ namespace DraftAnalyzer
             // trackBarAttribute15
             // 
             this.trackBarAttribute15.AutoSize = false;
-            this.trackBarAttribute15.Location = new System.Drawing.Point(451, 467);
+            this.trackBarAttribute15.Location = new System.Drawing.Point(451, 536);
             this.trackBarAttribute15.Maximum = 25;
             this.trackBarAttribute15.Name = "trackBarAttribute15";
             this.trackBarAttribute15.Size = new System.Drawing.Size(200, 22);
@@ -610,7 +610,7 @@ namespace DraftAnalyzer
             // trackBarAttribute12
             // 
             this.trackBarAttribute12.AutoSize = false;
-            this.trackBarAttribute12.Location = new System.Drawing.Point(451, 401);
+            this.trackBarAttribute12.Location = new System.Drawing.Point(451, 470);
             this.trackBarAttribute12.Maximum = 25;
             this.trackBarAttribute12.Name = "trackBarAttribute12";
             this.trackBarAttribute12.Size = new System.Drawing.Size(200, 22);
@@ -644,30 +644,10 @@ namespace DraftAnalyzer
             this.label7.Text = "Combine";
             this.label7.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // label8
-            // 
-            this.label8.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label8.Location = new System.Drawing.Point(9, 190);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(82, 22);
-            this.label8.TabIndex = 187;
-            this.label8.Text = "Height";
-            this.label8.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // label9
-            // 
-            this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label9.Location = new System.Drawing.Point(97, 190);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(82, 22);
-            this.label9.TabIndex = 189;
-            this.label9.Text = "Weight";
-            this.label9.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
             // label10
             // 
             this.label10.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label10.Location = new System.Drawing.Point(97, 292);
+            this.label10.Location = new System.Drawing.Point(97, 242);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(82, 22);
             this.label10.TabIndex = 191;
@@ -677,7 +657,7 @@ namespace DraftAnalyzer
             // buttonCopyToGroup
             // 
             this.buttonCopyToGroup.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.buttonCopyToGroup.Location = new System.Drawing.Point(657, 163);
+            this.buttonCopyToGroup.Location = new System.Drawing.Point(657, 232);
             this.buttonCopyToGroup.Name = "buttonCopyToGroup";
             this.buttonCopyToGroup.Size = new System.Drawing.Size(75, 40);
             this.buttonCopyToGroup.TabIndex = 192;
@@ -706,23 +686,37 @@ namespace DraftAnalyzer
             this.groupBoxGlobal.Controls.Add(this.numericUpDownConflict);
             this.groupBoxGlobal.Controls.Add(this.numericUpDownAffinity);
             this.groupBoxGlobal.Controls.Add(this.label12);
-            this.groupBoxGlobal.Controls.Add(this.numericUpDownWeight);
-            this.groupBoxGlobal.Controls.Add(this.numericUpDownHeight);
             this.groupBoxGlobal.Controls.Add(this.numericUpDownCombine);
             this.groupBoxGlobal.Controls.Add(this.numericUpDownAttributes);
             this.groupBoxGlobal.Controls.Add(this.label13);
             this.groupBoxGlobal.Controls.Add(this.label11);
             this.groupBoxGlobal.Controls.Add(this.label10);
             this.groupBoxGlobal.Controls.Add(this.label7);
-            this.groupBoxGlobal.Controls.Add(this.label9);
-            this.groupBoxGlobal.Controls.Add(this.label8);
             this.groupBoxGlobal.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.groupBoxGlobal.Location = new System.Drawing.Point(12, 39);
             this.groupBoxGlobal.Name = "groupBoxGlobal";
-            this.groupBoxGlobal.Size = new System.Drawing.Size(192, 450);
+            this.groupBoxGlobal.Size = new System.Drawing.Size(192, 406);
             this.groupBoxGlobal.TabIndex = 193;
             this.groupBoxGlobal.TabStop = false;
             this.groupBoxGlobal.Text = "All Positions";
+            // 
+            // comboBoxDefensiveFront
+            // 
+            this.comboBoxDefensiveFront.FormattingEnabled = true;
+            this.comboBoxDefensiveFront.Location = new System.Drawing.Point(32, 366);
+            this.comboBoxDefensiveFront.Name = "comboBoxDefensiveFront";
+            this.comboBoxDefensiveFront.Size = new System.Drawing.Size(121, 26);
+            this.comboBoxDefensiveFront.TabIndex = 223;
+            // 
+            // label21
+            // 
+            this.label21.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label21.Location = new System.Drawing.Point(33, 344);
+            this.label21.Name = "label21";
+            this.label21.Size = new System.Drawing.Size(127, 22);
+            this.label21.TabIndex = 222;
+            this.label21.Text = "Defensive Front";
+            this.label21.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // numericUpDownCombineThreshold
             // 
@@ -753,14 +747,14 @@ namespace DraftAnalyzer
             // 
             // numericUpDownDevWt
             // 
-            this.numericUpDownDevWt.Location = new System.Drawing.Point(115, 369);
+            this.numericUpDownDevWt.Location = new System.Drawing.Point(115, 319);
             this.numericUpDownDevWt.Name = "numericUpDownDevWt";
             this.numericUpDownDevWt.Size = new System.Drawing.Size(47, 24);
             this.numericUpDownDevWt.TabIndex = 219;
             // 
             // numericUpDownAvgDev
             // 
-            this.numericUpDownAvgDev.Location = new System.Drawing.Point(27, 369);
+            this.numericUpDownAvgDev.Location = new System.Drawing.Point(27, 319);
             this.numericUpDownAvgDev.Name = "numericUpDownAvgDev";
             this.numericUpDownAvgDev.Size = new System.Drawing.Size(47, 24);
             this.numericUpDownAvgDev.TabIndex = 218;
@@ -768,7 +762,7 @@ namespace DraftAnalyzer
             // label18
             // 
             this.label18.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label18.Location = new System.Drawing.Point(9, 344);
+            this.label18.Location = new System.Drawing.Point(9, 294);
             this.label18.Name = "label18";
             this.label18.Size = new System.Drawing.Size(82, 22);
             this.label18.TabIndex = 217;
@@ -778,7 +772,7 @@ namespace DraftAnalyzer
             // label19
             // 
             this.label19.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label19.Location = new System.Drawing.Point(97, 344);
+            this.label19.Location = new System.Drawing.Point(97, 294);
             this.label19.Name = "label19";
             this.label19.Size = new System.Drawing.Size(82, 22);
             this.label19.TabIndex = 216;
@@ -788,7 +782,7 @@ namespace DraftAnalyzer
             // label17
             // 
             this.label17.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label17.Location = new System.Drawing.Point(97, 91);
+            this.label17.Location = new System.Drawing.Point(97, 90);
             this.label17.Name = "label17";
             this.label17.Size = new System.Drawing.Size(82, 22);
             this.label17.TabIndex = 215;
@@ -798,7 +792,7 @@ namespace DraftAnalyzer
             // label16
             // 
             this.label16.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label16.Location = new System.Drawing.Point(9, 91);
+            this.label16.Location = new System.Drawing.Point(9, 90);
             this.label16.Name = "label16";
             this.label16.Size = new System.Drawing.Size(82, 22);
             this.label16.TabIndex = 214;
@@ -841,14 +835,14 @@ namespace DraftAnalyzer
             // 
             // numericUpDownScoutImpression
             // 
-            this.numericUpDownScoutImpression.Location = new System.Drawing.Point(115, 317);
+            this.numericUpDownScoutImpression.Location = new System.Drawing.Point(115, 267);
             this.numericUpDownScoutImpression.Name = "numericUpDownScoutImpression";
             this.numericUpDownScoutImpression.Size = new System.Drawing.Size(47, 24);
             this.numericUpDownScoutImpression.TabIndex = 209;
             // 
             // numericUpDownRedFlag
             // 
-            this.numericUpDownRedFlag.Location = new System.Drawing.Point(27, 317);
+            this.numericUpDownRedFlag.Location = new System.Drawing.Point(27, 267);
             this.numericUpDownRedFlag.Name = "numericUpDownRedFlag";
             this.numericUpDownRedFlag.Size = new System.Drawing.Size(47, 24);
             this.numericUpDownRedFlag.TabIndex = 208;
@@ -856,7 +850,7 @@ namespace DraftAnalyzer
             // label14
             // 
             this.label14.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label14.Location = new System.Drawing.Point(9, 292);
+            this.label14.Location = new System.Drawing.Point(9, 242);
             this.label14.Name = "label14";
             this.label14.Size = new System.Drawing.Size(82, 22);
             this.label14.TabIndex = 207;
@@ -865,14 +859,14 @@ namespace DraftAnalyzer
             // 
             // numericUpDownConflict
             // 
-            this.numericUpDownConflict.Location = new System.Drawing.Point(115, 266);
+            this.numericUpDownConflict.Location = new System.Drawing.Point(115, 216);
             this.numericUpDownConflict.Name = "numericUpDownConflict";
             this.numericUpDownConflict.Size = new System.Drawing.Size(47, 24);
             this.numericUpDownConflict.TabIndex = 206;
             // 
             // numericUpDownAffinity
             // 
-            this.numericUpDownAffinity.Location = new System.Drawing.Point(27, 266);
+            this.numericUpDownAffinity.Location = new System.Drawing.Point(27, 216);
             this.numericUpDownAffinity.Name = "numericUpDownAffinity";
             this.numericUpDownAffinity.Size = new System.Drawing.Size(47, 24);
             this.numericUpDownAffinity.TabIndex = 205;
@@ -880,26 +874,12 @@ namespace DraftAnalyzer
             // label12
             // 
             this.label12.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label12.Location = new System.Drawing.Point(97, 241);
+            this.label12.Location = new System.Drawing.Point(97, 191);
             this.label12.Name = "label12";
             this.label12.Size = new System.Drawing.Size(82, 22);
             this.label12.TabIndex = 204;
             this.label12.Text = "Conflict";
             this.label12.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // numericUpDownWeight
-            // 
-            this.numericUpDownWeight.Location = new System.Drawing.Point(115, 215);
-            this.numericUpDownWeight.Name = "numericUpDownWeight";
-            this.numericUpDownWeight.Size = new System.Drawing.Size(47, 24);
-            this.numericUpDownWeight.TabIndex = 203;
-            // 
-            // numericUpDownHeight
-            // 
-            this.numericUpDownHeight.Location = new System.Drawing.Point(27, 215);
-            this.numericUpDownHeight.Name = "numericUpDownHeight";
-            this.numericUpDownHeight.Size = new System.Drawing.Size(47, 24);
-            this.numericUpDownHeight.TabIndex = 202;
             // 
             // numericUpDownCombine
             // 
@@ -928,7 +908,7 @@ namespace DraftAnalyzer
             // label13
             // 
             this.label13.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label13.Location = new System.Drawing.Point(9, 241);
+            this.label13.Location = new System.Drawing.Point(9, 191);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(82, 22);
             this.label13.TabIndex = 199;
@@ -995,7 +975,7 @@ namespace DraftAnalyzer
             // buttonSaveAs
             // 
             this.buttonSaveAs.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.buttonSaveAs.Location = new System.Drawing.Point(657, 298);
+            this.buttonSaveAs.Location = new System.Drawing.Point(657, 367);
             this.buttonSaveAs.Name = "buttonSaveAs";
             this.buttonSaveAs.Size = new System.Drawing.Size(75, 23);
             this.buttonSaveAs.TabIndex = 195;
@@ -1006,7 +986,7 @@ namespace DraftAnalyzer
             // buttonLoad
             // 
             this.buttonLoad.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.buttonLoad.Location = new System.Drawing.Point(657, 359);
+            this.buttonLoad.Location = new System.Drawing.Point(657, 428);
             this.buttonLoad.Name = "buttonLoad";
             this.buttonLoad.Size = new System.Drawing.Size(75, 23);
             this.buttonLoad.TabIndex = 196;
@@ -1036,30 +1016,58 @@ namespace DraftAnalyzer
             this.buttonAllOnes.UseVisualStyleBackColor = true;
             this.buttonAllOnes.Click += new System.EventHandler(this.buttonAllOnes_Click);
             // 
-            // label21
+            // trackBarHeightFactor
             // 
-            this.label21.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label21.Location = new System.Drawing.Point(33, 394);
-            this.label21.Name = "label21";
-            this.label21.Size = new System.Drawing.Size(127, 22);
-            this.label21.TabIndex = 222;
-            this.label21.Text = "Defensive Front";
-            this.label21.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.trackBarHeightFactor.AutoSize = false;
+            this.trackBarHeightFactor.LargeChange = 1;
+            this.trackBarHeightFactor.Location = new System.Drawing.Point(451, 12);
+            this.trackBarHeightFactor.Maximum = 5;
+            this.trackBarHeightFactor.Name = "trackBarHeightFactor";
+            this.trackBarHeightFactor.Size = new System.Drawing.Size(200, 22);
+            this.trackBarHeightFactor.TabIndex = 199;
+            this.trackBarHeightFactor.TickStyle = System.Windows.Forms.TickStyle.TopLeft;
             // 
-            // comboBoxDefensiveFront
+            // trackBarWeightFactor
             // 
-            this.comboBoxDefensiveFront.FormattingEnabled = true;
-            this.comboBoxDefensiveFront.Location = new System.Drawing.Point(32, 416);
-            this.comboBoxDefensiveFront.Name = "comboBoxDefensiveFront";
-            this.comboBoxDefensiveFront.Size = new System.Drawing.Size(121, 26);
-            this.comboBoxDefensiveFront.TabIndex = 223;
+            this.trackBarWeightFactor.AutoSize = false;
+            this.trackBarWeightFactor.LargeChange = 1;
+            this.trackBarWeightFactor.Location = new System.Drawing.Point(451, 40);
+            this.trackBarWeightFactor.Maximum = 5;
+            this.trackBarWeightFactor.Name = "trackBarWeightFactor";
+            this.trackBarWeightFactor.Size = new System.Drawing.Size(200, 22);
+            this.trackBarWeightFactor.TabIndex = 200;
+            this.trackBarWeightFactor.TickStyle = System.Windows.Forms.TickStyle.TopLeft;
+            // 
+            // label8
+            // 
+            this.label8.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label8.Location = new System.Drawing.Point(337, 40);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(114, 22);
+            this.label8.TabIndex = 202;
+            this.label8.Text = "Weight per 2lbs";
+            this.label8.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // label9
+            // 
+            this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label9.Location = new System.Drawing.Point(337, 12);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(114, 22);
+            this.label9.TabIndex = 201;
+            this.label9.Text = "Height per 2\"";
+            this.label9.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // WeightsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(744, 501);
+            this.ClientSize = new System.Drawing.Size(744, 574);
             this.ControlBox = false;
+            this.Controls.Add(this.label8);
+            this.Controls.Add(this.label9);
+            this.Controls.Add(this.trackBarWeightFactor);
+            this.Controls.Add(this.trackBarHeightFactor);
             this.Controls.Add(this.buttonAllOnes);
             this.Controls.Add(this.buttonFOFDefaults);
             this.Controls.Add(this.buttonLoad);
@@ -1153,12 +1161,12 @@ namespace DraftAnalyzer
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownRedFlag)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownConflict)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownAffinity)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownWeight)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownHeight)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownCombine)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownAttributes)).EndInit();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBarHeightFactor)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBarWeightFactor)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1215,8 +1223,6 @@ namespace DraftAnalyzer
 		private System.Windows.Forms.TextBox textBoxPositionWeight;
 		private System.Windows.Forms.Label labelWeight;
 		private System.Windows.Forms.Label label7;
-		private System.Windows.Forms.Label label8;
-		private System.Windows.Forms.Label label9;
 		private System.Windows.Forms.Label label10;
 		private System.Windows.Forms.Button buttonCopyToGroup;
 		private System.Windows.Forms.GroupBox groupBoxGlobal;
@@ -1226,8 +1232,6 @@ namespace DraftAnalyzer
 		private System.Windows.Forms.RadioButton radioButtonAttributesUseMax;
 		private System.Windows.Forms.RadioButton radioButtonAttributesUseAverage;
 		private System.Windows.Forms.RadioButton radioButtonAttributesUseMin;
-		private System.Windows.Forms.NumericUpDown numericUpDownWeight;
-		private System.Windows.Forms.NumericUpDown numericUpDownHeight;
 		private System.Windows.Forms.NumericUpDown numericUpDownCombine;
 		private System.Windows.Forms.NumericUpDown numericUpDownAttributes;
 		private System.Windows.Forms.NumericUpDown numericUpDownScoutImpression;
@@ -1253,5 +1257,9 @@ namespace DraftAnalyzer
 		private System.Windows.Forms.Label label20;
         private System.Windows.Forms.ComboBox comboBoxDefensiveFront;
         private System.Windows.Forms.Label label21;
+        private System.Windows.Forms.TrackBar trackBarHeightFactor;
+        private System.Windows.Forms.TrackBar trackBarWeightFactor;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.Label label9;
     }
 }

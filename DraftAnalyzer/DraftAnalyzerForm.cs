@@ -1072,8 +1072,8 @@ namespace DraftAnalyzer
 
             var heightDiff = mFOFData.GetHeightDifference(position, data.mHeight);
             posRating.WeightDiff = Math.Abs(mFOFData.GetWeightDifference(position, data.mWeight, globalData.DefensiveFront));
-            posRating.SizeScore = heightDiff * globalData.Height;
-            posRating.SizeScore -= (posRating.WeightDiff * globalData.Weight);
+            posRating.SizeScore = (heightDiff * posWeights.HeightFactor);
+            posRating.SizeScore -= (posRating.WeightDiff * posWeights.WeightFactor);
 
 			double attributesFactor = 0.0;
 			switch(globalData.WhichAttributesToUse)

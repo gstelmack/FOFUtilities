@@ -10,6 +10,7 @@ namespace DraftAnalyzer
 {
 	public partial class WeightsForm : Form
 	{
+        private bool mInitialized = false;
 		private string mCurrentPosition;
 
 		private string mAppFolderName;
@@ -90,6 +91,7 @@ namespace DraftAnalyzer
             mAppFolderName = WindowsUtilities.OutputLocation.Get();
 
 			LoadData();
+            mInitialized = true;
 			FillScreenFromPosition(mCurrentPosition);
 
 			DisplayGlobalData();
@@ -160,10 +162,8 @@ namespace DraftAnalyzer
 			mDraftWeights.GlobalWeights.Attributes = (int)numericUpDownAttributes.Value;
 			mDraftWeights.GlobalWeights.Combines = (int)numericUpDownCombine.Value;
 			mDraftWeights.GlobalWeights.Conflict = (int)numericUpDownConflict.Value;
-			mDraftWeights.GlobalWeights.Height = (int)numericUpDownHeight.Value;
 			mDraftWeights.GlobalWeights.RedFlag = (int)numericUpDownRedFlag.Value;
 			mDraftWeights.GlobalWeights.ScoutImpression = (int)numericUpDownScoutImpression.Value;
-			mDraftWeights.GlobalWeights.Weight = (int)numericUpDownWeight.Value;
 			mDraftWeights.GlobalWeights.NoCombineAttributes = (int)numericUpDownNoCombineAttributes.Value;
 			mDraftWeights.GlobalWeights.NoCombineCombines = (int)numericUpDownNoCombineCombine.Value;
 			mDraftWeights.GlobalWeights.AvgDev = (int)numericUpDownAvgDev.Value;
@@ -177,9 +177,7 @@ namespace DraftAnalyzer
 		{
 			numericUpDownAttributes.Value = mDraftWeights.GlobalWeights.Attributes;
 			numericUpDownCombine.Value = mDraftWeights.GlobalWeights.Combines;
-			numericUpDownHeight.Value = mDraftWeights.GlobalWeights.Height;
 			numericUpDownScoutImpression.Value = mDraftWeights.GlobalWeights.ScoutImpression;
-			numericUpDownWeight.Value = mDraftWeights.GlobalWeights.Weight;
 			numericUpDownAffinity.Value = mDraftWeights.GlobalWeights.Affinity;
 			numericUpDownConflict.Value = mDraftWeights.GlobalWeights.Conflict;
 			numericUpDownRedFlag.Value = mDraftWeights.GlobalWeights.RedFlag;
@@ -229,10 +227,13 @@ namespace DraftAnalyzer
 
 		private void comboBoxPosition_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			SaveScreenToPosition(mCurrentPosition);
-			mCurrentPosition = (string)comboBoxPosition.Items[comboBoxPosition.SelectedIndex];
-			FillScreenFromPosition(mCurrentPosition);
-		}
+            if (mInitialized)
+            {
+                SaveScreenToPosition(mCurrentPosition);
+                mCurrentPosition = (string)comboBoxPosition.Items[comboBoxPosition.SelectedIndex];
+                FillScreenFromPosition(mCurrentPosition);
+            }
+        }
 
 		private void SaveScreenToPosition(string position)
 		{
@@ -247,6 +248,8 @@ namespace DraftAnalyzer
 			{
 				weightInput.Attributes[i] = mAttributeTrackBars[i].Value;
 			}
+            weightInput.HeightFactor = trackBarHeightFactor.Value;
+            weightInput.WeightFactor = trackBarWeightFactor.Value;
 			Double.TryParse(textBoxPositionWeight.Text, out weightInput.Weight);
 		}
 
@@ -288,6 +291,8 @@ namespace DraftAnalyzer
 					mAttributeTrackBars[i].Value = weightInput.Attributes[i];
 				}
 			}
+            trackBarHeightFactor.Value = weightInput.HeightFactor;
+            trackBarWeightFactor.Value = weightInput.WeightFactor;
 		}
 
 		private void buttonSaveAs_Click(object sender, EventArgs e)

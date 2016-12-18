@@ -1,4 +1,8 @@
-﻿8.1.3.0
+﻿8.1.4.0
+
+- Allow specifying individual height / weight factors per position.
+
+8.1.3.0
 
 - Fixed a bug where 43 Over and 43 Under were flipped in some output.
 

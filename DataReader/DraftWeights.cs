@@ -19,9 +19,11 @@ namespace DataReader
 			public double BroadJump;
 			public double PositionDrill;
 			public double[] Attributes = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
-		}
+            public double HeightFactor;
+            public double WeightFactor;
+        }
 
-		public class PositionWeightInputs
+        public class PositionWeightInputs
 		{
 			public double Weight;
 			public int Dash;
@@ -31,9 +33,11 @@ namespace DataReader
 			public int BroadJump;
 			public int PositionDrill;
 			public int[] Attributes = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-		}
+            public int HeightFactor;
+            public int WeightFactor;
+        }
 
-		public enum AttributeUsage
+        public enum AttributeUsage
 		{
 			UseMin,
 			UseAverage,
@@ -46,8 +50,6 @@ namespace DataReader
 			public int Combines = 10;
 			public int NoCombineAttributes = 100;
 			public int NoCombineCombines = 10;
-			public int Height = 0;
-			public int Weight = 0;
 			public int ScoutImpression = 0;
 			public int Affinity = 10;
 			public int Conflict = 30;
@@ -84,7 +86,7 @@ namespace DataReader
 		public GlobalWeightData GlobalWeights { get { return mGlobalWeights; } }
 		public FOFData FOFData { get { return mFOFData; } }
 
-		private const int kWeightsVersion = 7;
+		private const int kWeightsVersion = 8;
 
 		public DraftWeights()
 		{
@@ -106,10 +108,16 @@ namespace DataReader
 				{
 					mGlobalWeights.Attributes = inFile.ReadInt32();
 					mGlobalWeights.Combines = inFile.ReadInt32();
-					mGlobalWeights.Height = inFile.ReadInt32();
-					mGlobalWeights.ScoutImpression = inFile.ReadInt32();
-					mGlobalWeights.Weight = inFile.ReadInt32();
-					mGlobalWeights.Affinity = inFile.ReadInt32();
+                    if (version < 8)
+                    {
+                        inFile.ReadInt32();
+                    }
+                    mGlobalWeights.ScoutImpression = inFile.ReadInt32();
+                    if (version < 8)
+                    {
+                        inFile.ReadInt32();
+                    }
+                    mGlobalWeights.Affinity = inFile.ReadInt32();
 					if (version >= 3)
 					{
 						mGlobalWeights.Conflict = inFile.ReadInt32();
@@ -142,7 +150,7 @@ namespace DataReader
 
                     while (inStream.Position < fileLength)
 					{
-						LoadPositionWeight(inFile);
+						LoadPositionWeight(inFile, version);
 					}
 				}
 
@@ -161,9 +169,7 @@ namespace DataReader
 
 			outFile.Write(mGlobalWeights.Attributes);
 			outFile.Write(mGlobalWeights.Combines);
-			outFile.Write(mGlobalWeights.Height);
 			outFile.Write(mGlobalWeights.ScoutImpression);
-			outFile.Write(mGlobalWeights.Weight);
 			outFile.Write(mGlobalWeights.Affinity);
 			outFile.Write(mGlobalWeights.Conflict);
 			outFile.Write(mGlobalWeights.RedFlag);
@@ -223,9 +229,11 @@ namespace DataReader
 			{
 				outFile.Write(posWeight.Attributes[i]);
 			}
+            outFile.Write(posWeight.HeightFactor);
+            outFile.Write(posWeight.WeightFactor);
 		}
 
-		private void LoadPositionWeight(System.IO.BinaryReader inFile)
+		private void LoadPositionWeight(System.IO.BinaryReader inFile, int version)
 		{
 			string position = inFile.ReadString();
 			PositionWeightInputs posWeight = mPositionWeightsInputMap[position];
@@ -240,6 +248,11 @@ namespace DataReader
 			{
 				posWeight.Attributes[i] = inFile.ReadInt32();
 			}
+            if (version > 7)
+            {
+                posWeight.HeightFactor = inFile.ReadInt32();
+                posWeight.WeightFactor = inFile.ReadInt32();
+            }
 
 			mPositionWeightsMap[position] = BuildWeightFromInput(posWeight);
 			mNoCombinePositionWeightsMap[position] = BuildNoCombineWeightFromInput(posWeight);
@@ -281,6 +294,8 @@ namespace DataReader
 			{
 				newWeight.Attributes[attributeIndex] = (double)weightInput.Attributes[attributeIndex] * attributeFactor;
 			}
+            newWeight.HeightFactor = weightInput.HeightFactor * 0.5;
+            newWeight.WeightFactor = weightInput.WeightFactor * 0.5;
 
 			return newWeight;
 		}
@@ -320,8 +335,10 @@ namespace DataReader
 			{
 				newWeight.Attributes[attributeIndex] = (double)weightInput.Attributes[attributeIndex] * attributeFactor;
 			}
+            newWeight.HeightFactor = weightInput.HeightFactor * 0.5;
+            newWeight.WeightFactor = weightInput.WeightFactor * 0.5;
 
-			return newWeight;
+            return newWeight;
 		}
 
 		public void UpdatePositionWeights()
@@ -418,6 +435,8 @@ namespace DataReader
 			newWeightInput.Agility = 10;
 			newWeightInput.BroadJump = 15;
 			newWeightInput.PositionDrill = 15;
+            newWeightInput.HeightFactor = 2;
+            newWeightInput.WeightFactor = 0;
 			InitializeAttributeWeights("QB", newWeightInput);
 			newWeightInput.Attributes[0] = 20; //"Screen Passes (Ag25)",
 			newWeightInput.Attributes[1] = 19; //"Short Passes",
@@ -444,7 +463,9 @@ namespace DataReader
 			newWeightInput.Agility = 8;
 			newWeightInput.BroadJump = 10;
 			newWeightInput.PositionDrill = 5;
-			InitializeAttributeWeights("RB", newWeightInput);
+            newWeightInput.HeightFactor = 0;
+            newWeightInput.WeightFactor = 1;
+            InitializeAttributeWeights("RB", newWeightInput);
 			newWeightInput.Attributes[0] = 5; //"Breakaway Speed (Ft80)",
 			newWeightInput.Attributes[1] = 5; //"Power Inside (Bp100)",
 			newWeightInput.Attributes[2] = 8;  //"Third Down Running (Ag33)",
@@ -472,7 +493,9 @@ namespace DataReader
 			newWeightInput.Agility = 5;
 			newWeightInput.BroadJump = 20;
 			newWeightInput.PositionDrill = 15;
-			InitializeAttributeWeights("FB", newWeightInput);
+            newWeightInput.HeightFactor = 0;
+            newWeightInput.WeightFactor = 1;
+            InitializeAttributeWeights("FB", newWeightInput);
 			newWeightInput.Attributes[0] = 22;  //"Run Blocking (Bj50)",
 			newWeightInput.Attributes[1] = 5;  //"Pass Blocking",
 			newWeightInput.Attributes[2] = 3; //"Blocking Strength",
@@ -497,7 +520,9 @@ namespace DataReader
 			newWeightInput.Agility = 10;
 			newWeightInput.BroadJump = 20;
 			newWeightInput.PositionDrill = 8;
-			InitializeAttributeWeights("TE", newWeightInput);
+            newWeightInput.HeightFactor = 2;
+            newWeightInput.WeightFactor = 1;
+            InitializeAttributeWeights("TE", newWeightInput);
 			newWeightInput.Attributes[0] = 24; //"Run Blocking (Bj50)",
 			newWeightInput.Attributes[1] = 20;  //"Pass Blocking",
 			newWeightInput.Attributes[2] = 15; //"Blocking Strength (Bp100)",
@@ -523,7 +548,9 @@ namespace DataReader
 			newWeightInput.Agility = 18;
 			newWeightInput.BroadJump = 2;
 			newWeightInput.PositionDrill = 10;
-			InitializeAttributeWeights("FL", newWeightInput);
+            newWeightInput.HeightFactor = 2;
+            newWeightInput.WeightFactor = 1;
+            InitializeAttributeWeights("FL", newWeightInput);
 			newWeightInput.Attributes[0] = 10;  //"Avoid Drops (PD65)",
 			newWeightInput.Attributes[1] = 16;  //"Getting Downfield (Ag100)",
 			newWeightInput.Attributes[2] = 24;  //"Route Running (So50)",
@@ -547,7 +574,9 @@ namespace DataReader
 			newWeightInput.Agility = 18;
 			newWeightInput.BroadJump = 2;
 			newWeightInput.PositionDrill = 10;
-			InitializeAttributeWeights("SE", newWeightInput);
+            newWeightInput.HeightFactor = 2;
+            newWeightInput.WeightFactor = 1;
+            InitializeAttributeWeights("SE", newWeightInput);
 			newWeightInput.Attributes[0] = 10;  //"Avoid Drops (PD65)",
 			newWeightInput.Attributes[1] = 16;  //"Getting Downfield (Ag100)",
 			newWeightInput.Attributes[2] = 24;  //"Route Running (So50)",
@@ -571,7 +600,9 @@ namespace DataReader
 			newWeightInput.Agility = 17;
 			newWeightInput.BroadJump = 7;
 			newWeightInput.PositionDrill = 0;
-			InitializeAttributeWeights("C", newWeightInput);
+            newWeightInput.HeightFactor = 0;
+            newWeightInput.WeightFactor = 1;
+            InitializeAttributeWeights("C", newWeightInput);
 			newWeightInput.Attributes[0] = 24; //"Run Blocking (Ft100)",
 			newWeightInput.Attributes[1] = 17; //"Pass Blocking (Ag100)",
 			newWeightInput.Attributes[2] = 12;//"Blocking Strength (Bp100)",
@@ -589,7 +620,9 @@ namespace DataReader
 			newWeightInput.Agility = 15;
 			newWeightInput.BroadJump = 7;
 			newWeightInput.PositionDrill = 0;
-			InitializeAttributeWeights("RG", newWeightInput);
+            newWeightInput.HeightFactor = 0;
+            newWeightInput.WeightFactor = 1;
+            InitializeAttributeWeights("RG", newWeightInput);
 			newWeightInput.Attributes[0] = 24; //"Run Blocking (Ft100)",
 			newWeightInput.Attributes[1] = 15; //"Pass Blocking (Ag100)",
 			newWeightInput.Attributes[2] = 13;//"Blocking Strength (Bp100)",
@@ -606,7 +639,9 @@ namespace DataReader
 			newWeightInput.Agility = 15;
 			newWeightInput.BroadJump = 7;
 			newWeightInput.PositionDrill = 0;
-			InitializeAttributeWeights("LG", newWeightInput);
+            newWeightInput.HeightFactor = 0;
+            newWeightInput.WeightFactor = 1;
+            InitializeAttributeWeights("LG", newWeightInput);
 			newWeightInput.Attributes[0] = 24; //"Run Blocking (Ft100)",
 			newWeightInput.Attributes[1] = 15; //"Pass Blocking (Ag100)",
 			newWeightInput.Attributes[2] = 13;//"Blocking Strength (Bp100)",
@@ -623,7 +658,9 @@ namespace DataReader
 			newWeightInput.Agility = 20;
 			newWeightInput.BroadJump = 7;
 			newWeightInput.PositionDrill = 0;
-			InitializeAttributeWeights("LT", newWeightInput);
+            newWeightInput.HeightFactor = 0;
+            newWeightInput.WeightFactor = 1;
+            InitializeAttributeWeights("LT", newWeightInput);
 			newWeightInput.Attributes[0] = 24; //"Run Blocking (Ft100)",
 			newWeightInput.Attributes[1] = 23; //"Pass Blocking (Ag100)",
 			newWeightInput.Attributes[2] = 13;//"Blocking Strength (Bp100)",
@@ -640,7 +677,9 @@ namespace DataReader
 			newWeightInput.Agility = 20;
 			newWeightInput.BroadJump = 7;
 			newWeightInput.PositionDrill = 0;
-			InitializeAttributeWeights("RT", newWeightInput);
+            newWeightInput.HeightFactor = 0;
+            newWeightInput.WeightFactor = 1;
+            InitializeAttributeWeights("RT", newWeightInput);
 			newWeightInput.Attributes[0] = 24; //"Run Blocking (Ft100)",
 			newWeightInput.Attributes[1] = 23; //"Pass Blocking (Ag100)",
 			newWeightInput.Attributes[2] = 13;//"Blocking Strength (Bp100)",
@@ -657,7 +696,9 @@ namespace DataReader
 			newWeightInput.Agility = 0;
 			newWeightInput.BroadJump = 0;
 			newWeightInput.PositionDrill = 0;
-			InitializeAttributeWeights("P", newWeightInput);
+            newWeightInput.HeightFactor = 0;
+            newWeightInput.WeightFactor = 0;
+            InitializeAttributeWeights("P", newWeightInput);
 			newWeightInput.Attributes[0] = 25; //"Kicking Power (Ft100)",
 			newWeightInput.Attributes[1] = 12; //"Punt Hang Time (Bp100)",
 			newWeightInput.Attributes[2] = 8; //"Directional Punting (So50)",
@@ -674,7 +715,9 @@ namespace DataReader
 			newWeightInput.Agility = 0;
 			newWeightInput.BroadJump = 7;
 			newWeightInput.PositionDrill = 10;
-			InitializeAttributeWeights("K", newWeightInput);
+            newWeightInput.HeightFactor = 0;
+            newWeightInput.WeightFactor = 0;
+            InitializeAttributeWeights("K", newWeightInput);
 			newWeightInput.Attributes[0] = 25; //"Kicking Accuracy (So50)",
 			newWeightInput.Attributes[1] = 14; //"Kicking Power (Bp100Bj50)",
 			newWeightInput.Attributes[2] = 3;  //"Kickoff Distance (Ft100)",
@@ -691,7 +734,9 @@ namespace DataReader
 			newWeightInput.Agility = 20;
 			newWeightInput.BroadJump = 5;
 			newWeightInput.PositionDrill = 0;
-			InitializeAttributeWeights("LDE", newWeightInput);
+            newWeightInput.HeightFactor = 0;
+            newWeightInput.WeightFactor = 2;
+            InitializeAttributeWeights("LDE", newWeightInput);
 			newWeightInput.Attributes[0] = 25; //"Run Defense (Ag100)",
 			newWeightInput.Attributes[1] = 18; //"Pass Rush Technique (Ft100)",
             newWeightInput.Attributes[2] = 0; //"Man-to-Man Defense (Bj100)",
@@ -714,7 +759,9 @@ namespace DataReader
 			newWeightInput.Agility = 20;
 			newWeightInput.BroadJump = 5;
 			newWeightInput.PositionDrill = 0;
-			InitializeAttributeWeights("RDE", newWeightInput);
+            newWeightInput.HeightFactor = 0;
+            newWeightInput.WeightFactor = 2;
+            InitializeAttributeWeights("RDE", newWeightInput);
             newWeightInput.Attributes[0] = 25; //"Run Defense (Ag100)",
             newWeightInput.Attributes[1] = 18; //"Pass Rush Technique (Ft100)",
             newWeightInput.Attributes[2] = 0; //"Man-to-Man Defense (Bj100)",
@@ -737,7 +784,9 @@ namespace DataReader
 			newWeightInput.Agility = 20;
 			newWeightInput.BroadJump = 5;
 			newWeightInput.PositionDrill = 0;
-			InitializeAttributeWeights("LDT", newWeightInput);
+            newWeightInput.HeightFactor = 0;
+            newWeightInput.WeightFactor = 2;
+            InitializeAttributeWeights("LDT", newWeightInput);
             newWeightInput.Attributes[0] = 25; //"Run Defense (Ag100)",
             newWeightInput.Attributes[1] = 10; //"Pass Rush Technique (Ft100)",
             newWeightInput.Attributes[2] = 0; //"Man-to-Man Defense (Bj100)",
@@ -760,7 +809,9 @@ namespace DataReader
 			newWeightInput.Agility = 20;
 			newWeightInput.BroadJump = 5;
 			newWeightInput.PositionDrill = 0;
-			InitializeAttributeWeights("RDT", newWeightInput);
+            newWeightInput.HeightFactor = 0;
+            newWeightInput.WeightFactor = 2;
+            InitializeAttributeWeights("RDT", newWeightInput);
             newWeightInput.Attributes[0] = 25; //"Run Defense (Ag100)",
             newWeightInput.Attributes[1] = 10; //"Pass Rush Technique (Ft100)",
             newWeightInput.Attributes[2] = 0; //"Man-to-Man Defense (Bj100)",
@@ -783,7 +834,9 @@ namespace DataReader
 			newWeightInput.Agility = 20;
 			newWeightInput.BroadJump = 5;
 			newWeightInput.PositionDrill = 0;
-			InitializeAttributeWeights("NT", newWeightInput);
+            newWeightInput.HeightFactor = 1;
+            newWeightInput.WeightFactor = 2;
+            InitializeAttributeWeights("NT", newWeightInput);
             newWeightInput.Attributes[0] = 25; //"Run Defense (Ag100)",
             newWeightInput.Attributes[1] = 10; //"Pass Rush Technique (Ft100)",
             newWeightInput.Attributes[2] = 0; //"Man-to-Man Defense (Bj100)",
@@ -806,7 +859,9 @@ namespace DataReader
 			newWeightInput.Agility = 20;
 			newWeightInput.BroadJump = 10;
 			newWeightInput.PositionDrill = 10;
-			InitializeAttributeWeights("WILB", newWeightInput);
+            newWeightInput.HeightFactor = 0;
+            newWeightInput.WeightFactor = 2;
+            InitializeAttributeWeights("WILB", newWeightInput);
 			newWeightInput.Attributes[0] = 25; //"Run Defense (Ag100)",
 			newWeightInput.Attributes[1] = 5; //"Pass Rush Technique (Ft100)",
 			newWeightInput.Attributes[2] = 8; //"Man-to-Man Defense (Bj100)",
@@ -829,7 +884,9 @@ namespace DataReader
 			newWeightInput.Agility = 20;
 			newWeightInput.BroadJump = 10;
 			newWeightInput.PositionDrill = 10;
-			InitializeAttributeWeights("SILB", newWeightInput);
+            newWeightInput.HeightFactor = 0;
+            newWeightInput.WeightFactor = 2;
+            InitializeAttributeWeights("SILB", newWeightInput);
 			newWeightInput.Attributes[0] = 25; //"Run Defense (Ag100)",
 			newWeightInput.Attributes[1] = 5; //"Pass Rush Technique (Ft100)",
 			newWeightInput.Attributes[2] = 8; //"Man-to-Man Defense (Bj100)",
@@ -852,7 +909,9 @@ namespace DataReader
 			newWeightInput.Agility = 20;
 			newWeightInput.BroadJump = 10;
 			newWeightInput.PositionDrill = 10;
-			InitializeAttributeWeights("MLB", newWeightInput);
+            newWeightInput.HeightFactor = 0;
+            newWeightInput.WeightFactor = 2;
+            InitializeAttributeWeights("MLB", newWeightInput);
 			newWeightInput.Attributes[0] = 25; //"Run Defense (Ag100)",
 			newWeightInput.Attributes[1] = 5; //"Pass Rush Technique (Ft100)",
 			newWeightInput.Attributes[2] = 8; //"Man-to-Man Defense (Bj100)",
@@ -875,7 +934,9 @@ namespace DataReader
 			newWeightInput.Agility = 20;
 			newWeightInput.BroadJump = 12;
 			newWeightInput.PositionDrill = 10;
-			InitializeAttributeWeights("SLB", newWeightInput);
+            newWeightInput.HeightFactor = 0;
+            newWeightInput.WeightFactor = 2;
+            InitializeAttributeWeights("SLB", newWeightInput);
 			newWeightInput.Attributes[0] = 25; //"Run Defense (Ag100)",
 			newWeightInput.Attributes[1] = 8;  //"Pass Rush Technique (Ft100)",
 			newWeightInput.Attributes[2] = 10;  //"Man-to-Man Defense (Bj100)",
@@ -898,7 +959,9 @@ namespace DataReader
 			newWeightInput.Agility = 20;
 			newWeightInput.BroadJump = 12;
 			newWeightInput.PositionDrill = 10;
-			InitializeAttributeWeights("WLB", newWeightInput);
+            newWeightInput.HeightFactor = 0;
+            newWeightInput.WeightFactor = 2;
+            InitializeAttributeWeights("WLB", newWeightInput);
 			newWeightInput.Attributes[0] = 25; //"Run Defense (Ag100)",
 			newWeightInput.Attributes[1] = 8;  //"Pass Rush Technique (Ft100)",
 			newWeightInput.Attributes[2] = 10;  //"Man-to-Man Defense (Bj100)",
@@ -921,7 +984,9 @@ namespace DataReader
 			newWeightInput.Agility = 15;
 			newWeightInput.BroadJump = 1;
 			newWeightInput.PositionDrill = 20;
-			InitializeAttributeWeights("LCB", newWeightInput);
+            newWeightInput.HeightFactor = 1;
+            newWeightInput.WeightFactor = 1;
+            InitializeAttributeWeights("LCB", newWeightInput);
 			newWeightInput.Attributes[0] = 16; //"Run Defense (Ag100)",
 			newWeightInput.Attributes[1] = 24; //"Man-to-Man Defense (Ft50)",
 			newWeightInput.Attributes[2] = 22; //"Zone Defense (Ft50PD50)",
@@ -945,7 +1010,9 @@ namespace DataReader
 			newWeightInput.Agility = 15;
 			newWeightInput.BroadJump = 1;
 			newWeightInput.PositionDrill = 20;
-			InitializeAttributeWeights("RCB", newWeightInput);
+            newWeightInput.HeightFactor = 1;
+            newWeightInput.WeightFactor = 1;
+            InitializeAttributeWeights("RCB", newWeightInput);
 			newWeightInput.Attributes[0] = 16; //"Run Defense (Ag100)",
 			newWeightInput.Attributes[1] = 24; //"Man-to-Man Defense (Ft50)",
 			newWeightInput.Attributes[2] = 22; //"Zone Defense (Ft50PD50)",
@@ -969,7 +1036,9 @@ namespace DataReader
 			newWeightInput.Agility = 20;
 			newWeightInput.BroadJump = 1;
 			newWeightInput.PositionDrill = 10;
-			InitializeAttributeWeights("SS", newWeightInput);
+            newWeightInput.HeightFactor = 0;
+            newWeightInput.WeightFactor = 2;
+            InitializeAttributeWeights("SS", newWeightInput);
 			newWeightInput.Attributes[0] = 25; //"Run Defense (Ag100)",
 			newWeightInput.Attributes[1] = 11; //"Man-to-Man Defense (Ft50)",
 			newWeightInput.Attributes[2] = 11; //"Zone Defense (Ft50PD50)",
@@ -993,7 +1062,9 @@ namespace DataReader
 			newWeightInput.Agility = 20;
 			newWeightInput.BroadJump = 1;
 			newWeightInput.PositionDrill = 10;
-			InitializeAttributeWeights("FS", newWeightInput);
+            newWeightInput.HeightFactor = 0;
+            newWeightInput.WeightFactor = 2;
+            InitializeAttributeWeights("FS", newWeightInput);
 			newWeightInput.Attributes[0] = 25; //"Run Defense (Ag100)",
 			newWeightInput.Attributes[1] = 11; //"Man-to-Man Defense (Ft50)",
 			newWeightInput.Attributes[2] = 11; //"Zone Defense (Ft50PD50)",
@@ -1017,7 +1088,9 @@ namespace DataReader
 			newWeightInput.Agility = 10;
 			newWeightInput.BroadJump = 10;
 			newWeightInput.PositionDrill = 0;
-			InitializeAttributeWeights("LS", newWeightInput);
+            newWeightInput.HeightFactor = 0;
+            newWeightInput.WeightFactor = 0;
+            InitializeAttributeWeights("LS", newWeightInput);
 			newWeightInput.Attributes[0] = 25; //"Long Snapping"
 			mPositionWeightsInputMap.Add("LS", newWeightInput);
 			mPositionWeightsMap["LS"] = BuildWeightFromInput(newWeightInput);

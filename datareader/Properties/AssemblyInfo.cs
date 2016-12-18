@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("DataReader")]
-[assembly: AssemblyDescription("Reads various FOF2k7 data files.")]
+[assembly: AssemblyDescription("Reads various FOF data files.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Stelmacksoft")]
 [assembly: AssemblyProduct("FOFUtilitySuite")]
-[assembly: AssemblyCopyright("Copyright © Stelmacksoft 2006-2012")]
+[assembly: AssemblyCopyright("Copyright © Stelmacksoft 2006-2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -31,5 +31,5 @@ using System.Runtime.InteropServices;
 //
 // You can specify all the values or you can default the Revision and Build Numbers 
 // by using the '*' as shown below:
-[assembly: AssemblyVersion("2.0.8.0")]
-[assembly: AssemblyFileVersion("2.0.8.0")]
+[assembly: AssemblyVersion("8.1.1.0")]
+[assembly: AssemblyFileVersion("8.1.1.0")]
