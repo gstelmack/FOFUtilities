@@ -40,6 +40,7 @@
                         <GridViewColumn Header="Name" Width="auto" DisplayMemberBinding="{Binding Path=Name}"/>
                         <GridViewColumn Header="Pos" Width="auto" DisplayMemberBinding="{Binding Path=PosGrp}"/>
                         <GridViewColumn Header="Exp" Width="auto" DisplayMemberBinding="{Binding Path=Exp}"/>
+                        <GridViewColumn Header="Age" Width="auto" DisplayMemberBinding="{Binding Path=Age}"/>
                         <GridViewColumn Header="Ht" Width="auto">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>

@@ -165,7 +165,8 @@ namespace PlayerTracker
 						listData.PreviousCur = (byte)lastOvr;
 						listData.PreviousFut = (byte)lastFut;
 						listData.ExpYears = entry.Experience;
-						listData.ID = rec.Player_ID;
+                        listData.AgeYears = (byte)(m_ProgressData.StageRecords[lastStageIndex].Season - rec.Year_Born);
+                        listData.ID = rec.Player_ID;
 						listData.OverallChange = curFut - startFut;
 						listData.RecentChange = curFut - lastFut;
 						listData.TeamIndex = entry.Team;

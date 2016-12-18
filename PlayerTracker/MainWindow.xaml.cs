@@ -642,7 +642,9 @@ namespace PlayerTracker
 			PlayerListData data = (PlayerListData)listViewPlayers.SelectedItem;
 			PlayerRecord rec = m_ProgressData.PlayerRecords[data.ID];
 			string exp = data.Exp.TrimStart(new char[] { '0' });
-			labelPlayer.Content = data.Name + ", " + data.Pos + ", " + exp + "yrs";
+            StageData curStage = m_ProgressData.StageRecords.LastOrDefault();
+            int age = curStage.Season - rec.Year_Born;
+			labelPlayer.Content = data.Name + " (Age " + age + "): " + data.Pos + ", " + exp + "yrs";
 			if (rec.Draft_Round > 0)
 			{
 				labelPlayer.Content += "    " + rec.Draft_Year + " " + rec.Draft_Round + "(" + rec.Drafted_Position + ") by " + m_Teams[rec.Drafted_By];

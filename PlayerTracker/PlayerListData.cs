@@ -42,6 +42,9 @@ namespace PlayerTracker
         public byte ExpYears;
         public string Exp => ExpYears.ToString("D2");
 
+        public byte AgeYears;
+        public string Age => AgeYears.ToString("D2");
+
         public string Recent
         {
             get
