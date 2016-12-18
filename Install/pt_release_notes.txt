@@ -1,4 +1,8 @@
-﻿Version 8.1.2.0
+﻿Version 8.1.3.0
+
+- Add player age to display (contributed by Caligari)
+
+Version 8.1.2.0
 
 - Display and color current combine numbers on the main player list.
 - Display and color height / weight on the main player list based on the
