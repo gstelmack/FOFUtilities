@@ -1432,6 +1432,10 @@ namespace DataReader
 				kickerRecord.KickoffYards += playData.TypeSpecificData[(int)KickoffPlayFields.KickoffDistance];
 
 				int finalFieldPosition = playData.TypeSpecificData[(int)KickoffPlayFields.ReturnYardLine] % 100;
+                if (finalFieldPosition < 0)
+                {
+                    finalFieldPosition *= -1;
+                }
 				if (playData.TypeSpecificData[(int)KickoffPlayFields.KickingTeam] == 1)
 				{
 					finalFieldPosition = 100 - finalFieldPosition;
@@ -1458,7 +1462,29 @@ namespace DataReader
 			{
 				ExtractKickoffStatsFromPlay(gameLog, playData);
 			}
-		}
+
+            for (short i=0;i<playData.DefensiveGrade.Length;++i)
+            {
+                var offRec = GetOffensivePlayerStatsFromPlay(gameLog, playData, i);
+                if (playData.OffensiveGrade[i] == 1)
+                {
+                    offRec.PlusPlays += 1;
+                }
+                else if (playData.OffensiveGrade[i] == 2)
+                {
+                    offRec.MinusPlays += 1;
+                }
+                var defRec = GetDefensivePlayerStatsFromPlay(gameLog, playData, i);
+                if (playData.DefensiveGrade[i] == 1)
+                {
+                    defRec.PlusPlays += 1;
+                }
+                else if (playData.DefensiveGrade[i] == 2)
+                {
+                    defRec.MinusPlays += 1;
+                }
+            }
+        }
 
 		private const int kTeamCount = 32;
 		private const int kSeasonGameCount = 350;

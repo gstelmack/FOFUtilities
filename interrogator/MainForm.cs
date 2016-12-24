@@ -23,7 +23,6 @@ namespace Interrogator
 		private const string kSettingsRoot = "Interrogator";
 		private const string kUseProcessSeason = "UseProcessSeason";
 		private const string kSeasonToProcessFrom = "SeasonToProcessFrom";
-		private const string kOutputDirectory = "OutputDirectory";
 
 		private WindowsUtilities.XMLSettings mSettings;
 
@@ -455,10 +454,19 @@ namespace Interrogator
 				}
 			}
 
-			statsFile.Close();
-			drivesFile.Close();
-			resultsFile.Close();
-		}
+            if (statsFile != null)
+            {
+                statsFile.Close();
+            }
+            if (drivesFile != null)
+            {
+                drivesFile.Close();
+            }
+            if (resultsFile != null)
+            {
+                resultsFile.Close();
+            }
+        }
 
 		private void CreateDataTables()
 		{
