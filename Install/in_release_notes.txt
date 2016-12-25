@@ -1,0 +1,6 @@
+﻿Version 8.1.0.0
+
+- Support for FOF8 file structures.
+- Process From Season remembered per league.
+- Added the ability to specify a file (likely a script) that should be opened
+  when the files are done being processed.

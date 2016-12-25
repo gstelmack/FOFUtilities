@@ -44,8 +44,8 @@ enum<short> OFFENSIVE_FORMATION
 
 enum<short> DEFENSIVE_ALIGNMENT
 {
-    ThreeFour = 0,
-    FourThree = 1
+    Eagle34 = 0,
+    True34 = 1
 };
 
 enum<short> DEFENSIVE_PERSONNEL
@@ -59,14 +59,15 @@ enum<short> DEFENSIVE_PERSONNEL
 
 enum<short> DEFENSIVE_COVERAGE
 {
-    OneDeepLooseMan = 0,
-    OneDeepBumpAndRun = 1,
-    TwoDeepLooseMan = 2,
-    TwoDeepBumpAndRun = 3,
-    ThreeDeepZone = 4,
-    FourDeepZone = 5,
-    StrongSideMan = 6,
-    WeakSideMan = 7
+    ManToMan = 0,
+    Cover1 = 1,
+    Press1 = 2,
+    Tampa2 = 3,
+    Cover2 = 4,
+    Press2 = 5,
+    Cover3Sky = 6,
+    Cover3Cloud = 7,
+    Cover4 = 8
 };
 
 enum<short> DEFENSIVE_RUNPASS
@@ -192,6 +193,13 @@ enum<short> BADSNAPTYPE
     SnapHolderBobbled=2
 };
 
+enum<short> PLAYERPERFORMANCE
+{
+    Unknown=0,
+    Plus=1,
+    Minus=2
+};
+
 struct GAMEPLAYFORMATION
 {
 	OFFENSIVE_FORMATION OffensiveFormation;	
@@ -224,7 +232,7 @@ struct GAMEPLAYPENALTY {
     short HappenedOnPK;		    // 0-1 (1: Happened on Punt/Kick) *** Not 100% sure
     short ResultsInFirstDown;   // 0-1 (1: Results in a First Down) *** Not 100% sure
     short ResultsInLossOfDown;   // 0-1 (1: Results in Loss of Down) *** Not 100% sure
-    short Unknown;
+    short PenaltyLocation;      // Where on the field it happened
     short Unknown;
     short InEndZone;            // 0-1 (1: In End Zone)
     short YardLineIfAccepted;   // 0-100 (Yard Line if Accepted)
@@ -244,7 +252,7 @@ struct GAMEPLAYPENALTY {
     short Unknown;
     short Unknown;
     short Unknown;
-    short EffectOnPlay;         // 0-3 (0: No effect, 1: ???, 2: Added to end of play (i.e. intentional face mask), 3: Play doesn't happen (offsides)) *** Not sure on this
+    short EffectOnPlay;         // 0-3 (0: No effect, 1: Auto first down?, 2: Added to end of play (i.e. intentional face mask), 3: Play doesn't happen (offsides)) *** Not sure on this
 };
 
 struct GAMEPLAYLINEUP {
@@ -298,6 +306,7 @@ struct PLAYKICKOFFDATA
     short Second;
     short Always_Zero;
     short Always_Zero;
+    short Always_Zero;
     short KickingTeam;
     short PenaltyAccepted;
     short ReturnYardLine;
@@ -323,7 +332,7 @@ struct PLAYKICKOFFDATA
     short Touchback;
     short Returner;
     short FumbleRecoveryYardLine;
-    short Always_Zero2[34];
+    short Always_Zero2[33];
 };
 
 struct PLAYFGDATA 
@@ -527,10 +536,14 @@ struct GAMEPLAYENTRY
         PLAYINFODATA PlayInfoData;
     }
 
+    short Filler[18];
+    PLAYERPERFORMANCE OffensivePerformance[11];
+    short Filler2[13];
+    PLAYERPERFORMANCE DefensivePerformance[11];
+    short Filler3[28];
+
 	GAMEPLAYLINEUP OffensiveRoster;
 	GAMEPLAYLINEUP DefensiveRoster;
-
-    short Filler[81];
 };
 
 struct GAMETIMESTAMP
@@ -620,7 +633,7 @@ struct GAMEENDENTRY
 
 struct GAMEPLAYERENTRY
 {
-    long Unknown;   // Active Player Index?
+    long PlayerIndex;
     long PlayerID;
 };
 

@@ -418,7 +418,7 @@ namespace DataReader
 
 			playData.TypeSpecificData[(int)KickoffPlayFields.Minute] = BinaryHelper.ReadInt16(inFile,"Minute");
 			playData.TypeSpecificData[(int)KickoffPlayFields.Second] = BinaryHelper.ReadInt16(inFile,"Second");
-			BinaryHelper.ProbeBytes(inFile, 4);
+			BinaryHelper.ProbeBytes(inFile, 6);
 			playData.TypeSpecificData[(int)KickoffPlayFields.KickingTeam] = BinaryHelper.ReadInt16(inFile,"KickingTeam");
 			playData.TypeSpecificData[(int)KickoffPlayFields.PenaltyAccepted] = BinaryHelper.ReadInt16(inFile,"PenaltyAccepted");
 			playData.TypeSpecificData[(int)KickoffPlayFields.ReturnYardLine] = BinaryHelper.ReadInt16(inFile,"ReturnYardLine");
@@ -441,7 +441,7 @@ namespace DataReader
 			playData.TypeSpecificData[(int)KickoffPlayFields.Touchback] = BinaryHelper.ReadInt16(inFile,"Touchback");
 			playData.TypeSpecificData[(int)KickoffPlayFields.Returner] = BinaryHelper.ReadInt16(inFile,"Returner");
 			playData.TypeSpecificData[(int)KickoffPlayFields.FumbleRecoveryYardLine] = BinaryHelper.ReadInt16(inFile,"FumbleRecoveryYardLine");
-			BinaryHelper.ProbeBytes(inFile, 68);
+			BinaryHelper.ProbeBytes(inFile, 66);
 
 			BinaryHelper.TracerOutdent();
 		}
@@ -560,7 +560,8 @@ namespace DataReader
 			playData.HappenedOnPuntOrKick = BinaryHelper.ReadInt16(inFile, "HappenedOnPuntOrKick");
 			playData.ResultsInFirstDown = BinaryHelper.ReadInt16(inFile, "ResultsInFirstDown");
 			playData.ResultsInLossOfDown = BinaryHelper.ReadInt16(inFile, "ResultsInLossOfDown");
-			BinaryHelper.ProbeBytes(inFile, 4);
+            playData.PenaltyLocation = BinaryHelper.ReadInt16(inFile, "PenaltyLocation");
+			BinaryHelper.ProbeBytes(inFile, 2);
 			playData.InEndZone = BinaryHelper.ReadInt16(inFile, "InEndZone");
 			playData.YardLineIfAccepted = BinaryHelper.ReadInt16(inFile, "YardLineIfAccepted");
 			playData.DownIfAccepted = BinaryHelper.ReadInt16(inFile, "DownIfAccepted");
@@ -608,8 +609,26 @@ namespace DataReader
 				LoadInfoPlayData(inFile, playData);
 			}
 
-			// Offensive Lineup
-			for (int offensivePlayer = 0; offensivePlayer < playData.OffensivePlayers.Length; ++offensivePlayer)
+            BinaryHelper.ProbeBytes(inFile, 36);
+
+            // Offensive Grades
+            for (int offensivePlayer = 0; offensivePlayer < playData.OffensiveGrade.Length; ++offensivePlayer)
+            {
+                playData.OffensiveGrade[offensivePlayer] = BinaryHelper.ReadInt16(inFile, "Offensive Grade " + offensivePlayer.ToString());
+            }
+
+            BinaryHelper.ProbeBytes(inFile, 26);
+
+            // Defensive Grades
+            for (int defensivePlayer = 0; defensivePlayer < playData.DefensiveGrade.Length; ++defensivePlayer)
+            {
+                playData.DefensiveGrade[defensivePlayer] = BinaryHelper.ReadInt16(inFile, "Defensive Grade " + defensivePlayer.ToString());
+            }
+
+            BinaryHelper.ProbeBytes(inFile, 56);
+
+            // Offensive Lineup
+            for (int offensivePlayer = 0; offensivePlayer < playData.OffensivePlayers.Length; ++offensivePlayer)
 			{
 				playData.OffensivePlayers[offensivePlayer] = BinaryHelper.ReadInt16(inFile, "Offensive Player " + offensivePlayer.ToString());
 				if (playData.OffensivePlayers[offensivePlayer] >= kNumActivePlayers)
@@ -661,7 +680,15 @@ namespace DataReader
 
 		private void WritePlayersOnField(GamePlay playData, System.IO.StreamWriter dumpFile)
 		{
-			int playerIndex;
+            for (short ogrd = 0; ogrd<11; ++ogrd)
+            {
+                dumpFile.Write("," + playData.OffensiveGrade[ogrd]);
+            }
+            for (short dgrd = 0; dgrd < 11; ++dgrd)
+            {
+                dumpFile.Write("," + playData.DefensiveGrade[dgrd]);
+            }
+            int playerIndex;
 			for (short off = 0; off < 11; ++off)
 			{
 				playerIndex = -1;
@@ -858,14 +885,14 @@ namespace DataReader
 			while (true)
 			{
 				string nextHeader = BinaryHelper.ExtractString(inFile, 4, "Header");
-				if (nextHeader == "PD06")
+				if (nextHeader == "PD08")
 				{
 					GamePlay playData = LoadPlayData(inFile);
 					ExtractStatsFromPlay(newLog, playData);
 					newLog.Plays.Add(playData);
 					++CurPlayID;
 				}
-				else if (nextHeader == "ND06")
+				else if (nextHeader == "ND08")
 				{
 					LoadBoxScoreData(inFile, newLog);
 					break;
@@ -898,12 +925,12 @@ namespace DataReader
 			Encoding windows1252Encoding = Encoding.GetEncoding(1252);
 			System.IO.BinaryReader inFile = new System.IO.BinaryReader(inStream, windows1252Encoding);
 
-			//BinaryHelper.SetupTracer(logPath);
+			BinaryHelper.SetupTracer(logPath);
 
 			while (inFile.PeekChar() >= 0)
 			{
 				string header = BinaryHelper.ExtractString(inFile, 4, "Header");
-				if (header == "WD06")
+				if (header == "WD08")
 				{
 					GameLog newLog = LoadGameLog(inFile);
 					newRec.GameLogs.Add(newLog);
@@ -941,7 +968,8 @@ namespace DataReader
 				gInfoPlayDumpFile.Write(",Dat16");
 				gInfoPlayDumpFile.Write(",Plr1");
 				gInfoPlayDumpFile.Write(",Plr2");
-				gInfoPlayDumpFile.Write(",Off0,Off1,Off2,Off3,Off4,Off5,Off6,Off7,Off8,Off9,Off10,Def0,Def1,Def2,Def3,Def4,Def5,Def6,Def7,Def8,Def9,Def10");
+                gInfoPlayDumpFile.Write(",OfG0,OfG1,OfG2,OfG3,OfG4,OfG5,OfG6,OfG7,OfG8,OfG9,OfG10,DfG0,DfG1,DfG2,DfG3,DfG4,DfG5,DfG6,DfG7,DfG8,DfG9,DfG10");
+                gInfoPlayDumpFile.Write(",Off0,Off1,Off2,Off3,Off4,Off5,Off6,Off7,Off8,Off9,Off10,Def0,Def1,Def2,Def3,Def4,Def5,Def6,Def7,Def8,Def9,Def10");
 				gInfoPlayDumpFile.WriteLine();
 			}
 
@@ -953,7 +981,8 @@ namespace DataReader
 				{
 					gFGPlayDumpFile.Write("," + i.ToString("D2"));
 				}
-				gFGPlayDumpFile.Write(",Off0,Off1,Off2,Off3,Off4,Off5,Off6,Off7,Off8,Off9,Off10,Def0,Def1,Def2,Def3,Def4,Def5,Def6,Def7,Def8,Def9,Def10");
+                gFGPlayDumpFile.Write(",OfG0,OfG1,OfG2,OfG3,OfG4,OfG5,OfG6,OfG7,OfG8,OfG9,OfG10,DfG0,DfG1,DfG2,DfG3,DfG4,DfG5,DfG6,DfG7,DfG8,DfG9,DfG10");
+                gFGPlayDumpFile.Write(",Off0,Off1,Off2,Off3,Off4,Off5,Off6,Off7,Off8,Off9,Off10,Def0,Def1,Def2,Def3,Def4,Def5,Def6,Def7,Def8,Def9,Def10");
 				gFGPlayDumpFile.WriteLine();
 			}
 
@@ -965,7 +994,8 @@ namespace DataReader
 				{
 					gPuntPlayDumpFile.Write("," + i.ToString("D2"));
 				}
-				gPuntPlayDumpFile.Write(",Off0,Off1,Off2,Off3,Off4,Off5,Off6,Off7,Off8,Off9,Off10,Def0,Def1,Def2,Def3,Def4,Def5,Def6,Def7,Def8,Def9,Def10");
+                gPuntPlayDumpFile.Write(",OfG0,OfG1,OfG2,OfG3,OfG4,OfG5,OfG6,OfG7,OfG8,OfG9,OfG10,DfG0,DfG1,DfG2,DfG3,DfG4,DfG5,DfG6,DfG7,DfG8,DfG9,DfG10");
+                gPuntPlayDumpFile.Write(",Off0,Off1,Off2,Off3,Off4,Off5,Off6,Off7,Off8,Off9,Off10,Def0,Def1,Def2,Def3,Def4,Def5,Def6,Def7,Def8,Def9,Def10");
 				gPuntPlayDumpFile.WriteLine();
 			}
 
@@ -977,7 +1007,8 @@ namespace DataReader
 				{
 					gOnsideKickPlayDumpFile.Write("," + i.ToString("D2"));
 				}
-				gOnsideKickPlayDumpFile.Write(",Off0,Off1,Off2,Off3,Off4,Off5,Off6,Off7,Off8,Off9,Off10,Def0,Def1,Def2,Def3,Def4,Def5,Def6,Def7,Def8,Def9,Def10");
+                gOnsideKickPlayDumpFile.Write(",OfG0,OfG1,OfG2,OfG3,OfG4,OfG5,OfG6,OfG7,OfG8,OfG9,OfG10,DfG0,DfG1,DfG2,DfG3,DfG4,DfG5,DfG6,DfG7,DfG8,DfG9,DfG10");
+                gOnsideKickPlayDumpFile.Write(",Off0,Off1,Off2,Off3,Off4,Off5,Off6,Off7,Off8,Off9,Off10,Def0,Def1,Def2,Def3,Def4,Def5,Def6,Def7,Def8,Def9,Def10");
 				gOnsideKickPlayDumpFile.WriteLine();
 			}
 
@@ -1046,7 +1077,8 @@ namespace DataReader
 				gPassPlayDumpFile.Write(",EvadedRushToAvoidSafety");
 				gPassPlayDumpFile.Write(",FieldCondition");
 				gPassPlayDumpFile.Write(",GameLogMessage4Type");
-				gPassPlayDumpFile.Write(",Off0,Off1,Off2,Off3,Off4,Off5,Off6,Off7,Off8,Off9,Off10,Def0,Def1,Def2,Def3,Def4,Def5,Def6,Def7,Def8,Def9,Def10");
+                gPassPlayDumpFile.Write(",OfG0,OfG1,OfG2,OfG3,OfG4,OfG5,OfG6,OfG7,OfG8,OfG9,OfG10,DfG0,DfG1,DfG2,DfG3,DfG4,DfG5,DfG6,DfG7,DfG8,DfG9,DfG10");
+                gPassPlayDumpFile.Write(",Off0,Off1,Off2,Off3,Off4,Off5,Off6,Off7,Off8,Off9,Off10,Def0,Def1,Def2,Def3,Def4,Def5,Def6,Def7,Def8,Def9,Def10");
 				gPassPlayDumpFile.WriteLine();
 			}
 
@@ -1064,7 +1096,8 @@ namespace DataReader
 				gRunPlayDumpFile.Write(",dat38,TurnoverOnDowns,dat40,dat41");
 				gRunPlayDumpFile.Write(",RunDirection,IsFinesseRun,FieldCondition,DefenseFamiliar,GameLogMessage4Type");
 				gRunPlayDumpFile.Write(",dat47,dat48,dat49,dat50,dat51,dat52,dat53,dat54,dat55,dat56,dat57,dat58,dat59,dat60,dat61,dat62");
-				gRunPlayDumpFile.Write(",Off0,Off1,Off2,Off3,Off4,Off5,Off6,Off7,Off8,Off9,Off10,Def0,Def1,Def2,Def3,Def4,Def5,Def6,Def7,Def8,Def9,Def10");
+                gRunPlayDumpFile.Write(",OfG0,OfG1,OfG2,OfG3,OfG4,OfG5,OfG6,OfG7,OfG8,OfG9,OfG10,DfG0,DfG1,DfG2,DfG3,DfG4,DfG5,DfG6,DfG7,DfG8,DfG9,DfG10");
+                gRunPlayDumpFile.Write(",Off0,Off1,Off2,Off3,Off4,Off5,Off6,Off7,Off8,Off9,Off10,Def0,Def1,Def2,Def3,Def4,Def5,Def6,Def7,Def8,Def9,Def10");
 				gRunPlayDumpFile.WriteLine();
 			}
 
@@ -1399,6 +1432,10 @@ namespace DataReader
 				kickerRecord.KickoffYards += playData.TypeSpecificData[(int)KickoffPlayFields.KickoffDistance];
 
 				int finalFieldPosition = playData.TypeSpecificData[(int)KickoffPlayFields.ReturnYardLine] % 100;
+                if (finalFieldPosition < 0)
+                {
+                    finalFieldPosition *= -1;
+                }
 				if (playData.TypeSpecificData[(int)KickoffPlayFields.KickingTeam] == 1)
 				{
 					finalFieldPosition = 100 - finalFieldPosition;
@@ -1425,7 +1462,29 @@ namespace DataReader
 			{
 				ExtractKickoffStatsFromPlay(gameLog, playData);
 			}
-		}
+
+            for (short i=0;i<playData.DefensiveGrade.Length;++i)
+            {
+                var offRec = GetOffensivePlayerStatsFromPlay(gameLog, playData, i);
+                if (playData.OffensiveGrade[i] == 1)
+                {
+                    offRec.PlusPlays += 1;
+                }
+                else if (playData.OffensiveGrade[i] == 2)
+                {
+                    offRec.MinusPlays += 1;
+                }
+                var defRec = GetDefensivePlayerStatsFromPlay(gameLog, playData, i);
+                if (playData.DefensiveGrade[i] == 1)
+                {
+                    defRec.PlusPlays += 1;
+                }
+                else if (playData.DefensiveGrade[i] == 2)
+                {
+                    defRec.MinusPlays += 1;
+                }
+            }
+        }
 
 		private const int kTeamCount = 32;
 		private const int kSeasonGameCount = 350;
@@ -1728,10 +1787,12 @@ namespace DataReader
 			public int SuccessfulCatches;
 			public int SuccessfulRuns;
 			public int BadPassesCaught;
+            public int PlusPlays;
+            public int MinusPlays;
 		};
 
 		private const int kNumActivePlayers = 46;
-		private const int kNumDepthChartEntries = 107;
+		private const int kNumDepthChartEntries = 129;
 		public class GameTeamEntry
 		{
 			public short TeamIndex;
@@ -2069,6 +2130,7 @@ namespace DataReader
 			// Penalty Data
 			public short IsDefensivePenalty;
 			public short IsOffensivePenalty;
+            public short PenaltyLocation;
 			public short PenaltyYardage;
 			public short HappenedOnPuntOrKick;
 			public short ResultsInFirstDown;
@@ -2093,6 +2155,8 @@ namespace DataReader
 
 			// Offensive Lineup
 			public short[] OffensivePlayers = new short[11];
+            public short[] OffensiveGrade = new short[11];
+            public short[] DefensiveGrade = new short[11];
 
 			// Defensive Lineup
 			public short[] DefensivePlayers = new short[11];
