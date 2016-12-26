@@ -23,6 +23,7 @@ namespace Interrogator
         private const string kUseProcessSeason = "UseProcessSeason";
         private const string kSeasonToProcessFrom = "SeasonToProcessFrom";
         private const string kFileToOpenWhenDone = "FileToOpenWhenDone";
+        private const string kArguments = "Arguments";
 
         private WindowsUtilities.XMLSettings mSettings;
 
@@ -99,9 +100,15 @@ namespace Interrogator
                 var fileToOpen = textBoxFileToOpen.Text;
                 if (fileToOpen != null && System.IO.File.Exists(fileToOpen))
                 {
-                    var psi = new System.Diagnostics.ProcessStartInfo(fileToOpen);
-                    psi.UseShellExecute = true;
-                    System.Diagnostics.Process.Start(psi);
+                    var arguments = textBoxArguments.Text;
+                    if (arguments != null && arguments.Length > 0)
+                    {
+                        System.Diagnostics.Process.Start(fileToOpen, arguments);
+                    }
+                    else
+                    {
+                        System.Diagnostics.Process.Start(fileToOpen);
+                    }
                 }
             }
         }
@@ -484,6 +491,7 @@ namespace Interrogator
                 mSettings.WriteXMLValue(mLeagueID, kUseProcessSeason, checkBoxProcessFromSeason.Checked);
                 mSettings.WriteXMLString(mLeagueID, kSeasonToProcessFrom, textBoxStartingSeason.Text);
                 mSettings.WriteXMLString(mLeagueID, kFileToOpenWhenDone, textBoxFileToOpen.Text);
+                mSettings.WriteXMLString(mLeagueID, kArguments, textBoxArguments.Text);
 
                 mOldCursor = Cursor;
                 Cursor = Cursors.WaitCursor;
@@ -512,6 +520,7 @@ namespace Interrogator
                 checkBoxProcessFromSeason.Checked = mSettings.ReadXMLbool(mLeagueID, kUseProcessSeason, false);
                 textBoxStartingSeason.Text = mSettings.ReadXMLString(mLeagueID, kSeasonToProcessFrom, "");
                 textBoxFileToOpen.Text = mSettings.ReadXMLString(mLeagueID, kFileToOpenWhenDone, "");
+                textBoxArguments.Text = mSettings.ReadXMLString(mLeagueID, kArguments, "");
             }
             else
             {

@@ -39,6 +39,8 @@ namespace Interrogator
             this.textBoxFileToOpen = new System.Windows.Forms.TextBox();
             this.buttonBrowse = new System.Windows.Forms.Button();
             this.buttonReleaseNotes = new System.Windows.Forms.Button();
+            this.textBoxArguments = new System.Windows.Forms.TextBox();
+            this.label2 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // labelSavedGame
@@ -55,7 +57,7 @@ namespace Interrogator
             // labelOutputStatus
             // 
             this.labelOutputStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelOutputStatus.Location = new System.Drawing.Point(12, 138);
+            this.labelOutputStatus.Location = new System.Drawing.Point(12, 164);
             this.labelOutputStatus.Name = "labelOutputStatus";
             this.labelOutputStatus.Size = new System.Drawing.Size(392, 21);
             this.labelOutputStatus.TabIndex = 11;
@@ -90,7 +92,7 @@ namespace Interrogator
             // 
             // buttonGenerateCSV
             // 
-            this.buttonGenerateCSV.Location = new System.Drawing.Point(112, 112);
+            this.buttonGenerateCSV.Location = new System.Drawing.Point(120, 138);
             this.buttonGenerateCSV.Name = "buttonGenerateCSV";
             this.buttonGenerateCSV.Size = new System.Drawing.Size(171, 23);
             this.buttonGenerateCSV.TabIndex = 17;
@@ -134,11 +136,29 @@ namespace Interrogator
             this.buttonReleaseNotes.UseVisualStyleBackColor = true;
             this.buttonReleaseNotes.Click += new System.EventHandler(this.buttonReleaseNotes_Click);
             // 
+            // textBoxArguments
+            // 
+            this.textBoxArguments.Location = new System.Drawing.Point(144, 112);
+            this.textBoxArguments.Name = "textBoxArguments";
+            this.textBoxArguments.Size = new System.Drawing.Size(162, 20);
+            this.textBoxArguments.TabIndex = 22;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(81, 115);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(57, 13);
+            this.label2.TabIndex = 23;
+            this.label2.Text = "Arguments";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(416, 173);
+            this.ClientSize = new System.Drawing.Size(416, 200);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.textBoxArguments);
             this.Controls.Add(this.buttonReleaseNotes);
             this.Controls.Add(this.buttonBrowse);
             this.Controls.Add(this.textBoxFileToOpen);
@@ -169,5 +189,7 @@ namespace Interrogator
         private System.Windows.Forms.TextBox textBoxFileToOpen;
         private System.Windows.Forms.Button buttonBrowse;
         private System.Windows.Forms.Button buttonReleaseNotes;
+        private System.Windows.Forms.TextBox textBoxArguments;
+        private System.Windows.Forms.Label label2;
     }
 }
