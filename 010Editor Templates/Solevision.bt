@@ -595,7 +595,7 @@ struct GAMEPASSINFO
 };
 struct GAMERUSHINFOBASE 
 {
-    short Attempts;
+    short Attempts; // Over 100 for regular season home other rushing?
     short Yardage;
 };
 struct GAMERUSHINFO
@@ -603,7 +603,7 @@ struct GAMERUSHINFO
     GAMERUSHINFOBASE left;
     GAMERUSHINFOBASE middle;
     GAMERUSHINFOBASE right;
-    GAMERUSHINFOBASE none; 
+    GAMERUSHINFOBASE other; 
 };
 
 struct GAMEPOSSINFO

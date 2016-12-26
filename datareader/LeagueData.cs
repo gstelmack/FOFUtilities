@@ -11,12 +11,6 @@ namespace DataReader
 		public const int LoadAllSeasons = 0;
 		public delegate void FileReadDelegate(string filename);
 		public FileReadDelegate FileReadCallback = null;
-		static public bool DumpInfoPlays = false;
-		static public bool DumpOnsideKickPlays = false;
-		static public bool DumpPuntPlays = false;
-		static public bool DumpFieldGoalPlays = false;
-		static public bool DumpRunPlays = false;
-		static public bool DumpPassPlays = false;
 
 		public LeagueData(string pathPrefix,UniverseData universeData, int startingSeason, FileReadDelegate readCallback, bool loadGameList)
 		{
@@ -120,23 +114,9 @@ namespace DataReader
 			BinaryHelper.TracerWriteLine("Field Goal Play");
 			BinaryHelper.TracerIndent();
 
-			if (gFGPlayDumpFile != null)
-			{
-				int weekNum = gCurGameLog.Week - 1;
-				string gameID = gCurGameLog.Year + weekNum.ToString("D2") + gCurGameLog.AwayTeam.TeamIndex.ToString("D2") + gCurGameLog.HomeTeam.TeamIndex.ToString("D2");
-				gFGPlayDumpFile.Write("," + gameID + "," + CurPlayID + "," + gCurGameLog.AwayTeam.Abbreviation + "," + gCurGameLog.HomeTeam.Abbreviation + "," + playData.Quarter + "," + playData.Minutes + "," + playData.Seconds + "," + playData.Possession);
-			}
+            BinaryHelper.ProbeBytes(inFile, 63 * 2);
 
-			for (int i = 0; i < 63; ++i)
-			{
-				short data = BinaryHelper.ReadInt16(inFile, "FGData" + i);
-				if (gFGPlayDumpFile != null)
-				{
-					gFGPlayDumpFile.Write("," + data);
-				}
-			}
-
-			BinaryHelper.TracerOutdent();
+            BinaryHelper.TracerOutdent();
 		}
 
 		private void LoadPassPlayData(System.IO.BinaryReader inFile, GamePlay playData)
@@ -208,74 +188,6 @@ namespace DataReader
 			playData.TypeSpecificData[(int)PassPlayFields.FieldCondition] = BinaryHelper.ReadInt16(inFile,"FieldCondition");  // 0-5 (Field Condition, 0: Norm, 1: cold, 2: hot, 3: wet, 4: snowy, 5: soaked - not always displayed, depends on play result)
 			playData.TypeSpecificData[(int)PassPlayFields.GameLogMessage4Type] = BinaryHelper.ReadInt16(inFile,"GameLogMessage4Type");  // Game Log Message re: Turnover on Downs
 
-			if (gPassPlayDumpFile != null)
-			{
-				int weekNum = gCurGameLog.Week - 1;
-				string gameID = gCurGameLog.Year + weekNum.ToString("D2") + gCurGameLog.AwayTeam.TeamIndex.ToString("D2") + gCurGameLog.HomeTeam.TeamIndex.ToString("D2");
-				gPassPlayDumpFile.Write("," + gameID + "," + CurPlayID + "," + gCurGameLog.AwayTeam.Abbreviation + "," + gCurGameLog.HomeTeam.Abbreviation + "," + playData.Quarter + "," + playData.Minutes + "," + playData.Seconds + "," + playData.Possession);
-				gPassPlayDumpFile.Write("," + dat02);
-				gPassPlayDumpFile.Write("," + dat03);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.IsComplete]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.YardsGained]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.IsTouchdown]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.PassTarget]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.Tackler]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.IsFumble]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.FumbleRecoveryTeam]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.FumbleReturnYards]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.FumbleRecoveryTackler]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.IsFumbleRecoveredForTD]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.FumbleRecoverer]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.IsInterception]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.InterceptingPlayer]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.InterceptionReturnYards]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.IsInterceptedForTD]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.InterceptedTackler]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.InterceptionYardLine]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.IsPenaltyAccepted]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.IsDefensiveTD]);
-				gPassPlayDumpFile.Write("," + dat23);
-				gPassPlayDumpFile.Write("," + dat24);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.IsQBScramble]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.QBScrambleYards]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.IsQBSacked]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.QBSackYards]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.IsQBSackedForSafety]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.SackingPlayer]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.IsForcedOOB]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.InterceptedInEndZone]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.IsHalfSack]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.AssistantSacker]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.AssistantTackler]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.IsAssistedTackle]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.WhoAllowedQBSack]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.IncompletionType]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.IsOverMiddleOfField]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.YardsAfterCatch]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.GameLogMessage1Type]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.GameLogMessage2Type]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.GameLogMessage3Type]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.DoubleCoverage]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.PrePlayDown]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.PrePlayYardsToGo]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.PrePlayYardLine]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.PrePlayTeamPossession]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.PostPlayDown]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.PostPlayYardsToGo]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.PostPlayYardLine]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.IsTurnover]);
-				gPassPlayDumpFile.Write("," + dat53);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.IsTurnoverOnDowns]);
-				gPassPlayDumpFile.Write("," + dat55);
-				gPassPlayDumpFile.Write("," + dat56);
-				gPassPlayDumpFile.Write("," + dat57);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.PassDistance]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.DefenseFamiliar]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.EvadedRushToAvoidSafety]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.FieldCondition]);
-				gPassPlayDumpFile.Write("," + playData.TypeSpecificData[(int)PassPlayFields.GameLogMessage4Type]);
-			}
-
 			BinaryHelper.TracerOutdent();
 		}
 
@@ -284,22 +196,10 @@ namespace DataReader
 			BinaryHelper.TracerWriteLine("Run Play");
 			BinaryHelper.TracerIndent();
 
-			if (gRunPlayDumpFile != null)
-			{
-				int weekNum = gCurGameLog.Week - 1;
-				string gameID = gCurGameLog.Year + weekNum.ToString("D2") + gCurGameLog.AwayTeam.TeamIndex.ToString("D2") + gCurGameLog.HomeTeam.TeamIndex.ToString("D2");
-				gRunPlayDumpFile.Write("," + gameID + "," + CurPlayID + "," + gCurGameLog.AwayTeam.Abbreviation + "," + gCurGameLog.HomeTeam.Abbreviation + "," + playData.Quarter + "," + playData.Minutes + "," + playData.Seconds + "," + playData.Possession);
-			}
-
 			playData.TypeSpecificData[(int)RunPlayFields.Minute] = BinaryHelper.ReadInt16(inFile,"Minute");   // 0-15 (Minute)
 			playData.TypeSpecificData[(int)RunPlayFields.Seconds] = BinaryHelper.ReadInt16(inFile,"Seconds");  // 0-59 (Second)
 			short dat02 = BinaryHelper.ReadInt16(inFile, "Dat02");
 			short dat03 = BinaryHelper.ReadInt16(inFile, "Dat03");
-			if (gRunPlayDumpFile != null)
-			{
-				gRunPlayDumpFile.Write("," + dat02);
-				gRunPlayDumpFile.Write("," + dat03);
-			}
 			playData.TypeSpecificData[(int)RunPlayFields.YardsGained] = BinaryHelper.ReadInt16(inFile,"YardsGained");
 			playData.TypeSpecificData[(int)RunPlayFields.IsTouchdown] = BinaryHelper.ReadInt16(inFile,"IsTouchdown");  //	0-1 (1: Touchdown)
 			playData.TypeSpecificData[(int)RunPlayFields.Rusher] = BinaryHelper.ReadInt16(inFile,"Rusher");       // 0-10 (Rusher, based on position in formation)
@@ -313,16 +213,6 @@ namespace DataReader
 			playData.TypeSpecificData[(int)RunPlayFields.FumbleRecoverer] = BinaryHelper.ReadInt16(inFile,"FumbleRecoverer");      // 0-10 (Fumble Recoverer)
 			playData.TypeSpecificData[(int)RunPlayFields.TrueRushYardLine] = BinaryHelper.ReadInt16(inFile,"TrueRushYardLine");     // ??-?? (True Yard Line: interesting piece of data, is how far a rush would have ended without an end zone.  So a run from the 1 yard line for a TD could have a value here of 117, meaning it would have been an 18-yard rush if somewhere else on the field.  Haven't done anything with this, but there's potential for figuring out a 'true' yards/carry)
 			short dat16 = BinaryHelper.ReadInt16(inFile, "Dat16");
-			if (gRunPlayDumpFile != null)
-			{
-				gRunPlayDumpFile.Write("," + playData.TypeSpecificData[(int)RunPlayFields.YardsGained] + "," + playData.TypeSpecificData[(int)RunPlayFields.IsTouchdown]
-					+ "," + playData.TypeSpecificData[(int)RunPlayFields.Rusher] + "," + playData.TypeSpecificData[(int)RunPlayFields.IsFumble]
-					+ "," + playData.TypeSpecificData[(int)RunPlayFields.Tackler] + "," + playData.TypeSpecificData[(int)RunPlayFields.FumbleRecoveryTeam]
-					+ "," + playData.TypeSpecificData[(int)RunPlayFields.FumbleRecoveryYards] + "," + playData.TypeSpecificData[(int)RunPlayFields.FumbleRecoveredForTD]
-					+ "," + playData.TypeSpecificData[(int)RunPlayFields.FumbleRecoveryTackler] + "," + playData.TypeSpecificData[(int)RunPlayFields.IsPenaltyAccepted]
-					+ "," + playData.TypeSpecificData[(int)RunPlayFields.FumbleRecoverer] + "," + playData.TypeSpecificData[(int)RunPlayFields.TrueRushYardLine]);
-				gRunPlayDumpFile.Write("," + dat16);
-			}
 			playData.TypeSpecificData[(int)RunPlayFields.IsForcedOOB] = BinaryHelper.ReadInt16(inFile, "IsForcedOOB");          // 0-1 (1: Forced OOB)
 			playData.TypeSpecificData[(int)RunPlayFields.IsSafety] = BinaryHelper.ReadInt16(inFile,"IsSafety");             // 0-1 (1: Safety)
 			playData.TypeSpecificData[(int)RunPlayFields.AssistantTackler] = BinaryHelper.ReadInt16(inFile,"AssistantTackler");     // 0-10 (Player Assisting on Tackle, based on position in formation)
@@ -330,14 +220,6 @@ namespace DataReader
 			playData.TypeSpecificData[(int)RunPlayFields.KeyRunBlocker] = BinaryHelper.ReadInt16(inFile,"KeyRunBlocker");        // 0-10 (0: No Key Run Block, 1-10: Player getting the KRB, based on position in formation)
 			playData.TypeSpecificData[(int)RunPlayFields.KeyRunBlockOpportunity] = BinaryHelper.ReadInt16(inFile,"KeyRunBlockOpportunity");   // 0-10 (0: No Key Run Block Opportunity, 1-10: Player getting the KRBO, based on position in formation)
 			short dat23 = BinaryHelper.ReadInt16(inFile, "Dat23");
-			if (gRunPlayDumpFile != null)
-			{
-				gRunPlayDumpFile.Write("," + playData.TypeSpecificData[(int)RunPlayFields.IsForcedOOB] + "," + playData.TypeSpecificData[(int)RunPlayFields.IsSafety]
-					+ "," + playData.TypeSpecificData[(int)RunPlayFields.AssistantTackler] + "," + playData.TypeSpecificData[(int)RunPlayFields.WasTackleAssisted]
-					+ "," + playData.TypeSpecificData[(int)RunPlayFields.KeyRunBlocker]
-					+ "," + playData.TypeSpecificData[(int)RunPlayFields.KeyRunBlockOpportunity]);
-				gRunPlayDumpFile.Write("," + dat23);
-			}
 			playData.TypeSpecificData[(int)RunPlayFields.GameLogMessage1Type] = BinaryHelper.ReadInt16(inFile, "GameLogMessage1Type");  // Game Log Message Type re: Making a Move (" made a great move on ")
 			playData.TypeSpecificData[(int)RunPlayFields.GameLogMessage1Player] = BinaryHelper.ReadInt16(inFile,"GameLogMessage1Player");// Player referenced in Play24
 			playData.TypeSpecificData[(int)RunPlayFields.GameLogMessage2Type] = BinaryHelper.ReadInt16(inFile,"GameLogMessage2Type");  // Game Log Message re: Key Run Block (" ran over ")
@@ -352,61 +234,16 @@ namespace DataReader
 			playData.TypeSpecificData[(int)RunPlayFields.PostPlayYardsToGo] = BinaryHelper.ReadInt16(inFile,"PostPlayYardsToGo");    // 1-?? (Post-Play Yards To Go)
 			playData.TypeSpecificData[(int)RunPlayFields.PostPlayYardLine] = BinaryHelper.ReadInt16(inFile,"PostPlayYardLine");     // 0-100 (Post-Play Yard Line)
 			playData.TypeSpecificData[(int)RunPlayFields.IsTurnover] = BinaryHelper.ReadInt16(inFile,"IsTurnover");           // 0-1 (Turnover Indicator)
-			if (gRunPlayDumpFile != null)
-			{
-				gRunPlayDumpFile.Write("," + playData.TypeSpecificData[(int)RunPlayFields.GameLogMessage1Type] + "," + playData.TypeSpecificData[(int)RunPlayFields.GameLogMessage1Player]
-					+ "," + playData.TypeSpecificData[(int)RunPlayFields.GameLogMessage2Type] + "," + playData.TypeSpecificData[(int)RunPlayFields.GameLogMessage2Player]
-					+ "," + playData.TypeSpecificData[(int)RunPlayFields.GameLogMessage3Type] + "," + playData.TypeSpecificData[(int)RunPlayFields.GameLogMessage3Player]
-					+ "," + playData.TypeSpecificData[(int)RunPlayFields.PrePlayDown] + "," + playData.TypeSpecificData[(int)RunPlayFields.PrePlayYardsToGo]
-					+ "," + playData.TypeSpecificData[(int)RunPlayFields.PrePlayYardLine] + "," + playData.TypeSpecificData[(int)RunPlayFields.PrePlayTeamPossession]
-					+ "," + playData.TypeSpecificData[(int)RunPlayFields.PostPlayDown] + "," + playData.TypeSpecificData[(int)RunPlayFields.PostPlayYardsToGo]
-					+ "," + playData.TypeSpecificData[(int)RunPlayFields.PostPlayYardLine] + "," + playData.TypeSpecificData[(int)RunPlayFields.IsTurnover]
-					);
-			}
 			short dat38 = BinaryHelper.ReadInt16(inFile, "Dat38");
 			playData.TypeSpecificData[(int)RunPlayFields.TurnoverOnDowns] = BinaryHelper.ReadInt16(inFile, "TurnoverOnDowns");      // 0-1 (1: Turnover on Downs)
 			short dat40 = BinaryHelper.ReadInt16(inFile, "Dat40");
 			short dat41 = BinaryHelper.ReadInt16(inFile, "Dat41");
-			if (gRunPlayDumpFile != null)
-			{
-				gRunPlayDumpFile.Write("," + dat38 + "," + playData.TypeSpecificData[(int)RunPlayFields.TurnoverOnDowns]
-					+ "," + dat40 + "," + dat41
-					);
-			}
 			playData.TypeSpecificData[(int)RunPlayFields.RunDirection] = BinaryHelper.ReadInt16(inFile, "RunDirection");  // 0-9 (Run Direction, 0: around left end, 1: outside LT, 2: inside LT ... 7: around RE, 8: left reverse (finesse only), 9: right reverse (finesse only))
 			playData.TypeSpecificData[(int)RunPlayFields.IsFinesseRun] = BinaryHelper.ReadInt16(inFile,"IsFinesseRun");         // 0-1 (1: Finesse Run, different messages used)
 			playData.TypeSpecificData[(int)RunPlayFields.FieldCondition] = BinaryHelper.ReadInt16(inFile,"FieldCondition");  // 0-5 (Field Condition, 0: Norm, 1: cold, 2: hot, 3: wet, 4: snowy, 5: soaked - not always displayed, depends on play result)
 			playData.TypeSpecificData[(int)RunPlayFields.DefenseFamiliar] = BinaryHelper.ReadInt16(inFile,"DefenseFamiliar");// 0-2 (Defense Familiar: 0: None, 1: very familiar, 2: extremely familiar - not always displayed, depends on play result)
 			playData.TypeSpecificData[(int)RunPlayFields.GameLogMessage4Type] = BinaryHelper.ReadInt16(inFile,"GameLogMessage4Type");  // Game Log Message re: Turnover on Downs
-			if (gRunPlayDumpFile != null)
-			{
-				gRunPlayDumpFile.Write("," + playData.TypeSpecificData[(int)RunPlayFields.RunDirection] + "," + playData.TypeSpecificData[(int)RunPlayFields.IsFinesseRun]
-					+ "," + playData.TypeSpecificData[(int)RunPlayFields.FieldCondition] + "," + playData.TypeSpecificData[(int)RunPlayFields.DefenseFamiliar]
-					+ "," + playData.TypeSpecificData[(int)RunPlayFields.GameLogMessage4Type]
-					);
-			}
-			short dat47 = BinaryHelper.ReadInt16(inFile, "Dat47");
-			short dat48 = BinaryHelper.ReadInt16(inFile, "Dat48");
-			short dat49 = BinaryHelper.ReadInt16(inFile, "Dat49");
-			short dat50 = BinaryHelper.ReadInt16(inFile, "Dat50");
-			short dat51 = BinaryHelper.ReadInt16(inFile, "Dat51");
-			short dat52 = BinaryHelper.ReadInt16(inFile, "Dat52");
-			short dat53 = BinaryHelper.ReadInt16(inFile, "Dat53");
-			short dat54 = BinaryHelper.ReadInt16(inFile, "Dat54");
-			short dat55 = BinaryHelper.ReadInt16(inFile, "Dat55");
-			short dat56 = BinaryHelper.ReadInt16(inFile, "Dat56");
-			short dat57 = BinaryHelper.ReadInt16(inFile, "Dat57");
-			short dat58 = BinaryHelper.ReadInt16(inFile, "Dat58");
-			short dat59 = BinaryHelper.ReadInt16(inFile, "Dat59");
-			short dat60 = BinaryHelper.ReadInt16(inFile, "Dat60");
-			short dat61 = BinaryHelper.ReadInt16(inFile, "Dat61");
-			short dat62 = BinaryHelper.ReadInt16(inFile, "Dat62");
-			if (gRunPlayDumpFile != null)
-			{
-				gRunPlayDumpFile.Write("," + dat47 + "," + dat48 + "," + dat49 + "," + dat50 + "," + dat51 + "," + dat52 + "," + dat53 + "," + dat54
-					+ "," + dat55 + "," + dat56 + "," + dat57 + "," + dat58 + "," + dat59 + "," + dat60 + "," + dat61 + "," + dat62
-					);
-			}
+            BinaryHelper.ProbeBytes(inFile, 16 * 2);
 
 			BinaryHelper.TracerOutdent();
 		}
@@ -451,23 +288,9 @@ namespace DataReader
 			BinaryHelper.TracerWriteLine("Onside Play");
 			BinaryHelper.TracerIndent();
 
-			if (gOnsideKickPlayDumpFile != null)
-			{
-				int weekNum = gCurGameLog.Week - 1;
-				string gameID = gCurGameLog.Year + weekNum.ToString("D2") + gCurGameLog.AwayTeam.TeamIndex.ToString("D2") + gCurGameLog.HomeTeam.TeamIndex.ToString("D2");
-				gOnsideKickPlayDumpFile.Write("," + gameID + "," + CurPlayID + "," + gCurGameLog.AwayTeam.Abbreviation + "," + gCurGameLog.HomeTeam.Abbreviation + "," + playData.Quarter + "," + playData.Minutes + "," + playData.Seconds + "," + playData.Possession);
-			}
+            BinaryHelper.ProbeBytes(inFile, 63 * 2);
 
-			for (int i = 0; i < 63; ++i)
-			{
-				short data = BinaryHelper.ReadInt16(inFile, "OnsideData" + i);
-				if (gOnsideKickPlayDumpFile != null)
-				{
-					gOnsideKickPlayDumpFile.Write("," + data);
-				}
-			}
-
-			BinaryHelper.TracerOutdent();
+            BinaryHelper.TracerOutdent();
 		}
 
 		private void LoadPuntPlayData(System.IO.BinaryReader inFile, GamePlay playData)
@@ -475,23 +298,9 @@ namespace DataReader
 			BinaryHelper.TracerWriteLine("Punt Play");
 			BinaryHelper.TracerIndent();
 
-			if (gPuntPlayDumpFile != null)
-			{
-				int weekNum = gCurGameLog.Week - 1;
-				string gameID = gCurGameLog.Year + weekNum.ToString("D2") + gCurGameLog.AwayTeam.TeamIndex.ToString("D2") + gCurGameLog.HomeTeam.TeamIndex.ToString("D2");
-				gPuntPlayDumpFile.Write("," + gameID + "," + CurPlayID + "," + gCurGameLog.AwayTeam.Abbreviation + "," + gCurGameLog.HomeTeam.Abbreviation + "," + playData.Quarter + "," + playData.Minutes + "," + playData.Seconds + "," + playData.Possession);
-			}
+            BinaryHelper.ProbeBytes(inFile, 63 * 2);
 
-			for (int i = 0; i < 63; ++i)
-			{
-				short data = BinaryHelper.ReadInt16(inFile, "PuntData" + i);
-				if (gPuntPlayDumpFile != null)
-				{
-					gPuntPlayDumpFile.Write("," + data);
-				}
-			}
-
-			BinaryHelper.TracerOutdent();
+            BinaryHelper.TracerOutdent();
 		}
 
 		private void LoadInfoPlayData(System.IO.BinaryReader inFile, GamePlay playData)
@@ -499,24 +308,9 @@ namespace DataReader
 			BinaryHelper.TracerWriteLine("Info Play");
 			BinaryHelper.TracerIndent();
 
-			if (gInfoPlayDumpFile != null)
-			{
-				int weekNum = gCurGameLog.Week - 1;
-				string gameID = gCurGameLog.Year + weekNum.ToString("D2") + gCurGameLog.AwayTeam.TeamIndex.ToString("D2") + gCurGameLog.HomeTeam.TeamIndex.ToString("D2");
-				gInfoPlayDumpFile.Write("," + gameID + "," + CurPlayID + "," + gCurGameLog.AwayTeam.Abbreviation + "," + gCurGameLog.HomeTeam.Abbreviation + "," + playData.Quarter + "," + playData.Minutes + "," + playData.Seconds + "," + playData.Possession);
-			}
+            BinaryHelper.ProbeBytes(inFile, 63 * 2);
 
-			for (int i = 0; i < 63; ++i)
-			{
-				short data = BinaryHelper.ReadInt16(inFile,"InfoData"+i);
-				if (gInfoPlayDumpFile != null && i >= 2 && i <= 18)
-				{
-					gInfoPlayDumpFile.Write("," + data);
-				}
-			}
-			//BinaryHelper.ProbeBytes(inFile, 63 * 2);
-
-			BinaryHelper.TracerOutdent();
+            BinaryHelper.TracerOutdent();
 		}
 
 		private GamePlay LoadPlayData(System.IO.BinaryReader inFile)
@@ -647,83 +441,9 @@ namespace DataReader
 				}
 			}
 
-			// Finish off the info play lines to CSV by writing out the players involved in the play.
-			if (playData.PlayType >= 7 && gInfoPlayDumpFile != null)
-			{
-				WritePlayersOnField(playData, gInfoPlayDumpFile);
-			}
-			else if (playData.PlayType == 1 && gFGPlayDumpFile != null)
-			{
-				WritePlayersOnField(playData, gFGPlayDumpFile);
-			}
-			else if (playData.PlayType == 3 && gOnsideKickPlayDumpFile != null)
-			{
-				WritePlayersOnField(playData, gOnsideKickPlayDumpFile);
-			}
-			else if (playData.PlayType == 4 && gPuntPlayDumpFile != null)
-			{
-				WritePlayersOnField(playData, gPuntPlayDumpFile);
-			}
-			else if (playData.PlayType == 5 && gRunPlayDumpFile != null)
-			{
-				WritePlayersOnField(playData, gRunPlayDumpFile);
-			}
-			else if (playData.PlayType == 6 && gPassPlayDumpFile != null)
-			{
-				WritePlayersOnField(playData, gPassPlayDumpFile);
-			}
-
 			BinaryHelper.TracerOutdent();
 
 			return playData;
-		}
-
-		private void WritePlayersOnField(GamePlay playData, System.IO.StreamWriter dumpFile)
-		{
-            for (short ogrd = 0; ogrd<11; ++ogrd)
-            {
-                dumpFile.Write("," + playData.OffensiveGrade[ogrd]);
-            }
-            for (short dgrd = 0; dgrd < 11; ++dgrd)
-            {
-                dumpFile.Write("," + playData.DefensiveGrade[dgrd]);
-            }
-            int playerIndex;
-			for (short off = 0; off < 11; ++off)
-			{
-				playerIndex = -1;
-				int teamPlayerIndex = playData.OffensivePlayers[off];
-				if (teamPlayerIndex >= 0)
-				{
-					if (playData.Possession == 0)
-					{
-						playerIndex = gCurGameLog.HomeTeam.ActivePlayerIDs[teamPlayerIndex];
-					}
-					else
-					{
-						playerIndex = gCurGameLog.AwayTeam.ActivePlayerIDs[teamPlayerIndex];
-					}
-				}
-				dumpFile.Write("," + playerIndex);
-			}
-			for (short def = 0; def < 11; ++def)
-			{
-				playerIndex = -1;
-				int teamPlayerIndex = playData.OffensivePlayers[def];
-				if (teamPlayerIndex >= 0)
-				{
-					if (playData.Possession == 0)
-					{
-						playerIndex = gCurGameLog.AwayTeam.ActivePlayerIDs[teamPlayerIndex];
-					}
-					else
-					{
-						playerIndex = gCurGameLog.HomeTeam.ActivePlayerIDs[teamPlayerIndex];
-					}
-				}
-				dumpFile.Write("," + playerIndex);
-			}
-			dumpFile.WriteLine();
 		}
 
 		private void LoadGameDriveInfo(System.IO.BinaryReader inFile, GameDriveInfo driveInfo)
@@ -777,7 +497,7 @@ namespace DataReader
 			rushInfo.MiddleYards = BinaryHelper.ReadInt16(inFile, "MiddleYards");
 			rushInfo.RightAttempts = BinaryHelper.ReadInt16(inFile, "RightAttempts");
 			rushInfo.RightYards = BinaryHelper.ReadInt16(inFile, "RightYards");
-			rushInfo.OtherAttempts = BinaryHelper.ReadInt16(inFile, "OtherAttempts");
+			rushInfo.OtherAttempts = (short)(BinaryHelper.ReadInt16(inFile, "OtherAttempts") % 100);
 			rushInfo.OtherYards = BinaryHelper.ReadInt16(inFile, "OtherYards");
 
 			BinaryHelper.TracerOutdent();
@@ -800,10 +520,6 @@ namespace DataReader
 			BinaryHelper.TracerIndent();
 
 			newLog.PlayerOfTheGameID = BinaryHelper.ReadInt32(inFile, "PlayerOfTheGameID");
-			//if (newLog.Year == mCurrentYear)
-			//{
-			//	newLog.PlayerOfTheGameID = mPlayerActiveRecords[newLog.PlayerOfTheGameID].PlayerID;
-			//}
 			short homeDriveCount = BinaryHelper.ReadInt16(inFile, "HomeDriveCount");
 			short awayDriveCount = BinaryHelper.ReadInt16(inFile, "AwayDriveCount");
 			newLog.HomeDrives = new GameDriveInfo[homeDriveCount];
@@ -829,12 +545,6 @@ namespace DataReader
 			BinaryHelper.TracerOutdent();
 		}
 
-		System.IO.StreamWriter gInfoPlayDumpFile = null;
-		System.IO.StreamWriter gFGPlayDumpFile = null;
-		System.IO.StreamWriter gPuntPlayDumpFile = null;
-		System.IO.StreamWriter gOnsideKickPlayDumpFile = null;
-		System.IO.StreamWriter gPassPlayDumpFile = null;
-		System.IO.StreamWriter gRunPlayDumpFile = null;
 		GameLog gCurGameLog = null;
 
 		private GameLog LoadGameLog(System.IO.BinaryReader inFile)
@@ -947,160 +657,6 @@ namespace DataReader
 		private int CurPlayID = 0;
 		private void LoadGameList()
 		{
-			if (DumpInfoPlays)
-			{
-				gInfoPlayDumpFile = new System.IO.StreamWriter(System.IO.Path.Combine(WindowsUtilities.OutputLocation.Get(), "InfoPlays.csv"));
-				gInfoPlayDumpFile.Write("FOFText,GameID,PlayID,Awy,Hom,Qtr,Min,Sec,Pos");
-				gInfoPlayDumpFile.Write(",Dat02");
-				gInfoPlayDumpFile.Write(",Dat03");
-				gInfoPlayDumpFile.Write(",Kick");
-				gInfoPlayDumpFile.Write(",Good");
-				gInfoPlayDumpFile.Write(",Blkd");
-				gInfoPlayDumpFile.Write(",Run2");
-				gInfoPlayDumpFile.Write(",Good");
-				gInfoPlayDumpFile.Write(",Pas2");
-				gInfoPlayDumpFile.Write(",Good");
-				gInfoPlayDumpFile.Write(",Dat11");
-				gInfoPlayDumpFile.Write(",QBKp");
-				gInfoPlayDumpFile.Write(",BdSnpTyp");
-				gInfoPlayDumpFile.Write(",Type");
-				gInfoPlayDumpFile.Write(",Dat15");
-				gInfoPlayDumpFile.Write(",Dat16");
-				gInfoPlayDumpFile.Write(",Plr1");
-				gInfoPlayDumpFile.Write(",Plr2");
-                gInfoPlayDumpFile.Write(",OfG0,OfG1,OfG2,OfG3,OfG4,OfG5,OfG6,OfG7,OfG8,OfG9,OfG10,DfG0,DfG1,DfG2,DfG3,DfG4,DfG5,DfG6,DfG7,DfG8,DfG9,DfG10");
-                gInfoPlayDumpFile.Write(",Off0,Off1,Off2,Off3,Off4,Off5,Off6,Off7,Off8,Off9,Off10,Def0,Def1,Def2,Def3,Def4,Def5,Def6,Def7,Def8,Def9,Def10");
-				gInfoPlayDumpFile.WriteLine();
-			}
-
-			if (DumpFieldGoalPlays)
-			{
-				gFGPlayDumpFile = new System.IO.StreamWriter(System.IO.Path.Combine(WindowsUtilities.OutputLocation.Get(), "FGPlays.csv"));
-				gFGPlayDumpFile.Write("FOFText,GameID,PlayID,Awy,Hom,Qtr,Min,Sec,Pos");
-				for (int i = 0; i < 63; ++i)
-				{
-					gFGPlayDumpFile.Write("," + i.ToString("D2"));
-				}
-                gFGPlayDumpFile.Write(",OfG0,OfG1,OfG2,OfG3,OfG4,OfG5,OfG6,OfG7,OfG8,OfG9,OfG10,DfG0,DfG1,DfG2,DfG3,DfG4,DfG5,DfG6,DfG7,DfG8,DfG9,DfG10");
-                gFGPlayDumpFile.Write(",Off0,Off1,Off2,Off3,Off4,Off5,Off6,Off7,Off8,Off9,Off10,Def0,Def1,Def2,Def3,Def4,Def5,Def6,Def7,Def8,Def9,Def10");
-				gFGPlayDumpFile.WriteLine();
-			}
-
-			if (DumpPuntPlays)
-			{
-				gPuntPlayDumpFile = new System.IO.StreamWriter(System.IO.Path.Combine(WindowsUtilities.OutputLocation.Get(), "PuntPlays.csv"));
-				gPuntPlayDumpFile.Write("FOFText,GameID,PlayID,Awy,Hom,Qtr,Min,Sec,Pos");
-				for (int i = 0; i < 63; ++i)
-				{
-					gPuntPlayDumpFile.Write("," + i.ToString("D2"));
-				}
-                gPuntPlayDumpFile.Write(",OfG0,OfG1,OfG2,OfG3,OfG4,OfG5,OfG6,OfG7,OfG8,OfG9,OfG10,DfG0,DfG1,DfG2,DfG3,DfG4,DfG5,DfG6,DfG7,DfG8,DfG9,DfG10");
-                gPuntPlayDumpFile.Write(",Off0,Off1,Off2,Off3,Off4,Off5,Off6,Off7,Off8,Off9,Off10,Def0,Def1,Def2,Def3,Def4,Def5,Def6,Def7,Def8,Def9,Def10");
-				gPuntPlayDumpFile.WriteLine();
-			}
-
-			if (DumpOnsideKickPlays)
-			{
-				gOnsideKickPlayDumpFile = new System.IO.StreamWriter(System.IO.Path.Combine(WindowsUtilities.OutputLocation.Get(), "OnsidePlays.csv"));
-				gOnsideKickPlayDumpFile.Write("FOFText,GameID,PlayID,Awy,Hom,Qtr,Min,Sec,Pos");
-				for (int i = 0; i < 63; ++i)
-				{
-					gOnsideKickPlayDumpFile.Write("," + i.ToString("D2"));
-				}
-                gOnsideKickPlayDumpFile.Write(",OfG0,OfG1,OfG2,OfG3,OfG4,OfG5,OfG6,OfG7,OfG8,OfG9,OfG10,DfG0,DfG1,DfG2,DfG3,DfG4,DfG5,DfG6,DfG7,DfG8,DfG9,DfG10");
-                gOnsideKickPlayDumpFile.Write(",Off0,Off1,Off2,Off3,Off4,Off5,Off6,Off7,Off8,Off9,Off10,Def0,Def1,Def2,Def3,Def4,Def5,Def6,Def7,Def8,Def9,Def10");
-				gOnsideKickPlayDumpFile.WriteLine();
-			}
-
-			if (DumpPassPlays)
-			{
-				gPassPlayDumpFile = new System.IO.StreamWriter(System.IO.Path.Combine(WindowsUtilities.OutputLocation.Get(), "PassPlays.csv"));
-				gPassPlayDumpFile.Write("FOFText,GameID,PlayID,Awy,Hom,Qtr,Min,Sec,Pos");
-				gPassPlayDumpFile.Write(",dat02");
-				gPassPlayDumpFile.Write(",dat03");
-				gPassPlayDumpFile.Write(",IsComplete");
-				gPassPlayDumpFile.Write(",YardsGained");
-				gPassPlayDumpFile.Write(",IsTouchdown");
-				gPassPlayDumpFile.Write(",PassTarget");
-				gPassPlayDumpFile.Write(",Tackler");
-				gPassPlayDumpFile.Write(",IsFumble");
-				gPassPlayDumpFile.Write(",FumbleRecoveryTeam");
-				gPassPlayDumpFile.Write(",FumbleReturnYards");
-				gPassPlayDumpFile.Write(",FumbleRecoveryTackler");
-				gPassPlayDumpFile.Write(",IsFumbleRecoveredForTD");
-				gPassPlayDumpFile.Write(",FumbleRecoverer");
-				gPassPlayDumpFile.Write(",IsInterception");
-				gPassPlayDumpFile.Write(",InterceptingPlayer");
-				gPassPlayDumpFile.Write(",InterceptionReturnYards");
-				gPassPlayDumpFile.Write(",IsInterceptedForTD");
-				gPassPlayDumpFile.Write(",InterceptedTackler");
-				gPassPlayDumpFile.Write(",InterceptionYardLine");
-				gPassPlayDumpFile.Write(",IsPenaltyAccepted");
-				gPassPlayDumpFile.Write(",IsDefensiveTD");
-				gPassPlayDumpFile.Write(",dat23");
-				gPassPlayDumpFile.Write(",dat24");
-				gPassPlayDumpFile.Write(",IsQBScramble");
-				gPassPlayDumpFile.Write(",QBScrambleYards");
-				gPassPlayDumpFile.Write(",IsQBSacked");
-				gPassPlayDumpFile.Write(",QBSackYards");
-				gPassPlayDumpFile.Write(",IsQBSackedForSafety");
-				gPassPlayDumpFile.Write(",SackingPlayer");
-				gPassPlayDumpFile.Write(",IsForcedOOB");
-				gPassPlayDumpFile.Write(",InterceptedInEndZone");
-				gPassPlayDumpFile.Write(",IsHalfSack");
-				gPassPlayDumpFile.Write(",AssistantSacker");
-				gPassPlayDumpFile.Write(",AssistantTackler");
-				gPassPlayDumpFile.Write(",IsAssistedTackle");
-				gPassPlayDumpFile.Write(",WhoAllowedQBSack");
-				gPassPlayDumpFile.Write(",IncompletionType");
-				gPassPlayDumpFile.Write(",IsOverMiddleOfField");
-				gPassPlayDumpFile.Write(",YardsAfterCatch");
-				gPassPlayDumpFile.Write(",GameLogMessage1Type");
-				gPassPlayDumpFile.Write(",GameLogMessage2Type");
-				gPassPlayDumpFile.Write(",GameLogMessage3Type");
-				gPassPlayDumpFile.Write(",DoubleCoverage");
-				gPassPlayDumpFile.Write(",PrePlayDown");
-				gPassPlayDumpFile.Write(",PrePlayYardsToGo");
-				gPassPlayDumpFile.Write(",PrePlayYardLine");
-				gPassPlayDumpFile.Write(",PrePlayTeamPossession");
-				gPassPlayDumpFile.Write(",PostPlayDown");
-				gPassPlayDumpFile.Write(",PostPlayYardsToGo");
-				gPassPlayDumpFile.Write(",PostPlayYardLine");
-				gPassPlayDumpFile.Write(",IsTurnover");
-				gPassPlayDumpFile.Write(",dat53");
-				gPassPlayDumpFile.Write(",IsTurnoverOnDowns");
-				gPassPlayDumpFile.Write(",dat55");
-				gPassPlayDumpFile.Write(",dat56");
-				gPassPlayDumpFile.Write(",dat57");
-				gPassPlayDumpFile.Write(",PassDistance");
-				gPassPlayDumpFile.Write(",DefenseFamiliar");
-				gPassPlayDumpFile.Write(",EvadedRushToAvoidSafety");
-				gPassPlayDumpFile.Write(",FieldCondition");
-				gPassPlayDumpFile.Write(",GameLogMessage4Type");
-                gPassPlayDumpFile.Write(",OfG0,OfG1,OfG2,OfG3,OfG4,OfG5,OfG6,OfG7,OfG8,OfG9,OfG10,DfG0,DfG1,DfG2,DfG3,DfG4,DfG5,DfG6,DfG7,DfG8,DfG9,DfG10");
-                gPassPlayDumpFile.Write(",Off0,Off1,Off2,Off3,Off4,Off5,Off6,Off7,Off8,Off9,Off10,Def0,Def1,Def2,Def3,Def4,Def5,Def6,Def7,Def8,Def9,Def10");
-				gPassPlayDumpFile.WriteLine();
-			}
-
-			if (DumpRunPlays)
-			{
-				gRunPlayDumpFile = new System.IO.StreamWriter(System.IO.Path.Combine(WindowsUtilities.OutputLocation.Get(), "RunPlays.csv"));
-				gRunPlayDumpFile.Write("FOFText,GameID,PlayID,Awy,Hom,Qtr,Min,Sec,Pos");
-				gRunPlayDumpFile.Write(",dat02");
-				gRunPlayDumpFile.Write(",dat03");
-				gRunPlayDumpFile.Write(",YardsGained],IsTouchdown,Rusher,IsFumble,Tackler,FumbleRecoveryTeam,FumbleRecoveryYards,FumbleRecoveredForTD,FumbleRecoveryTackler,IsPenaltyAccepted,FumbleRecoverer,TrueRushYardLine");
-				gRunPlayDumpFile.Write(",dat16");
-				gRunPlayDumpFile.Write(",IsForcedOOB,IsSafety,AssistantTackler,WasTackleAssisted,KeyRunBlocker,KeyRunBlockOpportunity");
-				gRunPlayDumpFile.Write(",dat23");
-				gRunPlayDumpFile.Write(",GameLogMessage1Type,GameLogMessage1Player,GameLogMessage2Type,GameLogMessage2Player,GameLogMessage3Type,GameLogMessage3Player,PrePlayDown,PrePlayYardsToGo,PrePlayYardLine,PrePlayTeamPossession,PostPlayDown,PostPlayYardsToGo,PostPlayYardLine,IsTurnover");
-				gRunPlayDumpFile.Write(",dat38,TurnoverOnDowns,dat40,dat41");
-				gRunPlayDumpFile.Write(",RunDirection,IsFinesseRun,FieldCondition,DefenseFamiliar,GameLogMessage4Type");
-				gRunPlayDumpFile.Write(",dat47,dat48,dat49,dat50,dat51,dat52,dat53,dat54,dat55,dat56,dat57,dat58,dat59,dat60,dat61,dat62");
-                gRunPlayDumpFile.Write(",OfG0,OfG1,OfG2,OfG3,OfG4,OfG5,OfG6,OfG7,OfG8,OfG9,OfG10,DfG0,DfG1,DfG2,DfG3,DfG4,DfG5,DfG6,DfG7,DfG8,DfG9,DfG10");
-                gRunPlayDumpFile.Write(",Off0,Off1,Off2,Off3,Off4,Off5,Off6,Off7,Off8,Off9,Off10,Def0,Def1,Def2,Def3,Def4,Def5,Def6,Def7,Def8,Def9,Def10");
-				gRunPlayDumpFile.WriteLine();
-			}
-
 			mAvailableGameWeeks = new List<GameWeekRecord>();
 			// Read all files that have {GameID}{Week}.{Year} as a format
 			// Want to process by year then by week
@@ -1131,31 +687,6 @@ namespace DataReader
 				}
 			}
 			mAvailableGameWeeks.Sort(new GameWeekComparer());
-
-			if (gOnsideKickPlayDumpFile != null)
-			{
-				gOnsideKickPlayDumpFile.Close();
-			}
-			if (gFGPlayDumpFile != null)
-			{
-				gFGPlayDumpFile.Close();
-			}
-			if (gPuntPlayDumpFile != null)
-			{
-				gPuntPlayDumpFile.Close();
-			}
-			if (gInfoPlayDumpFile != null)
-			{
-				gInfoPlayDumpFile.Close();
-			}
-			if (gPassPlayDumpFile != null)
-			{
-				gPassPlayDumpFile.Close();
-			}
-			if (gRunPlayDumpFile != null)
-			{
-				gRunPlayDumpFile.Close();
-			}
 		}
 
 		PlayerGameStatsRecord GetOffensivePlayerStatsFromPlay(GameLog gameLog, GamePlay playData, short playPlayerIndex)
