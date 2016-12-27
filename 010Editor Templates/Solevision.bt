@@ -382,6 +382,7 @@ struct PLAYRUSHDATA
     short Seconds;  // 0-59 (Second)
     short Always0;
     short Always0;
+    short Always0;
     short YardsGained;
     short IsTouchdown;  //	0-1 (1: Touchdown)
     short Rusher;       // 0-10 (Rusher, based on position in formation)
@@ -425,13 +426,14 @@ struct PLAYRUSHDATA
     FIELDCONDITION FieldCondition;  // 0-5 (Field Condition, 0: Norm, 1: cold, 2: hot, 3: wet, 4: snowy, 5: soaked - not always displayed, depends on play result)
     DEFENSEFAMILIAR DefenseFamiliar;// 0-2 (Defense Familiar: 0: None, 1: very familiar, 2: extremely familiar - not always displayed, depends on play result)
     short GameLogMessage4Type;  // Game Log Message re: Turnover on Downs
-    short Unknown1[16];
+    short Unknown1[15];
 };
 
 struct PLAYPASSDATA 
 {
     short Minute;   // 0-15 (Minute)
     short Seconds;  // 0-59 (Second)
+    short Always0;
     short Always0;
     short Always0;
     short IsComplete;   // 0-1 (1: Completion)
@@ -485,7 +487,6 @@ struct PLAYPASSDATA
     short IsTurnover;       // 0-1 (1: Turnover)
     short Unknown;
     short IsTurnoverOnDowns;    // 0-1 (1: Turnover on Downs)
-    short Unknown;
     short Unknown;
     short Unknown;
     PASSDISTANCE PassDistance;      // 0-8 (Pass Distance, 0: Screen ... 8: Spike)

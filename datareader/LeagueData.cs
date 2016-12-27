@@ -126,9 +126,8 @@ namespace DataReader
 
 			playData.TypeSpecificData[(int)PassPlayFields.Minute] = BinaryHelper.ReadInt16(inFile, "Minutes");   // 0-15 (Minute)
 			playData.TypeSpecificData[(int)PassPlayFields.Seconds] = BinaryHelper.ReadInt16(inFile,"Seconds");  // 0-59 (Second)
-			short dat02 = BinaryHelper.ReadInt16(inFile, "dat02");
-			short dat03 = BinaryHelper.ReadInt16(inFile, "dat03");
-			playData.TypeSpecificData[(int)PassPlayFields.IsComplete] = BinaryHelper.ReadInt16(inFile, "IsComplete");   // 0-1 (1: Completion)
+            BinaryHelper.ProbeBytes(inFile, 3 * 2);
+            playData.TypeSpecificData[(int)PassPlayFields.IsComplete] = BinaryHelper.ReadInt16(inFile, "IsComplete");   // 0-1 (1: Completion)
 			playData.TypeSpecificData[(int)PassPlayFields.YardsGained] = BinaryHelper.ReadInt16(inFile,"DesignedYardage"); // ??-?? (Designed Yardage: i.e. either the yardage of the pass if complete, or what it would have been if incomplete (assumed, but likely))
 			playData.TypeSpecificData[(int)PassPlayFields.IsTouchdown] = BinaryHelper.ReadInt16(inFile,"IsTouchdown");  // 0-1 (1: Touchdown)
 			playData.TypeSpecificData[(int)PassPlayFields.PassTarget] = BinaryHelper.ReadInt16(inFile,"PassTarget");   // 1-10 (Pass Target, based on position in formation)
@@ -181,7 +180,6 @@ namespace DataReader
 			playData.TypeSpecificData[(int)PassPlayFields.IsTurnoverOnDowns] = BinaryHelper.ReadInt16(inFile, "IsTurnoverOnDowns");    // 0-1 (1: Turnover on Downs)
 			short dat55 = BinaryHelper.ReadInt16(inFile, "dat55");
 			short dat56 = BinaryHelper.ReadInt16(inFile, "dat56");
-			short dat57 = BinaryHelper.ReadInt16(inFile, "dat57");
 			playData.TypeSpecificData[(int)PassPlayFields.PassDistance] = BinaryHelper.ReadInt16(inFile,"PassDistance");      // 0-8 (Pass Distance, 0: Screen ... 8: Spike)
 			playData.TypeSpecificData[(int)PassPlayFields.DefenseFamiliar] = BinaryHelper.ReadInt16(inFile,"DefenseFamiliar");// 0-2 (Defense Familiar: 0: None, 1: very familiar, 2: extremely familiar - not always displayed, depends on play result)
 			playData.TypeSpecificData[(int)PassPlayFields.EvadedRushToAvoidSafety] = BinaryHelper.ReadInt16(inFile,"EvadedRushToAvoidSafety");  // 0-1 (1: Evades Rush to avoid the safety)
@@ -198,9 +196,8 @@ namespace DataReader
 
 			playData.TypeSpecificData[(int)RunPlayFields.Minute] = BinaryHelper.ReadInt16(inFile,"Minute");   // 0-15 (Minute)
 			playData.TypeSpecificData[(int)RunPlayFields.Seconds] = BinaryHelper.ReadInt16(inFile,"Seconds");  // 0-59 (Second)
-			short dat02 = BinaryHelper.ReadInt16(inFile, "Dat02");
-			short dat03 = BinaryHelper.ReadInt16(inFile, "Dat03");
-			playData.TypeSpecificData[(int)RunPlayFields.YardsGained] = BinaryHelper.ReadInt16(inFile,"YardsGained");
+            BinaryHelper.ProbeBytes(inFile, 3 * 2);
+            playData.TypeSpecificData[(int)RunPlayFields.YardsGained] = BinaryHelper.ReadInt16(inFile,"YardsGained");
 			playData.TypeSpecificData[(int)RunPlayFields.IsTouchdown] = BinaryHelper.ReadInt16(inFile,"IsTouchdown");  //	0-1 (1: Touchdown)
 			playData.TypeSpecificData[(int)RunPlayFields.Rusher] = BinaryHelper.ReadInt16(inFile,"Rusher");       // 0-10 (Rusher, based on position in formation)
 			playData.TypeSpecificData[(int)RunPlayFields.IsFumble] = BinaryHelper.ReadInt16(inFile,"IsFumble");     // 0-1 (1: Fumble)
@@ -243,7 +240,7 @@ namespace DataReader
 			playData.TypeSpecificData[(int)RunPlayFields.FieldCondition] = BinaryHelper.ReadInt16(inFile,"FieldCondition");  // 0-5 (Field Condition, 0: Norm, 1: cold, 2: hot, 3: wet, 4: snowy, 5: soaked - not always displayed, depends on play result)
 			playData.TypeSpecificData[(int)RunPlayFields.DefenseFamiliar] = BinaryHelper.ReadInt16(inFile,"DefenseFamiliar");// 0-2 (Defense Familiar: 0: None, 1: very familiar, 2: extremely familiar - not always displayed, depends on play result)
 			playData.TypeSpecificData[(int)RunPlayFields.GameLogMessage4Type] = BinaryHelper.ReadInt16(inFile,"GameLogMessage4Type");  // Game Log Message re: Turnover on Downs
-            BinaryHelper.ProbeBytes(inFile, 16 * 2);
+            BinaryHelper.ProbeBytes(inFile, 15 * 2);
 
 			BinaryHelper.TracerOutdent();
 		}
@@ -981,38 +978,53 @@ namespace DataReader
 
 		void ExtractStatsFromPlay(GameLog gameLog, GamePlay playData)
 		{
+            var assignPerformance = false;
+
 			if (playData.PlayType == (short)PlayType.Pass)
 			{
 				ExtractPassStatsFromPlay(gameLog,playData);
+                if (playData.EffectOnPlay != 3)
+                {
+                    assignPerformance = true;
+                }
 			}
 			else if (playData.PlayType == (short)PlayType.Run)
 			{
 				ExtractRunStatsFromPlay(gameLog, playData);
+                if (playData.TypeSpecificData[(int)RunPlayFields.RunDirection] != (short)RunDirection.KneelDown
+                    && playData.EffectOnPlay != 3)
+                {
+                    assignPerformance = true;
+                }
 			}
 			else if (playData.PlayType == (short)PlayType.Kickoff)
 			{
 				ExtractKickoffStatsFromPlay(gameLog, playData);
 			}
 
-            for (short i=0;i<playData.DefensiveGrade.Length;++i)
+            if (assignPerformance)
             {
-                var offRec = GetOffensivePlayerStatsFromPlay(gameLog, playData, i);
-                if (playData.OffensiveGrade[i] == 1)
+                for (short i = 0; i < playData.DefensiveGrade.Length; ++i)
                 {
-                    offRec.PlusPlays += 1;
-                }
-                else if (playData.OffensiveGrade[i] == 2)
-                {
-                    offRec.MinusPlays += 1;
-                }
-                var defRec = GetDefensivePlayerStatsFromPlay(gameLog, playData, i);
-                if (playData.DefensiveGrade[i] == 1)
-                {
-                    defRec.PlusPlays += 1;
-                }
-                else if (playData.DefensiveGrade[i] == 2)
-                {
-                    defRec.MinusPlays += 1;
+                    var offRec = GetOffensivePlayerStatsFromPlay(gameLog, playData, i);
+                    if (playData.OffensiveGrade[i] == 1)
+                    {
+                        offRec.PlusPlays += 1;
+                    }
+                    else if (playData.OffensiveGrade[i] == 2)
+                    {
+                        offRec.MinusPlays += 1;
+                    }
+                    var defRec = GetDefensivePlayerStatsFromPlay(gameLog, playData, i);
+                    if (playData.DefensiveGrade[i] == 1)
+                    {
+                        defRec.PlusPlays += 1;
+                    }
+                    else if (playData.DefensiveGrade[i] == 2)
+                    {
+                        defRec.MinusPlays += 1;
+                    }
+
                 }
             }
         }

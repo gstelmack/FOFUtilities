@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following 
@@ -29,5 +28,5 @@ using System.Runtime.InteropServices;
 //      Build Number
 //      Revision
 //
-[assembly: AssemblyVersion("8.1.2.0")]
-[assembly: AssemblyFileVersion("8.1.2.0")]
+[assembly: AssemblyVersion("8.1.4.0")]
+[assembly: AssemblyFileVersion("8.1.4.0")]
