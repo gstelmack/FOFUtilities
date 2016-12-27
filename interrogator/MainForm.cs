@@ -382,71 +382,68 @@ namespace Interrogator
                         driveID += 1;
                     }
 
-                    if (gameWeekRec.Week > 5)
+                    foreach (LeagueData.PlayerGameStatsRecord rec in curLog.HomeTeam.PlayerStats)
                     {
-                        foreach (LeagueData.PlayerGameStatsRecord rec in curLog.HomeTeam.PlayerStats)
-                        {
-                            statsFile.Write(rec.PlayerID + ",");
-                            statsFile.Write((rec.Week - 5) + ",");
-                            statsFile.Write(rec.Team + ",");
-                            statsFile.Write(rec.DoubleCoveragesThrownInto + ",");
-                            statsFile.Write(rec.DoubleCoveragesAvoided + ",");
-                            statsFile.Write(rec.BadPasses + ",");
-                            statsFile.Write(rec.RunsForLoss + ",");
-                            statsFile.Write(rec.RunsOf20YardsPlus + ",");
-                            statsFile.Write(rec.FumblesLost + ",");
-                            statsFile.Write(rec.HasKeyCoverage + ",");
-                            statsFile.Write(rec.ThrownAt + ",");
-                            statsFile.Write(rec.TacklesForLoss + ",");
-                            statsFile.Write(rec.AssistedTacklesForLoss + ",");
-                            statsFile.Write(rec.ReceptionsOf20YardsPlusGivenUp + ",");
-                            statsFile.Write(rec.Kickoffs + ",");
-                            statsFile.Write(rec.KickoffYards + ",");
-                            statsFile.Write(rec.KickoffTouchbacks + ",");
-                            statsFile.Write(rec.TotalFieldPositionAfterKickoff + ",");
-                            statsFile.Write(rec.OffensivePassPlays + ",");
-                            statsFile.Write(rec.OffensiveRunPlays + ",");
-                            statsFile.Write(rec.DefensivePassPlays + ",");
-                            statsFile.Write(rec.DefensiveRunPlays + ",");
-                            statsFile.Write(rec.SuccessfulPasses + ",");
-                            statsFile.Write(rec.SuccessfulCatches + ",");
-                            statsFile.Write(rec.SuccessfulRuns + ",");
-                            statsFile.Write(rec.BadPassesCaught + ",");
-                            statsFile.Write(rec.PlusPlays + ",");
-                            statsFile.WriteLine(rec.MinusPlays);
-                        }
+                        statsFile.Write(rec.PlayerID + ",");
+                        statsFile.Write((rec.Week - 5) + ",");
+                        statsFile.Write(rec.Team + ",");
+                        statsFile.Write(rec.DoubleCoveragesThrownInto + ",");
+                        statsFile.Write(rec.DoubleCoveragesAvoided + ",");
+                        statsFile.Write(rec.BadPasses + ",");
+                        statsFile.Write(rec.RunsForLoss + ",");
+                        statsFile.Write(rec.RunsOf20YardsPlus + ",");
+                        statsFile.Write(rec.FumblesLost + ",");
+                        statsFile.Write(rec.HasKeyCoverage + ",");
+                        statsFile.Write(rec.ThrownAt + ",");
+                        statsFile.Write(rec.TacklesForLoss + ",");
+                        statsFile.Write(rec.AssistedTacklesForLoss + ",");
+                        statsFile.Write(rec.ReceptionsOf20YardsPlusGivenUp + ",");
+                        statsFile.Write(rec.Kickoffs + ",");
+                        statsFile.Write(rec.KickoffYards + ",");
+                        statsFile.Write(rec.KickoffTouchbacks + ",");
+                        statsFile.Write(rec.TotalFieldPositionAfterKickoff + ",");
+                        statsFile.Write(rec.OffensivePassPlays + ",");
+                        statsFile.Write(rec.OffensiveRunPlays + ",");
+                        statsFile.Write(rec.DefensivePassPlays + ",");
+                        statsFile.Write(rec.DefensiveRunPlays + ",");
+                        statsFile.Write(rec.SuccessfulPasses + ",");
+                        statsFile.Write(rec.SuccessfulCatches + ",");
+                        statsFile.Write(rec.SuccessfulRuns + ",");
+                        statsFile.Write(rec.BadPassesCaught + ",");
+                        statsFile.Write(rec.PlusPlays + ",");
+                        statsFile.WriteLine(rec.MinusPlays);
+                    }
 
-                        foreach (LeagueData.PlayerGameStatsRecord rec in curLog.AwayTeam.PlayerStats)
-                        {
-                            statsFile.Write(rec.PlayerID + ",");
-                            statsFile.Write((rec.Week - 5) + ",");
-                            statsFile.Write(rec.Team + ",");
-                            statsFile.Write(rec.DoubleCoveragesThrownInto + ",");
-                            statsFile.Write(rec.DoubleCoveragesAvoided + ",");
-                            statsFile.Write(rec.BadPasses + ",");
-                            statsFile.Write(rec.RunsForLoss + ",");
-                            statsFile.Write(rec.RunsOf20YardsPlus + ",");
-                            statsFile.Write(rec.FumblesLost + ",");
-                            statsFile.Write(rec.HasKeyCoverage + ",");
-                            statsFile.Write(rec.ThrownAt + ",");
-                            statsFile.Write(rec.TacklesForLoss + ",");
-                            statsFile.Write(rec.AssistedTacklesForLoss + ",");
-                            statsFile.Write(rec.ReceptionsOf20YardsPlusGivenUp + ",");
-                            statsFile.Write(rec.Kickoffs + ",");
-                            statsFile.Write(rec.KickoffYards + ",");
-                            statsFile.Write(rec.KickoffTouchbacks + ",");
-                            statsFile.Write(rec.TotalFieldPositionAfterKickoff + ",");
-                            statsFile.Write(rec.OffensivePassPlays + ",");
-                            statsFile.Write(rec.OffensiveRunPlays + ",");
-                            statsFile.Write(rec.DefensivePassPlays + ",");
-                            statsFile.Write(rec.DefensiveRunPlays + ",");
-                            statsFile.Write(rec.SuccessfulPasses + ",");
-                            statsFile.Write(rec.SuccessfulCatches + ",");
-                            statsFile.Write(rec.SuccessfulRuns + ",");
-                            statsFile.Write(rec.BadPassesCaught + ",");
-                            statsFile.Write(rec.PlusPlays + ",");
-                            statsFile.WriteLine(rec.MinusPlays);
-                        }
+                    foreach (LeagueData.PlayerGameStatsRecord rec in curLog.AwayTeam.PlayerStats)
+                    {
+                        statsFile.Write(rec.PlayerID + ",");
+                        statsFile.Write((rec.Week - 5) + ",");
+                        statsFile.Write(rec.Team + ",");
+                        statsFile.Write(rec.DoubleCoveragesThrownInto + ",");
+                        statsFile.Write(rec.DoubleCoveragesAvoided + ",");
+                        statsFile.Write(rec.BadPasses + ",");
+                        statsFile.Write(rec.RunsForLoss + ",");
+                        statsFile.Write(rec.RunsOf20YardsPlus + ",");
+                        statsFile.Write(rec.FumblesLost + ",");
+                        statsFile.Write(rec.HasKeyCoverage + ",");
+                        statsFile.Write(rec.ThrownAt + ",");
+                        statsFile.Write(rec.TacklesForLoss + ",");
+                        statsFile.Write(rec.AssistedTacklesForLoss + ",");
+                        statsFile.Write(rec.ReceptionsOf20YardsPlusGivenUp + ",");
+                        statsFile.Write(rec.Kickoffs + ",");
+                        statsFile.Write(rec.KickoffYards + ",");
+                        statsFile.Write(rec.KickoffTouchbacks + ",");
+                        statsFile.Write(rec.TotalFieldPositionAfterKickoff + ",");
+                        statsFile.Write(rec.OffensivePassPlays + ",");
+                        statsFile.Write(rec.OffensiveRunPlays + ",");
+                        statsFile.Write(rec.DefensivePassPlays + ",");
+                        statsFile.Write(rec.DefensiveRunPlays + ",");
+                        statsFile.Write(rec.SuccessfulPasses + ",");
+                        statsFile.Write(rec.SuccessfulCatches + ",");
+                        statsFile.Write(rec.SuccessfulRuns + ",");
+                        statsFile.Write(rec.BadPassesCaught + ",");
+                        statsFile.Write(rec.PlusPlays + ",");
+                        statsFile.WriteLine(rec.MinusPlays);
                     }
 
                     gameID += 1;
