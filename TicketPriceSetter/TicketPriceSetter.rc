@@ -21,6 +21,7 @@
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -73,18 +74,25 @@ END
 // remains consistent on all systems.
 IDR_MAINFRAME           ICON                    "res\\TicketPriceSetter.ico"
 
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Dialog
 //
 
-IDD_TICKETPRICESETTER_DIALOG DIALOGEX 0, 0, 163, 36
+IDD_TICKETPRICESETTER_DIALOG DIALOGEX 0, 0, 163, 87
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_APPWINDOW
 CAPTION "Ticket Price Setter"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     PUSHBUTTON      "Rex Prices",IDC_BUTTON_REX,56,7,50,14
+    CTEXT           "Static",IDC_STATIC_MOUSE_POSITION,7,72,149,8
+    RTEXT           "Choose/Edit Display Options Position",IDC_STATIC,7,29,118,8
+    LTEXT           "X",IDC_STATIC,35,38,8,8
+    LTEXT           "Y",IDC_STATIC,82,38,8,8
+    EDITTEXT        IDC_EDIT_MOUSEX,18,51,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_MOUSEY,67,51,40,14,ES_AUTOHSCROLL
 END
 
 
@@ -140,10 +148,21 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 156
         TOPMARGIN, 7
-        BOTTOMMARGIN, 29
+        BOTTOMMARGIN, 80
     END
 END
 #endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_TICKETPRICESETTER_DIALOG AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
 
 #endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
@@ -171,6 +190,4 @@ LANGUAGE 9, 1
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
-
-
 

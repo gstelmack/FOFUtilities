@@ -7,6 +7,8 @@
 #include "TicketPriceSetterDlg.h"
 #include "afxdialogex.h"
 
+#include <sstream>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -24,17 +26,24 @@ CTicketPriceSetterDlg::CTicketPriceSetterDlg(CWnd* pParent /*=NULL*/)
 
 void CTicketPriceSetterDlg::DoDataExchange(CDataExchange* pDX)
 {
-	CDialogEx::DoDataExchange(pDX);
+	CDialogEx::DoDataExchange( pDX );
+	DDX_Control( pDX, IDC_STATIC_MOUSE_POSITION, m_MousePosition );
+	DDX_Control( pDX, IDC_EDIT_MOUSEX, m_MouseX );
+	DDX_Control( pDX, IDC_EDIT_MOUSEY, m_MouseY );
 }
 
 BEGIN_MESSAGE_MAP(CTicketPriceSetterDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_BUTTON_REX, &CTicketPriceSetterDlg::OnBnClickedButtonRex)
+	ON_EN_CHANGE( IDC_EDIT_MOUSEX, &CTicketPriceSetterDlg::OnEnChangeEditMousex )
+	ON_EN_CHANGE( IDC_EDIT_MOUSEY, &CTicketPriceSetterDlg::OnEnChangeEditMousey )
+	ON_WM_TIMER()
 END_MESSAGE_MAP()
 
 
 // CTicketPriceSetterDlg message handlers
+static const int kTimer1 = 1;
 
 BOOL CTicketPriceSetterDlg::OnInitDialog()
 {
@@ -46,6 +55,21 @@ BOOL CTicketPriceSetterDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
 	// TODO: Add extra initialization here
+	SetTimer( kTimer1, 100, nullptr );
+
+	{
+		auto x = AfxGetApp()->GetProfileInt( L"Mouse", L"X", 0 );
+		std::wstringstream ss;
+		ss << x;
+		m_MouseX.SetWindowTextW( ss.str().c_str() );
+	}
+
+	{
+		auto y = AfxGetApp()->GetProfileInt( L"Mouse", L"Y", 0 );
+		std::wstringstream ss;
+		ss << y;
+		m_MouseY.SetWindowTextW( ss.str().c_str() );
+	}
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -90,52 +114,25 @@ HCURSOR CTicketPriceSetterDlg::OnQueryDragIcon()
 
 void CTicketPriceSetterDlg::OnBnClickedButtonRex()
 {
-	CWnd* fofWindow = FindWindow(NULL,TEXT("Front Office Football Seven"));
-	if (!fofWindow)
-	{
-		AfxMessageBox(TEXT("Cannot FOF window.\n"), MB_OK | MB_ICONSTOP);
-		return;
-	}
-	fofWindow = fofWindow->GetWindow(GW_CHILD);
+	auto x = AfxGetApp()->GetProfileInt( L"Mouse", L"X", 0 );
+	auto y = AfxGetApp()->GetProfileInt( L"Mouse", L"Y", 0 );
 
-	CString windowName;
-	CWnd* gameOptionsWindow = NULL;
-	CWnd* almanacWindow = NULL;
-	CWnd* testWindow;
-	for (testWindow = fofWindow->GetWindow(GW_CHILD); testWindow != NULL; testWindow = testWindow->GetWindow(GW_HWNDNEXT))
+	CWnd* ticketPricesWindow = FindWindow( NULL, TEXT( "Ticket Prices and Stadium Information" ) );
+	if ( !ticketPricesWindow )
 	{
-		testWindow->GetWindowText(windowName);
-		if (windowName == "Game Options")
-		{
-			gameOptionsWindow = testWindow;
-		}
-		else if (windowName == "Almanac")
-		{
-			almanacWindow = testWindow;
-		}
-	}
-	if (!gameOptionsWindow)
-	{
-		AfxMessageBox(TEXT("Cannot find Game Options window.\n"), MB_OK | MB_ICONSTOP);
+		AfxMessageBox( TEXT( "Ticket prices did not open.\n" ), MB_OK | MB_ICONSTOP );
 		return;
 	}
-
-	CWnd* gameOptionsList = gameOptionsWindow->GetDlgItem(0x3f3);
-	if (!gameOptionsList)
+	CWnd* recommendButton = ticketPricesWindow->GetDlgItem( 0x58d );
+	if ( !recommendButton )
 	{
-		AfxMessageBox(TEXT("No game options list in game options window?\n"), MB_OK | MB_ICONSTOP);
+		AfxMessageBox( TEXT( "No recommend button in ticket prices window?\n" ), MB_OK | MB_ICONSTOP );
 		return;
 	}
-
-	if (!almanacWindow)
+	CComboBox* ticketPriceTeamBox = static_cast<CComboBox*>( ticketPricesWindow->GetDlgItem( 0x58B ) );
+	if ( !ticketPriceTeamBox )
 	{
-		AfxMessageBox(TEXT("Cannot find Almanac window.\n"), MB_OK | MB_ICONSTOP);
-		return;
-	}
-	CWnd* almanacList = almanacWindow->GetDlgItem(0x3f3);
-	if (!almanacList)
-	{
-		AfxMessageBox(TEXT("No almanac list in almanac window?\n"), MB_OK | MB_ICONSTOP);
+		AfxMessageBox( TEXT( "No team box in ticket price window?\n" ), MB_OK | MB_ICONSTOP );
 		return;
 	}
 
@@ -146,10 +143,10 @@ void CTicketPriceSetterDlg::OnBnClickedButtonRex()
 	for (int teamIndex = 0; teamIndex < 32; ++teamIndex)
 	{
 		// Click change color
-		DoMouseClick(26, 98, gameOptionsList, screenX, screenY);
+		DoMouseClick(x, y, screenX, screenY);
 
 		// Change the color to the correct team
-		CWnd* colorChooserWindow = FindWindow(NULL, TEXT("Color Chooser"));
+		CWnd* colorChooserWindow = FindWindow(NULL, TEXT("Color and Display Options Chooser"));
 		if (!colorChooserWindow)
 		{
 			AfxMessageBox(TEXT("Color chooser did not open.\n"), MB_OK | MB_ICONSTOP);
@@ -176,48 +173,22 @@ void CTicketPriceSetterDlg::OnBnClickedButtonRex()
 		::SendMessage(saveButton->GetSafeHwnd(), BM_CLICK, 0, 0);
 		Sleep(250);
 
-		// Click Stadium options
-		DoMouseClick(43, 443, almanacList, screenX, screenY);
+		ticketPriceTeamBox->SetCurSel( teamIndex );
+		wParam = MAKEWPARAM( 1127, CBN_SELCHANGE );
+		colorChooserWindow->SendMessage( WM_COMMAND, wParam, (LPARAM)( ticketPriceTeamBox->GetSafeHwnd() ) );
+		Sleep( 250 );
 
-		// Click recommend prices
-		CWnd* ticketPricesWindow = FindWindow(NULL, TEXT("Ticket Prices and Stadium Information"));
-		if (!ticketPricesWindow)
-		{
-			AfxMessageBox(TEXT("Ticket prices did not open.\n"), MB_OK | MB_ICONSTOP);
-			return;
-		}
-		CWnd* recommendButton = ticketPricesWindow->GetDlgItem(0x58d);
-		if (!recommendButton)
-		{
-			AfxMessageBox(TEXT("No recommend button in ticket prices window?\n"), MB_OK | MB_ICONSTOP);
-			return;
-		}
 		::SendMessage(recommendButton->GetSafeHwnd(), BM_CLICK, 0, 0);
-		Sleep(250);
-
-		// Close the dialog
-		CWnd* okbutton = ticketPricesWindow->GetDlgItem(1);
-		if (!okbutton)
-		{
-			AfxMessageBox(TEXT("No OK button in ticket prices window?\n"), MB_OK | MB_ICONSTOP);
-			return;
-		}
-		::SendMessage(okbutton->GetSafeHwnd(), BM_CLICK, 0, 0);
 		Sleep(250);
 	}
 }
 
-void CTicketPriceSetterDlg::DoMouseClick(int x, int y, CWnd* window, int screenX, int screenY)
+void CTicketPriceSetterDlg::DoMouseClick(int x, int y, int screenX, int screenY)
 {
 	INPUT inputStruct;
 	ZeroMemory(&inputStruct, sizeof(inputStruct));
-	POINT clickPoint;
-	inputStruct.type = INPUT_MOUSE;
-	clickPoint.x = x;
-	clickPoint.y = y;
-	window->ClientToScreen(&clickPoint);
-	long clickX = (clickPoint.x * 65535) / screenX;
-	long clickY = (clickPoint.y * 65535) / screenY;
+	long clickX = (x * 65535) / screenX;
+	long clickY = (y * 65535) / screenY;
 
 	inputStruct.mi.dx = clickX;
 	inputStruct.mi.dy = clickY;
@@ -231,4 +202,38 @@ void CTicketPriceSetterDlg::DoMouseClick(int x, int y, CWnd* window, int screenX
 	inputStruct.mi.dwFlags = MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_LEFTUP;
 	SendInput(1, &inputStruct, sizeof(inputStruct));
 	Sleep(250);
+}
+
+void CTicketPriceSetterDlg::OnEnChangeEditMousex()
+{
+	CString mouseX;
+	m_MouseX.GetWindowText( mouseX );
+	auto start = mouseX.GetString();
+	wchar_t* end;
+	auto x = std::wcstol( start, &end, 10 );
+	AfxGetApp()->WriteProfileInt( L"Mouse" , L"X" , x );
+}
+
+
+void CTicketPriceSetterDlg::OnEnChangeEditMousey()
+{
+	CString mouseY;
+	m_MouseY.GetWindowText( mouseY );
+	auto start = mouseY.GetString();
+	wchar_t* end;
+	auto y = std::wcstol( start, &end, 10 );
+	AfxGetApp()->WriteProfileInt( L"Mouse", L"Y", y );
+}
+
+
+void CTicketPriceSetterDlg::OnTimer( UINT_PTR nIDEvent )
+{
+	POINT point;
+	GetCursorPos( &point );
+
+	std::wstringstream ss;
+	ss << point.x << L", " << point.y;
+	m_MousePosition.SetWindowTextW( ss.str().c_str() );
+
+	CDialogEx::OnTimer( nIDEvent );
 }

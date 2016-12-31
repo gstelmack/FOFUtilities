@@ -3,6 +3,7 @@
 //
 
 #pragma once
+#include "afxwin.h"
 
 
 // CTicketPriceSetterDlg dialog
@@ -23,7 +24,7 @@ public:
 protected:
 	HICON m_hIcon;
 
-	void DoMouseClick(int x, int y, CWnd* window, int screenX, int screenY);
+	void DoMouseClick(int x, int y, int screenX, int screenY);
 
 	// Generated message map functions
 	virtual BOOL OnInitDialog();
@@ -32,4 +33,12 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	afx_msg void OnBnClickedButtonRex();
+	afx_msg void OnEnChangeEditMousex();
+	afx_msg void OnEnChangeEditMousey();
+protected:
+	CStatic m_MousePosition;
+	CEdit m_MouseX;
+	CEdit m_MouseY;
+public:
+	afx_msg void OnTimer( UINT_PTR nIDEvent );
 };
