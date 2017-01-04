@@ -1,4 +1,8 @@
-﻿Version 8.1.4.0
+﻿Version 8.1.5.0
+
+- Do not write duplicate stat records when teams have fewer than 46 active players.
+
+Version 8.1.4.0
 
 - Fixed plus/minus to ignore kneeldowns and deadball penalties.
 

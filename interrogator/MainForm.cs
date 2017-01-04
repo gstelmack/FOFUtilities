@@ -384,6 +384,10 @@ namespace Interrogator
 
                     foreach (LeagueData.PlayerGameStatsRecord rec in curLog.HomeTeam.PlayerStats)
                     {
+                        if (rec.PlayerID < 0)
+                        {
+                            continue;
+                        }
                         statsFile.Write(rec.PlayerID + ",");
                         statsFile.Write((rec.Week - 5) + ",");
                         statsFile.Write(rec.Team + ",");
@@ -416,6 +420,10 @@ namespace Interrogator
 
                     foreach (LeagueData.PlayerGameStatsRecord rec in curLog.AwayTeam.PlayerStats)
                     {
+                        if (rec.PlayerID < 0)
+                        {
+                            continue;
+                        }
                         statsFile.Write(rec.PlayerID + ",");
                         statsFile.Write((rec.Week - 5) + ",");
                         statsFile.Write(rec.Team + ",");

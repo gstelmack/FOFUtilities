@@ -20,7 +20,7 @@ namespace DataReader
 			mSavedGamePath = pathPrefix;
 			mLeagueID = Path.GetFileName(pathPrefix);
 			mExportPath = Path.Combine(universeData.ExportDirectory, mLeagueID);
-			LoadTeamInformation();
+			//LoadTeamInformation();
 			if (loadGameList)
 			{
 				LoadGameList();
@@ -89,8 +89,12 @@ namespace DataReader
 			int i;
 			for (i = 0; i < newEntry.ActivePlayerIDs.Length; ++i)
 			{
-				BinaryHelper.ReadInt32(inFile, "UnknownIndex");
+                var activePlayerIndex = BinaryHelper.ReadInt32(inFile, "Player Index " + i.ToString("D2"));
 				newEntry.ActivePlayerIDs[i] = BinaryHelper.ReadInt32(inFile, "Player ID " + i.ToString("D2"));
+                if (activePlayerIndex >= 65535)
+                {
+                    newEntry.ActivePlayerIDs[i] = -1;
+                }
 				newEntry.PlayerStats[i] = new PlayerGameStatsRecord();
 				newEntry.PlayerStats[i].PlayerID = newEntry.ActivePlayerIDs[i];
 				newEntry.PlayerStats[i].Week = (short)week;
