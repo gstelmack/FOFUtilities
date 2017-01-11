@@ -1,4 +1,9 @@
-﻿Version 8.1.5.0
+﻿Version 8.1.6.0
+
+- Fix reading playerIDs > 32768.
+- Change icon.
+
+Version 8.1.5.0
 
 - Do not write duplicate stat records when teams have fewer than 46 active players.
 

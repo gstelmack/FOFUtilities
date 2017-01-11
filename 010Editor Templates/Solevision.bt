@@ -635,7 +635,7 @@ struct GAMEENDENTRY
 struct GAMEPLAYERENTRY
 {
     long PlayerIndex;
-    long PlayerID;
+    PLAYERID PlayerID;
 };
 
 struct GAMETEAMENTRY

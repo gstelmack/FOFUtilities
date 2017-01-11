@@ -20,8 +20,8 @@ namespace DataReader
 			mSavedGamePath = pathPrefix;
 			mLeagueID = Path.GetFileName(pathPrefix);
 			mExportPath = Path.Combine(universeData.ExportDirectory, mLeagueID);
-			//LoadTeamInformation();
-			if (loadGameList)
+            LoadTeamInformation();
+            if (loadGameList)
 			{
 				LoadGameList();
 			}
@@ -90,7 +90,7 @@ namespace DataReader
 			for (i = 0; i < newEntry.ActivePlayerIDs.Length; ++i)
 			{
                 var activePlayerIndex = BinaryHelper.ReadInt32(inFile, "Player Index " + i.ToString("D2"));
-				newEntry.ActivePlayerIDs[i] = BinaryHelper.ReadInt32(inFile, "Player ID " + i.ToString("D2"));
+				newEntry.ActivePlayerIDs[i] = BinaryHelper.ReadCodedInt32(inFile, "Player ID " + i.ToString("D2"));
                 if (activePlayerIndex >= 65535)
                 {
                     newEntry.ActivePlayerIDs[i] = -1;
@@ -520,7 +520,7 @@ namespace DataReader
 		{
 			BinaryHelper.TracerIndent();
 
-			newLog.PlayerOfTheGameID = BinaryHelper.ReadInt32(inFile, "PlayerOfTheGameID");
+			newLog.PlayerOfTheGameActivePlayerIndex = BinaryHelper.ReadInt32(inFile, "PlayerOfTheGameActivePlayerIndex");
 			short homeDriveCount = BinaryHelper.ReadInt16(inFile, "HomeDriveCount");
 			short awayDriveCount = BinaryHelper.ReadInt16(inFile, "AwayDriveCount");
 			newLog.HomeDrives = new GameDriveInfo[homeDriveCount];
@@ -1734,7 +1734,7 @@ namespace DataReader
 			public short WindStrength;
 			public GameTeamEntry HomeTeam;
 			public GameTeamEntry AwayTeam;
-			public int PlayerOfTheGameID;
+			public int PlayerOfTheGameActivePlayerIndex;
 			public GameDriveInfo[] HomeDrives;
 			public GameDriveInfo[] AwayDrives;
 			public GamePassInfo HomePassing;

@@ -15,6 +15,7 @@ typedef short INCOME <read=INCOMERead, write=INCOMEWrite>;
 typedef short POVERTYLEVEL <read=POVERTYLEVELRead, write=POVERTYLEVELWrite>;
 typedef short GROWTHRATE <read=GROWTHRATERead, write=GROWTHRATEWrite>;
 typedef short LUXURYBOXPRICE <read=LUXURYBOXPRICERead, write=LUXURYBOXPRICEWrite>;
+typedef long PLAYERID <read=PLAYERIDRead, write=PLAYERIDWrite>;
 
 string SALARYRead( SALARY sal )
 {
@@ -28,10 +29,28 @@ string SALARYRead( SALARY sal )
 
 void SALARYWrite( SALARY &sal, string s )
 {
-    long val = Atoi(s);
+    long val = Atoi(s) / 10000;
     short low16Bits = val % 32768;
     short hi16Bits = val / 32768;
 	sal = (SALARY)( (long)low16Bits + (long)(hi16Bits << 16) );
+}
+
+string PLAYERIDRead( PLAYERID id )
+{
+    short low16Bits = id & 0x0000ffff;
+    short hi16Bits = (id & 0xffff0000) >> 16;
+    long val = low16Bits + (hi16Bits * 32768);
+	string s;
+	SPrintf( s, "%d", val );
+	return s;
+}
+
+void PLAYERIDWrite( PLAYERID &id, string s )
+{
+    long val = Atoi(s);
+    short low16Bits = val % 32768;
+    short hi16Bits = val / 32768;
+	id = (PLAYERID)( (long)low16Bits + (long)(hi16Bits << 16) );
 }
 
 string LUXURYBOXPRICERead( LUXURYBOXPRICE lbp )
