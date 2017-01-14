@@ -80,19 +80,34 @@ IDR_MAINFRAME           ICON                    "res\\TicketPriceSetter.ico"
 // Dialog
 //
 
-IDD_TICKETPRICESETTER_DIALOG DIALOGEX 0, 0, 163, 87
+IDD_TICKETPRICESETTER_DIALOG DIALOGEX 0, 0, 163, 272
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_APPWINDOW
 CAPTION "Ticket Price Setter"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     PUSHBUTTON      "Rex Prices",IDC_BUTTON_REX,56,7,50,14
-    CTEXT           "Static",IDC_STATIC_MOUSE_POSITION,7,72,149,8
-    RTEXT           "Choose/Edit Display Options Position",IDC_STATIC,7,29,118,8
-    LTEXT           "X",IDC_STATIC,35,38,8,8
-    LTEXT           "Y",IDC_STATIC,82,38,8,8
-    EDITTEXT        IDC_EDIT_MOUSEX,18,51,40,14,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT_MOUSEY,67,51,40,14,ES_AUTOHSCROLL
+    CTEXT           "Static",IDC_STATIC_MOUSE_POSITION,7,257,149,8
+    RTEXT           "Controls Position",IDC_STATIC,54,38,54,8
+    LTEXT           "X",IDC_STATIC,54,26,8,8
+    LTEXT           "Y",IDC_STATIC,101,26,8,8
+    EDITTEXT        IDC_EDIT_CONTROLS_X,37,51,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_CONTROLS_Y,86,51,40,14,ES_AUTOHSCROLL
+    RTEXT           "Options Position",IDC_STATIC,55,73,52,8
+    EDITTEXT        IDC_EDIT_OPTIONS_X,37,86,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_OPTIONS_Y,86,86,40,14,ES_AUTOHSCROLL
+    RTEXT           "Choose/Edit Display Options Position",IDC_STATIC,22,108,118,8
+    EDITTEXT        IDC_EDIT_DISPLAY_OPTIONS_X,37,121,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_DISPLAY_OPTIONS_Y,86,121,40,14,ES_AUTOHSCROLL
+    RTEXT           "Almanac Position",IDC_STATIC,54,142,54,8
+    EDITTEXT        IDC_EDIT_ALMANAC_X,37,155,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_ALMANAC_Y,86,155,40,14,ES_AUTOHSCROLL
+    RTEXT           "Blue Book Position",IDC_STATIC,52,177,58,8
+    EDITTEXT        IDC_EDIT_BLUE_BOOK_X,37,190,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_BLUE_BOOK_Y,86,190,40,14,ES_AUTOHSCROLL
+    RTEXT           "Stadium Overview Position",IDC_STATIC,38,211,86,8
+    EDITTEXT        IDC_EDIT_STADIUM_X,37,224,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_STADIUM_Y,86,224,40,14,ES_AUTOHSCROLL
 END
 
 
@@ -102,8 +117,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,1
- PRODUCTVERSION 1,0,0,1
+ FILEVERSION 8,1,1,0
+ PRODUCTVERSION 8,1,6,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -116,16 +131,16 @@ VS_VERSION_INFO VERSIONINFO
 BEGIN
     BLOCK "StringFileInfo"
     BEGIN
-        BLOCK "040904B0"
+        BLOCK "040904b0"
         BEGIN
-            VALUE "CompanyName", "TODO: <Company name>"
+            VALUE "CompanyName", "StelmackSoft"
             VALUE "FileDescription", "TicketPriceSetter"
-            VALUE "FileVersion", "1.0.0.1"
+            VALUE "FileVersion", "8.1.1.0"
             VALUE "InternalName", "TicketPriceSetter.exe"
-            VALUE "LegalCopyright", "TODO: (c) <Company name>.  All rights reserved."
+            VALUE "LegalCopyright", "(c) 2017 StelmackSoft.  All rights reserved."
             VALUE "OriginalFilename", "TicketPriceSetter.exe"
-            VALUE "ProductName", "TODO: <Product name>"
-            VALUE "ProductVersion", "1.0.0.1"
+            VALUE "ProductName", "FOF Utility Suite"
+            VALUE "ProductVersion", "8.1.6.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -148,7 +163,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 156
         TOPMARGIN, 7
-        BOTTOMMARGIN, 80
+        BOTTOMMARGIN, 265
     END
 END
 #endif    // APSTUDIO_INVOKED
