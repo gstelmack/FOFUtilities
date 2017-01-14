@@ -7,10 +7,18 @@
 #define IDC_BUTTON1                     1000
 #define IDC_BUTTON_REX                  1000
 #define IDC_STATIC_MOUSE_POSITION       1001
-#define IDC_EDIT_MOUSEX                 1002
-#define IDC_EDIT_MOUSEY                 1003
-#define IDC_CHECK1                      1004
-#define IDC_CHECK_CAPTURE_MOUSE         1004
+#define IDC_EDIT_CONTROLS_X             1002
+#define IDC_EDIT_CONTROLS_Y             1003
+#define IDC_EDIT_OPTIONS_X              1010
+#define IDC_EDIT_OPTIONS_Y              1011
+#define IDC_EDIT_DISPLAY_OPTIONS_X      1012
+#define IDC_EDIT_DISPLAY_OPTIONS_Y      1013
+#define IDC_EDIT_ALMANAC_X              1014
+#define IDC_EDIT_ALMANAC_Y              1015
+#define IDC_EDIT_BLUE_BOOK_X            1016
+#define IDC_EDIT_BLUE_BOOK_Y            1017
+#define IDC_EDIT_STADIUM_X              1018
+#define IDC_EDIT_STADIUM_Y              1019
 
 // Next default values for new objects
 // 
