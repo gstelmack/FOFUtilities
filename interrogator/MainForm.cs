@@ -200,7 +200,8 @@ namespace Interrogator
             resultsFile.Write("ClubAttendance,");
             resultsFile.Write("ClubCapacity,");
             resultsFile.Write("BoxAttendance,");
-            resultsFile.WriteLine("BoxCapacity");
+            resultsFile.Write("BoxCapacity,");
+            resultsFile.WriteLine("PoGID");
 
             filename = System.IO.Path.Combine(outputDir, "drive_results.csv");
             System.IO.StreamWriter drivesFile = new System.IO.StreamWriter(filename, false);
@@ -340,7 +341,8 @@ namespace Interrogator
                     resultsFile.Write(curLog.ClubAttendance + ",");
                     resultsFile.Write(curLog.ClubCapacity + ",");
                     resultsFile.Write(curLog.BoxAttendance + ",");
-                    resultsFile.WriteLine(curLog.BoxCapacity);
+                    resultsFile.Write(curLog.BoxCapacity + ",");
+                    resultsFile.WriteLine(curLog.PlayerOfTheGamePlayerID);
 
                     int driveID = 0;
                     foreach (LeagueData.GameDriveInfo homeDriveInfo in curLog.HomeDrives)
