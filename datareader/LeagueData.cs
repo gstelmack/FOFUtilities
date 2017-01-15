@@ -158,7 +158,8 @@ namespace DataReader
 
             playData.TypeSpecificData[(int)PassPlayFields.Minute] = BinaryHelper.ReadInt16(inFile, "Minutes");   // 0-15 (Minute)
             playData.TypeSpecificData[(int)PassPlayFields.Seconds] = BinaryHelper.ReadInt16(inFile,"Seconds");  // 0-59 (Second)
-            BinaryHelper.ProbeBytes(inFile, 3 * 2);
+            playData.TypeSpecificData[(int)PassPlayFields.PenaltyPlayer] = BinaryHelper.ReadInt16(inFile, "PenaltyPlayer");
+            BinaryHelper.ProbeBytes(inFile, 2 * 2);
             playData.TypeSpecificData[(int)PassPlayFields.IsComplete] = BinaryHelper.ReadInt16(inFile, "IsComplete");   // 0-1 (1: Completion)
             playData.TypeSpecificData[(int)PassPlayFields.YardsGained] = BinaryHelper.ReadInt16(inFile,"DesignedYardage"); // ??-?? (Designed Yardage: i.e. either the yardage of the pass if complete, or what it would have been if incomplete (assumed, but likely))
             playData.TypeSpecificData[(int)PassPlayFields.IsTouchdown] = BinaryHelper.ReadInt16(inFile,"IsTouchdown");  // 0-1 (1: Touchdown)
@@ -228,7 +229,8 @@ namespace DataReader
 
             playData.TypeSpecificData[(int)RunPlayFields.Minute] = BinaryHelper.ReadInt16(inFile,"Minute");   // 0-15 (Minute)
             playData.TypeSpecificData[(int)RunPlayFields.Seconds] = BinaryHelper.ReadInt16(inFile,"Seconds");  // 0-59 (Second)
-            BinaryHelper.ProbeBytes(inFile, 3 * 2);
+            playData.TypeSpecificData[(int)PassPlayFields.PenaltyPlayer] = BinaryHelper.ReadInt16(inFile, "PenaltyPlayer");
+            BinaryHelper.ProbeBytes(inFile, 2 * 2);
             playData.TypeSpecificData[(int)RunPlayFields.YardsGained] = BinaryHelper.ReadInt16(inFile,"YardsGained");
             playData.TypeSpecificData[(int)RunPlayFields.IsTouchdown] = BinaryHelper.ReadInt16(inFile,"IsTouchdown");  //	0-1 (1: Touchdown)
             playData.TypeSpecificData[(int)RunPlayFields.Rusher] = BinaryHelper.ReadInt16(inFile,"Rusher");       // 0-10 (Rusher, based on position in formation)
@@ -1020,6 +1022,8 @@ namespace DataReader
         {
             var assignPerformance = false;
 
+            short penaltyPlayer = -1;
+            var acceptedPenalty = false;
             if (playData.PlayType == (short)PlayType.Pass)
             {
                 ExtractPassStatsFromPlay(gameLog,playData);
@@ -1027,6 +1031,8 @@ namespace DataReader
                 {
                     assignPerformance = true;
                 }
+                penaltyPlayer = playData.TypeSpecificData[(int)PassPlayFields.PenaltyPlayer];
+                acceptedPenalty = playData.TypeSpecificData[(int)PassPlayFields.IsPenaltyAccepted] != 0;
             }
             else if (playData.PlayType == (short)PlayType.Run)
             {
@@ -1036,10 +1042,34 @@ namespace DataReader
                 {
                     assignPerformance = true;
                 }
+                penaltyPlayer = playData.TypeSpecificData[(int)RunPlayFields.PenaltyPlayer];
+                acceptedPenalty = playData.TypeSpecificData[(int)RunPlayFields.IsPenaltyAccepted] != 0;
             }
             else if (playData.PlayType == (short)PlayType.Kickoff)
             {
                 ExtractKickoffStatsFromPlay(gameLog, playData);
+            }
+
+            if (penaltyPlayer >= 0)
+            {
+                if (playData.IsDefensivePenalty != 0)
+                {
+                    var defRec = GetDefensivePlayerStatsFromPlay(gameLog, playData, penaltyPlayer);
+                    defRec.PenaltiesCommitted += 1;
+                    if (acceptedPenalty)
+                    {
+                        defRec.PenaltiesAccepted += 1;
+                    }
+                }
+                else if (playData.IsOffensivePenalty != 0)
+                {
+                    var offRec = GetOffensivePlayerStatsFromPlay(gameLog, playData, penaltyPlayer);
+                    offRec.PenaltiesCommitted += 1;
+                    if (acceptedPenalty)
+                    {
+                        offRec.PenaltiesAccepted += 1;
+                    }
+                }
             }
 
             if (assignPerformance)
@@ -1242,9 +1272,13 @@ namespace DataReader
                 SuccessfulCatches = 0;
                 SuccessfulRuns = 0;
                 BadPassesCaught = 0;
-            }
+                PlusPlays = 0;
+                MinusPlays = 0;
+                PenaltiesCommitted = 0;
+                PenaltiesAccepted = 0;
+        }
 
-            public int PlayerID;
+        public int PlayerID;
             public short Year;
             public short Week;
             public short Team;
@@ -1372,6 +1406,8 @@ namespace DataReader
             public int BadPassesCaught;
             public int PlusPlays;
             public int MinusPlays;
+            public int PenaltiesCommitted;
+            public int PenaltiesAccepted;
         };
 
         private const int kNumActivePlayers = 46;
@@ -1496,7 +1532,8 @@ namespace DataReader
             DefenseFamiliar,
             EvadedRushToAvoidSafety,
             FieldCondition,
-            GameLogMessage4Type
+            GameLogMessage4Type,
+            PenaltyPlayer
         };
 
         public enum RunPlayFields
@@ -1540,7 +1577,8 @@ namespace DataReader
             IsFinesseRun,
             FieldCondition,
             DefenseFamiliar,
-            GameLogMessage4Type
+            GameLogMessage4Type,
+            PenaltyPlayer
         };
 
         public enum KickoffPlayFields

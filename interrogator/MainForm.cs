@@ -265,7 +265,9 @@ namespace Interrogator
                     statsFile.Write("SuccessfulRuns,");
                     statsFile.Write("BadPassesCaught,");
                     statsFile.Write("PlusPlays,");
-                    statsFile.WriteLine("MinusPlays");
+                    statsFile.Write("MinusPlays,");
+                    statsFile.Write("PenaltiesCommitted,");
+                    statsFile.WriteLine("PenaltiesAccepted");
 
                     oldYear = gameWeekRec.Year;
                     gameID = 0;
@@ -417,7 +419,9 @@ namespace Interrogator
                         statsFile.Write(rec.SuccessfulRuns + ",");
                         statsFile.Write(rec.BadPassesCaught + ",");
                         statsFile.Write(rec.PlusPlays + ",");
-                        statsFile.WriteLine(rec.MinusPlays);
+                        statsFile.Write(rec.MinusPlays + ",");
+                        statsFile.Write(rec.PenaltiesCommitted + ",");
+                        statsFile.WriteLine(rec.PenaltiesAccepted);
                     }
 
                     foreach (LeagueData.PlayerGameStatsRecord rec in curLog.AwayTeam.PlayerStats)
@@ -453,7 +457,9 @@ namespace Interrogator
                         statsFile.Write(rec.SuccessfulRuns + ",");
                         statsFile.Write(rec.BadPassesCaught + ",");
                         statsFile.Write(rec.PlusPlays + ",");
-                        statsFile.WriteLine(rec.MinusPlays);
+                        statsFile.Write(rec.MinusPlays + ",");
+                        statsFile.Write(rec.PenaltiesCommitted + ",");
+                        statsFile.WriteLine(rec.PenaltiesAccepted);
                     }
 
                     gameID += 1;

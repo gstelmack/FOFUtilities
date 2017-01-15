@@ -380,7 +380,7 @@ struct PLAYRUSHDATA
 {
     short Minute;   // 0-15 (Minute)
     short Seconds;  // 0-59 (Second)
-    short Always0;
+    short PenaltyPlayer;
     short Always0;
     short Always0;
     short YardsGained;
@@ -433,7 +433,7 @@ struct PLAYPASSDATA
 {
     short Minute;   // 0-15 (Minute)
     short Seconds;  // 0-59 (Second)
-    short Always0;
+    short PenaltyPlayer;
     short Always0;
     short Always0;
     short IsComplete;   // 0-1 (1: Completion)
