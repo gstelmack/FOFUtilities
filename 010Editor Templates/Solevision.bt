@@ -186,6 +186,28 @@ enum<short> FGPLAYTYPE
     FGPlay20=20
 };
 
+enum<short> PUNTRETURNTYPE
+{
+    PuntPlayNormal=0,
+    PuntPlayFairCatch=1,
+    PuntPlayDowned=2,
+    PuntPlayOOB=3
+};
+
+enum<short> PUNTPENALTYTIME
+{
+    PuntNoPenalty=0,
+    PuntBeforeKick=1,
+    PuntDuringReturn=2
+};
+
+enum<short> FGPENALTYTIME
+{
+    FGNoPenalty=0,
+    FGBeforeKick=1,
+    FGAfterKick=2
+};
+
 enum<short> BADSNAPTYPE
 {
     SnapGood=0,
@@ -275,6 +297,7 @@ struct PLAYINFODATA
 {
     short Minute;
     short Second;
+    short PenaltyPlayer;
     short InfoPlayData2;
     short InfoPlayData3;
     short WasKickOnExtraPoint;
@@ -292,19 +315,33 @@ struct PLAYINFODATA
     short InfoPlayData16;
     short InfoPlayData17;
     short PassReceiver;              // if throw for conversion
-    short PlayData2[44];
+    short PlayData2[43];
 };
 
 struct PLAYONSIDEDATA 
 {
-    short PlayData[63];
+    short Minute;
+    short Second;
+    short PenaltyPlayer;
+    short OnsideData3;
+    short OnsideData4;
+    short KickingTeam;
+    short PenaltyAccepted;
+    short OnsideData7;
+    short OnsideData8;
+    short OnsideData9;
+    short RecoveryYardLine;
+    short KickoffYardLine;
+    short OnisdeData12;
+    short KickRecoveryPlayer;
+    short OnsideData[49];
 };
 
 struct PLAYKICKOFFDATA 
 {
     short Minute;
     short Second;
-    short Always_Zero;
+    short PenaltyPlayer;
     short Always_Zero;
     short Always_Zero;
     short KickingTeam;
@@ -339,6 +376,7 @@ struct PLAYFGDATA
 {
     short Minute;
     short Second;
+    short PenaltyPlayer;
     short FGPlayData2;
     short FGPlayData3;
     short KickingTeam;
@@ -356,11 +394,11 @@ struct PLAYFGDATA
     short FGPlayData16;
     short KickDistance;
     short FGPlayData18;
-    short FGPlayData19;
-    short FGPlayData20;
-    short FGPlayData21;
+    short PrePlayDown;
+    short PrePlayYardsToGo;
+    short PrePlayYardLine;
     FGPLAYTYPE FGPlayType;        // 0 = no kick, 8 = succeeded, 10 = failure of some sort
-    short FGPlayData23;
+    FGPENALTYTIME PenaltyTime;
     short FGPlayData24;
     short FGPlayData25;
     short FGPlayData26;
@@ -368,12 +406,57 @@ struct PLAYFGDATA
     short KickBlockedDueToBadSnap;
     short FGPlayData29;
     short FGPlayData30;
-    short PlayData[32];
+    short PlayData[31];
 };
 
 struct PLAYPUNTDATA 
 {
-    short PlayData[63];
+    short Minute;   // 0-15 (Minute)
+    short Seconds;  // 0-59 (Second)
+    short PenaltyPlayer;
+    short PuntPlayData3;    // zero
+    short PuntPlayData4;    // zero
+    short KickingTeam;
+    short PuntPlayData6;    // usually 2
+    short PuntPlayData7;    // usually 1, was 7 on a blocked for safety play, did not match player
+    short Fumble;
+    short WhoBlockedKick;
+    short PuntPlayData10;   // blocked for saefty?
+    short BlockReturnYards;
+    short PostPlayDown;
+    short PostPlayToGo;
+    short PostPlayYardLine;
+    short PostPlayTeamPossession;
+    short PuntPlayData16;   // zero
+    short PuntPlayData17;   // Fumble with turnover?
+    short PuntPlayData18;   // zero
+    short PuntPlayData19;   // Block Recovery Team? TD?
+    short BlockRecoveryPlayer;
+    short PuntPlayData21;   // zero
+    short PuntDistance;
+    short PuntPlayData23;   // Unknown
+    short Returner;
+    short Tackler;
+    short Touchdown;
+    short PuntPlayData27;   // Unknown
+    short PuntPlayData28;   // Unknown
+    short FumbleRecoverer;
+    short ReturnYards;
+    short FumbleRecoveryTackler;
+    short PuntPlayData32;   // zero
+    short PrePlayDown;
+    short PrePlayYardsToGo;
+    short PrePlayYardLine;
+    PUNTPENALTYTIME PenaltyTime;
+    short PuntPlayData37;   // Unknown
+    short FumbleRecoveryYards;
+    short PuntPlayData39;   // Unknown
+    short PuntPlayData40;   // Unknown
+    short PuntPlayData41;   // Unknown
+    short PuntPlayData42;   // Unknown
+    short Touchback;
+    PUNTRETURNTYPE ReturnType;
+    short PlayDataLate[18];
 };
 
 struct PLAYRUSHDATA 

@@ -1,4 +1,12 @@
-﻿Version 8.1.6.0
+﻿Version 8.1.7.0
+
+- PenaltiesCommitted and PenaltiesAccepted (how many of the committed penalties
+  were accepted by the other team) written to player_season_extra file.
+- Player of the Game Player ID is written to the game_information_extra file.
+  NOTE: This is only accurate for the current season, these will be wrong for
+  older seasons.
+
+Version 8.1.6.0
 
 - Fix reading playerIDs > 32768.
 - Change icon.

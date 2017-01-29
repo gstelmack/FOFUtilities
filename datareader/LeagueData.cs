@@ -13,6 +13,10 @@ namespace DataReader
         public delegate void FileReadDelegate(string filename);
         public FileReadDelegate FileReadCallback = null;
 
+#if DEBUG
+        public StreamWriter puntFile = null;
+#endif
+
         private char[] commaDelim = new char[] { ',' };
 
         public LeagueData(string pathPrefix,UniverseData universeData, int startingSeason, FileReadDelegate readCallback, bool loadGameList)
@@ -23,12 +27,20 @@ namespace DataReader
             mSavedGamePath = pathPrefix;
             mLeagueID = Path.GetFileName(pathPrefix);
             mExportPath = Path.Combine(universeData.ExportDirectory, mLeagueID);
+#if DEBUG
+            puntFile = new StreamWriter("PuntPlays.csv", false);
+            puntFile.WriteLine("Game,Q,M,S,KT,PPT,3,4,6,7,10,11,16,17,18,19,20,21,23,27,28,32,37,39,40,41,42");
+#endif
             LoadTeamInformation();
             LoadActivePlayerData();
+            LoadHistoricalPlayerData();
             if (loadGameList)
             {
                 LoadGameList();
             }
+#if DEBUG
+            puntFile.Close();
+#endif
         }
 
         private void LoadActivePlayerData()
@@ -40,18 +52,57 @@ namespace DataReader
             }
             using (System.IO.StreamReader inFile = new System.IO.StreamReader(filePath))
             {
-                var activePlayerIDs = new ArrayList();
+                var activePlayers = new ArrayList();
                 string headerLine = inFile.ReadLine();
 
                 while (!inFile.EndOfStream)
                 {
                     string inLine = inFile.ReadLine();
                     string[] tokens = inLine.Split(commaDelim);
-                    activePlayerIDs.Add(Int32.Parse(tokens[0]));
+                    var activePlayer = new ActivePlayerRecord();
+                    activePlayer.PlayerID = Int32.Parse(tokens[0]);
+                    activePlayer.HistoricalPlayerIndex = Int32.Parse(tokens[235]);
+                    activePlayers.Add(activePlayer);
                 }
 
-                mActivePlayerIDs = new int[activePlayerIDs.Count];
-                activePlayerIDs.CopyTo(mActivePlayerIDs);
+                mActivePlayers = new ActivePlayerRecord[activePlayers.Count];
+                activePlayers.CopyTo(mActivePlayers);
+            }
+        }
+
+        private void LoadHistoricalPlayerData()
+        {
+            var filePath = System.IO.Path.Combine(mExportPath, "player_information.csv");
+            if (FileReadCallback != null)
+            {
+                FileReadCallback("player_information.csv");
+            }
+            using (System.IO.StreamReader inFile = new System.IO.StreamReader(filePath))
+            {
+                var historicalPlayers = new List<HistoricalPlayerRecord>();
+                string headerLine = inFile.ReadLine();
+
+                while (!inFile.EndOfStream)
+                {
+                    string inLine = inFile.ReadLine();
+                    string[] tokens = inLine.Split(commaDelim);
+                    var historicalPlayer = new HistoricalPlayerRecord();
+                    historicalPlayer.PlayerID = Int32.Parse(tokens[0]);
+                    historicalPlayer.LastName = tokens[1];
+                    historicalPlayer.FirstName = tokens[2];
+                    historicalPlayer.Position = tokens[5];
+                    historicalPlayers.Add(historicalPlayer);
+                }
+
+                mHistoricalPlayers = new HistoricalPlayerRecord[historicalPlayers.Count];
+                mHistoricalPlayerMap = new Dictionary<int, HistoricalPlayerRecord>();
+                var index = 0;
+                foreach (var histRec in historicalPlayers)
+                {
+                    mHistoricalPlayerMap[histRec.PlayerID] = histRec;
+                    mHistoricalPlayers[index] = histRec;
+                    ++index;
+                }
             }
         }
 
@@ -146,7 +197,46 @@ namespace DataReader
             BinaryHelper.TracerWriteLine("Field Goal Play");
             BinaryHelper.TracerIndent();
 
-            BinaryHelper.ProbeBytes(inFile, 63 * 2);
+            playData.PlayMinutes = BinaryHelper.ReadInt16(inFile, "Minutes");   // 0-15 (Minute)
+            playData.PlaySeconds = BinaryHelper.ReadInt16(inFile, "Seconds");  // 0-59 (Second)
+            playData.PenaltyPlayer = BinaryHelper.ReadInt16(inFile, "PenaltyPlayer");
+
+            playData.TypeSpecificData[(int)FGPlayFields.FGPlayData2] = BinaryHelper.ReadInt16(inFile, "FGPlayData2");
+            playData.TypeSpecificData[(int)FGPlayFields.FGPlayData3] = BinaryHelper.ReadInt16(inFile, "FGPlayData3");
+            playData.TypeSpecificData[(int)FGPlayFields.KickingTeam] = BinaryHelper.ReadInt16(inFile, "KickingTeam");
+            playData.TypeSpecificData[(int)FGPlayFields.KickNegatedByPenalty] = BinaryHelper.ReadInt16(inFile, "KickNegatedByPenalty");
+            playData.TypeSpecificData[(int)FGPlayFields.KickingPlayer] = BinaryHelper.ReadInt16(inFile, "KickingPlayer");
+            playData.TypeSpecificData[(int)FGPlayFields.KickBlocked] = BinaryHelper.ReadInt16(inFile, "KickBlocked");
+            playData.TypeSpecificData[(int)FGPlayFields.WhoBlockedKick] = BinaryHelper.ReadInt16(inFile, "WhoBlockedKick");
+            playData.TypeSpecificData[(int)FGPlayFields.WhoRecoveredKick] = BinaryHelper.ReadInt16(inFile, "WhoRecoveredKick");
+            playData.TypeSpecificData[(int)FGPlayFields.BlockedKickRecoveryYards] = BinaryHelper.ReadInt16(inFile, "BlockedKickRecoveryYards");
+            playData.TypeSpecificData[(int)FGPlayFields.FGPlayData11] = BinaryHelper.ReadInt16(inFile, "FGPlayData11");
+            playData.TypeSpecificData[(int)FGPlayFields.FGPlayData12] = BinaryHelper.ReadInt16(inFile, "FGPlayData12");
+            playData.TypeSpecificData[(int)FGPlayFields.FGPlayData13] = BinaryHelper.ReadInt16(inFile, "FGPlayData13");
+            playData.TypeSpecificData[(int)FGPlayFields.FGPlayData14] = BinaryHelper.ReadInt16(inFile, "FGPlayData14");
+            playData.TypeSpecificData[(int)FGPlayFields.BlockedKickRecoveryYardLine] = BinaryHelper.ReadInt16(inFile, "BlockedKickRecoveryYardLine");
+            playData.TypeSpecificData[(int)FGPlayFields.FGPlayData16] = BinaryHelper.ReadInt16(inFile, "FGPlayData16");
+            playData.TypeSpecificData[(int)FGPlayFields.KickDistance] = BinaryHelper.ReadInt16(inFile, "KickDistance");
+            playData.TypeSpecificData[(int)FGPlayFields.FGPlayData18] = BinaryHelper.ReadInt16(inFile, "FGPlayData18");
+            playData.TypeSpecificData[(int)FGPlayFields.PrePlayDown] = BinaryHelper.ReadInt16(inFile, "PrePlayDown");
+            playData.TypeSpecificData[(int)FGPlayFields.PrePlayYardsToGo] = BinaryHelper.ReadInt16(inFile, "PrePlayYardsToGo");
+            playData.TypeSpecificData[(int)FGPlayFields.PrePlayYardLine] = BinaryHelper.ReadInt16(inFile, "PrePlayYardLine");
+            playData.TypeSpecificData[(int)FGPlayFields.FGPlayType] = BinaryHelper.ReadInt16(inFile, "FGPlayType");
+            playData.TypeSpecificData[(int)FGPlayFields.PenaltyTime] = BinaryHelper.ReadInt16(inFile, "PenaltyTime");
+            playData.TypeSpecificData[(int)FGPlayFields.FGPlayData24] = BinaryHelper.ReadInt16(inFile, "FGPlayData24");
+            playData.TypeSpecificData[(int)FGPlayFields.FGPlayData25] = BinaryHelper.ReadInt16(inFile, "FGPlayData25");
+            playData.TypeSpecificData[(int)FGPlayFields.FGPlayData26] = BinaryHelper.ReadInt16(inFile, "FGPlayData26");
+            playData.TypeSpecificData[(int)FGPlayFields.FGPlayData27] = BinaryHelper.ReadInt16(inFile, "FGPlayData27");
+            playData.TypeSpecificData[(int)FGPlayFields.KickBlockedDueToBadSnap] = BinaryHelper.ReadInt16(inFile, "KickBlockedDueToBadSnap");
+            playData.TypeSpecificData[(int)FGPlayFields.FGPlayData29] = BinaryHelper.ReadInt16(inFile, "FGPlayData29");
+            playData.TypeSpecificData[(int)FGPlayFields.FGPlayData30] = BinaryHelper.ReadInt16(inFile, "FGPlayData30");
+
+            BinaryHelper.ProbeBytes(inFile, 31 * 2);
+
+            if (playData.TypeSpecificData[(int)FGPlayFields.KickNegatedByPenalty] > 0 && (playData.IsDefensivePenalty != 0 || playData.IsOffensivePenalty != 0))
+            {
+                playData.IsPenaltyAccepted = 1;
+            }
 
             BinaryHelper.TracerOutdent();
         }
@@ -156,9 +246,9 @@ namespace DataReader
             BinaryHelper.TracerWriteLine("Pass Play");
             BinaryHelper.TracerIndent();
 
-            playData.TypeSpecificData[(int)PassPlayFields.Minute] = BinaryHelper.ReadInt16(inFile, "Minutes");   // 0-15 (Minute)
-            playData.TypeSpecificData[(int)PassPlayFields.Seconds] = BinaryHelper.ReadInt16(inFile,"Seconds");  // 0-59 (Second)
-            playData.TypeSpecificData[(int)PassPlayFields.PenaltyPlayer] = BinaryHelper.ReadInt16(inFile, "PenaltyPlayer");
+            playData.PlayMinutes = BinaryHelper.ReadInt16(inFile, "Minutes");   // 0-15 (Minute)
+            playData.PlaySeconds = BinaryHelper.ReadInt16(inFile,"Seconds");  // 0-59 (Second)
+            playData.PenaltyPlayer = BinaryHelper.ReadInt16(inFile, "PenaltyPlayer");
             BinaryHelper.ProbeBytes(inFile, 2 * 2);
             playData.TypeSpecificData[(int)PassPlayFields.IsComplete] = BinaryHelper.ReadInt16(inFile, "IsComplete");   // 0-1 (1: Completion)
             playData.TypeSpecificData[(int)PassPlayFields.YardsGained] = BinaryHelper.ReadInt16(inFile,"DesignedYardage"); // ??-?? (Designed Yardage: i.e. either the yardage of the pass if complete, or what it would have been if incomplete (assumed, but likely))
@@ -177,7 +267,7 @@ namespace DataReader
             playData.TypeSpecificData[(int)PassPlayFields.IsInterceptedForTD] = BinaryHelper.ReadInt16(inFile,"IsInterceptedForTD");   // 0-1 (1: Interception for touchdown)
             playData.TypeSpecificData[(int)PassPlayFields.InterceptedTackler] = BinaryHelper.ReadInt16(inFile,"InterceptedTackler");   // 0-10 (Player tackling interceptor, based on position in formation)
             playData.TypeSpecificData[(int)PassPlayFields.InterceptionYardLine] = BinaryHelper.ReadInt16(inFile,"InterceptionYardLine"); // 0-100 (Interception yard line)
-            playData.TypeSpecificData[(int)PassPlayFields.IsPenaltyAccepted] = BinaryHelper.ReadInt16(inFile,"IsPenaltyAccepted");    // 0-1 (1: Accepted Penalty)
+            playData.IsPenaltyAccepted = BinaryHelper.ReadInt16(inFile,"IsPenaltyAccepted");    // 0-1 (1: Accepted Penalty)
             playData.TypeSpecificData[(int)PassPlayFields.IsDefensiveTD] = BinaryHelper.ReadInt16(inFile,"IsDefensiveTD");    // 0-1 (1: Defensive TD)
             short dat23 = BinaryHelper.ReadInt16(inFile, "dat23");
             short dat24 = BinaryHelper.ReadInt16(inFile, "dat24");
@@ -227,9 +317,9 @@ namespace DataReader
             BinaryHelper.TracerWriteLine("Run Play");
             BinaryHelper.TracerIndent();
 
-            playData.TypeSpecificData[(int)RunPlayFields.Minute] = BinaryHelper.ReadInt16(inFile,"Minute");   // 0-15 (Minute)
-            playData.TypeSpecificData[(int)RunPlayFields.Seconds] = BinaryHelper.ReadInt16(inFile,"Seconds");  // 0-59 (Second)
-            playData.TypeSpecificData[(int)PassPlayFields.PenaltyPlayer] = BinaryHelper.ReadInt16(inFile, "PenaltyPlayer");
+            playData.PlayMinutes = BinaryHelper.ReadInt16(inFile,"Minute");   // 0-15 (Minute)
+            playData.PlaySeconds = BinaryHelper.ReadInt16(inFile,"Seconds");  // 0-59 (Second)
+            playData.PenaltyPlayer = BinaryHelper.ReadInt16(inFile, "PenaltyPlayer");
             BinaryHelper.ProbeBytes(inFile, 2 * 2);
             playData.TypeSpecificData[(int)RunPlayFields.YardsGained] = BinaryHelper.ReadInt16(inFile,"YardsGained");
             playData.TypeSpecificData[(int)RunPlayFields.IsTouchdown] = BinaryHelper.ReadInt16(inFile,"IsTouchdown");  //	0-1 (1: Touchdown)
@@ -240,7 +330,7 @@ namespace DataReader
             playData.TypeSpecificData[(int)RunPlayFields.FumbleRecoveryYards] = BinaryHelper.ReadInt16(inFile,"FumbleRecoveryYards");  // ??-?? (Fumble Return yards)
             playData.TypeSpecificData[(int)RunPlayFields.FumbleRecoveredForTD] = BinaryHelper.ReadInt16(inFile,"FumbleRecoveredForTD"); // 0-1 (1: Fumble Recovered for TD)
             playData.TypeSpecificData[(int)RunPlayFields.FumbleRecoveryTackler] = BinaryHelper.ReadInt16(inFile,"FumbleRecoveryTackler");    // 0-10 (Tackler of Fumble Recover, based on position in formation)
-            playData.TypeSpecificData[(int)RunPlayFields.IsPenaltyAccepted] = BinaryHelper.ReadInt16(inFile,"IsPenaltyAccepted");    // 0-1 (1: Accepted Penalty)
+            playData.IsPenaltyAccepted = BinaryHelper.ReadInt16(inFile,"IsPenaltyAccepted");    // 0-1 (1: Accepted Penalty)
             playData.TypeSpecificData[(int)RunPlayFields.FumbleRecoverer] = BinaryHelper.ReadInt16(inFile,"FumbleRecoverer");      // 0-10 (Fumble Recoverer)
             playData.TypeSpecificData[(int)RunPlayFields.TrueRushYardLine] = BinaryHelper.ReadInt16(inFile,"TrueRushYardLine");     // ??-?? (True Yard Line: interesting piece of data, is how far a rush would have ended without an end zone.  So a run from the 1 yard line for a TD could have a value here of 117, meaning it would have been an 18-yard rush if somewhere else on the field.  Haven't done anything with this, but there's potential for figuring out a 'true' yards/carry)
             short dat16 = BinaryHelper.ReadInt16(inFile, "Dat16");
@@ -284,11 +374,12 @@ namespace DataReader
             BinaryHelper.TracerWriteLine("Kickoff Play");
             BinaryHelper.TracerIndent();
 
-            playData.TypeSpecificData[(int)KickoffPlayFields.Minute] = BinaryHelper.ReadInt16(inFile,"Minute");
-            playData.TypeSpecificData[(int)KickoffPlayFields.Second] = BinaryHelper.ReadInt16(inFile,"Second");
-            BinaryHelper.ProbeBytes(inFile, 6);
+            playData.PlayMinutes = BinaryHelper.ReadInt16(inFile,"Minute");
+            playData.PlaySeconds = BinaryHelper.ReadInt16(inFile,"Second");
+            playData.PenaltyPlayer = BinaryHelper.ReadInt16(inFile, "PenaltyPlayer");
+            BinaryHelper.ProbeBytes(inFile, 2 * 2);
             playData.TypeSpecificData[(int)KickoffPlayFields.KickingTeam] = BinaryHelper.ReadInt16(inFile,"KickingTeam");
-            playData.TypeSpecificData[(int)KickoffPlayFields.PenaltyAccepted] = BinaryHelper.ReadInt16(inFile,"PenaltyAccepted");
+            playData.IsPenaltyAccepted = BinaryHelper.ReadInt16(inFile,"PenaltyAccepted");
             playData.TypeSpecificData[(int)KickoffPlayFields.ReturnYardLine] = BinaryHelper.ReadInt16(inFile,"ReturnYardLine");
             BinaryHelper.ProbeBytes(inFile, 4);
             //short Unknown = BinaryHelper.ReadInt16(inFile,"Unknown");   // 0-1 Range
@@ -319,7 +410,26 @@ namespace DataReader
             BinaryHelper.TracerWriteLine("Onside Play");
             BinaryHelper.TracerIndent();
 
-            BinaryHelper.ProbeBytes(inFile, 63 * 2);
+            playData.PlayMinutes = BinaryHelper.ReadInt16(inFile, "Minute");
+            playData.PlaySeconds = BinaryHelper.ReadInt16(inFile, "Second");
+            playData.PenaltyPlayer = BinaryHelper.ReadInt16(inFile, "PenaltyPlayer");
+            playData.TypeSpecificData[(int)OnsideKickFields.OnsideData3] = BinaryHelper.ReadInt16(inFile, "OnsideData3");
+            playData.TypeSpecificData[(int)OnsideKickFields.OnsideData4] = BinaryHelper.ReadInt16(inFile, "OnsideData4");
+            playData.TypeSpecificData[(int)OnsideKickFields.KickingTeam] = BinaryHelper.ReadInt16(inFile, "KickingTeam");
+            playData.TypeSpecificData[(int)OnsideKickFields.PenaltyAccepted] = BinaryHelper.ReadInt16(inFile, "PenaltyAccepted");
+            playData.TypeSpecificData[(int)OnsideKickFields.OnsideData7] = BinaryHelper.ReadInt16(inFile, "OnsideData7");
+            playData.TypeSpecificData[(int)OnsideKickFields.OnsideData8] = BinaryHelper.ReadInt16(inFile, "OnsideData8");
+            playData.TypeSpecificData[(int)OnsideKickFields.OnsideData9] = BinaryHelper.ReadInt16(inFile, "OnsideData9");
+            playData.TypeSpecificData[(int)OnsideKickFields.RecoveryYardLine] = BinaryHelper.ReadInt16(inFile, "RecoveryYardLine");
+            playData.TypeSpecificData[(int)OnsideKickFields.KickoffYardLine] = BinaryHelper.ReadInt16(inFile, "KickoffYardLine");
+            playData.TypeSpecificData[(int)OnsideKickFields.OnsideData12] = BinaryHelper.ReadInt16(inFile, "OnsideData12");
+            playData.TypeSpecificData[(int)OnsideKickFields.KickRecoveryPlayer] = BinaryHelper.ReadInt16(inFile, "KickRecoveryPlayer");
+            BinaryHelper.ProbeBytes(inFile, 49 * 2);
+
+            if (playData.TypeSpecificData[(int)OnsideKickFields.PenaltyAccepted] > 0 && (playData.IsDefensivePenalty != 0 || playData.IsOffensivePenalty != 0))
+            {
+                playData.IsPenaltyAccepted = 1;
+            }
 
             BinaryHelper.TracerOutdent();
         }
@@ -329,7 +439,58 @@ namespace DataReader
             BinaryHelper.TracerWriteLine("Punt Play");
             BinaryHelper.TracerIndent();
 
-            BinaryHelper.ProbeBytes(inFile, 63 * 2);
+            playData.PlayMinutes = BinaryHelper.ReadInt16(inFile, "Minute");
+            playData.PlaySeconds = BinaryHelper.ReadInt16(inFile, "Second");
+            playData.PenaltyPlayer = BinaryHelper.ReadInt16(inFile, "PenaltyPlayer");
+
+            playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData3] = BinaryHelper.ReadInt16(inFile, "PuntPlayData3");
+            playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData4] = BinaryHelper.ReadInt16(inFile, "PuntPlayData4");
+            playData.TypeSpecificData[(int)PuntPlayFields.KickingTeam] = BinaryHelper.ReadInt16(inFile, "KickingTeam");
+            playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData6] = BinaryHelper.ReadInt16(inFile, "PuntPlayData6");
+            playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData7] = BinaryHelper.ReadInt16(inFile, "PuntPlayData7");
+            playData.TypeSpecificData[(int)PuntPlayFields.Fumble] = BinaryHelper.ReadInt16(inFile, "Fumble");
+            playData.TypeSpecificData[(int)PuntPlayFields.WhoBlockedKick] = BinaryHelper.ReadInt16(inFile, "WhoBlockedKick");
+            playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData10] = BinaryHelper.ReadInt16(inFile, "PuntPlayData10");
+            playData.TypeSpecificData[(int)PuntPlayFields.BlockReturnYards] = BinaryHelper.ReadInt16(inFile, "BlockReturnYards");
+            playData.TypeSpecificData[(int)PuntPlayFields.PostPlayDown] = BinaryHelper.ReadInt16(inFile, "PostPlayDown");
+            playData.TypeSpecificData[(int)PuntPlayFields.PostPlayToGo] = BinaryHelper.ReadInt16(inFile, "PostPlayToGo");
+            playData.TypeSpecificData[(int)PuntPlayFields.PostPlayYardLine] = BinaryHelper.ReadInt16(inFile, "PostPlayYardLine");
+            playData.TypeSpecificData[(int)PuntPlayFields.PostPlayTeamPossession] = BinaryHelper.ReadInt16(inFile, "PostPlayTeamPossession");
+            playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData16] = BinaryHelper.ReadInt16(inFile, "PuntPlayData16");
+            playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData17] = BinaryHelper.ReadInt16(inFile, "PuntPlayData17");
+            playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData18] = BinaryHelper.ReadInt16(inFile, "PuntPlayData18");
+            playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData19] = BinaryHelper.ReadInt16(inFile, "PuntPlayData19");
+            playData.TypeSpecificData[(int)PuntPlayFields.BlockRecoveryPlayer] = BinaryHelper.ReadInt16(inFile, "BlockRecoveryPlayer");
+            playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData21] = BinaryHelper.ReadInt16(inFile, "PuntPlayData21");
+            playData.TypeSpecificData[(int)PuntPlayFields.PuntDistance] = BinaryHelper.ReadInt16(inFile, "PuntDistance");
+            playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData23] = BinaryHelper.ReadInt16(inFile, "PuntPlayData23");
+            playData.TypeSpecificData[(int)PuntPlayFields.Returner] = BinaryHelper.ReadInt16(inFile, "Returner");
+            playData.TypeSpecificData[(int)PuntPlayFields.Tackler] = BinaryHelper.ReadInt16(inFile, "Tackler");
+            playData.TypeSpecificData[(int)PuntPlayFields.Touchdown] = BinaryHelper.ReadInt16(inFile, "Touchdown");
+            playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData27] = BinaryHelper.ReadInt16(inFile, "PuntPlayData27");
+            playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData28] = BinaryHelper.ReadInt16(inFile, "PuntPlayData28");
+            playData.TypeSpecificData[(int)PuntPlayFields.FumbleRecoverer] = BinaryHelper.ReadInt16(inFile, "FumbleRecoverer");
+            playData.TypeSpecificData[(int)PuntPlayFields.ReturnYards] = BinaryHelper.ReadInt16(inFile, "ReturnYards");
+            playData.TypeSpecificData[(int)PuntPlayFields.FumbleRecoveryTackler] = BinaryHelper.ReadInt16(inFile, "FumbleRecoveryTackler");
+            playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData32] = BinaryHelper.ReadInt16(inFile, "PuntPlayData32");
+            playData.TypeSpecificData[(int)PuntPlayFields.PrePlayDown] = BinaryHelper.ReadInt16(inFile, "PrePlayDown");
+            playData.TypeSpecificData[(int)PuntPlayFields.PrePlayYardsToGo] = BinaryHelper.ReadInt16(inFile, "PrePlayYardsToGo");
+            playData.TypeSpecificData[(int)PuntPlayFields.PrePlayYardLine] = BinaryHelper.ReadInt16(inFile, "PrePlayYardLine");
+            playData.TypeSpecificData[(int)PuntPlayFields.PenaltyTime] = BinaryHelper.ReadInt16(inFile, "PenaltyTime");
+            playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData37] = BinaryHelper.ReadInt16(inFile, "PuntPlayData37");
+            playData.TypeSpecificData[(int)PuntPlayFields.FumbleRecoveryYards] = BinaryHelper.ReadInt16(inFile, "FumbleRecoveryYards");
+            playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData39] = BinaryHelper.ReadInt16(inFile, "PuntPlayData39");
+            playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData40] = BinaryHelper.ReadInt16(inFile, "PuntPlayData40");
+            playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData41] = BinaryHelper.ReadInt16(inFile, "PuntPlayData41");
+            playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData42] = BinaryHelper.ReadInt16(inFile, "PuntPlayData42");
+            playData.TypeSpecificData[(int)PuntPlayFields.Touchback] = BinaryHelper.ReadInt16(inFile, "Touchback");
+            playData.TypeSpecificData[(int)PuntPlayFields.ReturnType] = BinaryHelper.ReadInt16(inFile, "ReturnType");
+            BinaryHelper.ProbeBytes(inFile, 18 * 2);
+
+            if (playData.TypeSpecificData[(int)PuntPlayFields.PenaltyTime] > 0 && (playData.IsDefensivePenalty !=0  || playData.IsOffensivePenalty != 0))
+            {
+                playData.IsPenaltyAccepted = 1;
+            }
 
             BinaryHelper.TracerOutdent();
         }
@@ -551,13 +712,13 @@ namespace DataReader
             BinaryHelper.TracerIndent();
 
             var pogActivePlayerIndex = BinaryHelper.ReadInt32(inFile, "PlayerOfTheGameActivePlayerIndex");
-            if (pogActivePlayerIndex < 0 || pogActivePlayerIndex > mActivePlayerIDs.Length)
+            if (pogActivePlayerIndex < 0 || pogActivePlayerIndex > mActivePlayers.Length)
             {
                 newLog.PlayerOfTheGamePlayerID = -1;
             }
             else
             {
-                newLog.PlayerOfTheGamePlayerID = mActivePlayerIDs[pogActivePlayerIndex];
+                newLog.PlayerOfTheGamePlayerID = mActivePlayers[pogActivePlayerIndex].PlayerID;
             }
             short homeDriveCount = BinaryHelper.ReadInt16(inFile, "HomeDriveCount");
             short awayDriveCount = BinaryHelper.ReadInt16(inFile, "AwayDriveCount");
@@ -629,6 +790,8 @@ namespace DataReader
             BinaryHelper.TracerOutdent();
 
             BinaryHelper.ProbeBytes(inFile, 2);
+
+            System.Diagnostics.Debug.WriteLine("***** Processing game " + newLog.Year + " Wk " + newLog.Week + " " + newLog.HomeTeam.Abbreviation + " vs " + newLog.AwayTeam.Abbreviation + " *****");
 
             CurPlayID = 0;
             while (true)
@@ -785,7 +948,7 @@ namespace DataReader
 
         void ExtractPassStatsFromPlay(GameLog gameLog, GamePlay playData)
         {
-            if (playData.TypeSpecificData[(int)PassPlayFields.IsPenaltyAccepted] !=0 && playData.EffectOnPlay != 2)
+            if (playData.IsPenaltyAccepted !=0 && playData.EffectOnPlay != 2)
             {
                 return;
             }
@@ -914,7 +1077,7 @@ namespace DataReader
 
         void ExtractRunStatsFromPlay(GameLog gameLog, GamePlay playData)
         {
-            if (playData.TypeSpecificData[(int)RunPlayFields.IsPenaltyAccepted] != 0 && playData.EffectOnPlay != 2)
+            if (playData.IsPenaltyAccepted != 0 && playData.EffectOnPlay != 2)
             {
                 return;
             }
@@ -986,7 +1149,7 @@ namespace DataReader
 
         void ExtractKickoffStatsFromPlay(GameLog gameLog, GamePlay playData)
         {
-            if (playData.TypeSpecificData[(int)KickoffPlayFields.PenaltyAccepted] != 0 && playData.EffectOnPlay != 2)
+            if (playData.IsPenaltyAccepted != 0 && playData.EffectOnPlay != 2)
             {
                 return;
             }
@@ -1022,17 +1185,13 @@ namespace DataReader
         {
             var assignPerformance = false;
 
-            short penaltyPlayer = -1;
-            var acceptedPenalty = false;
             if (playData.PlayType == (short)PlayType.Pass)
             {
-                ExtractPassStatsFromPlay(gameLog,playData);
+                ExtractPassStatsFromPlay(gameLog, playData);
                 if (playData.EffectOnPlay != 3)
                 {
                     assignPerformance = true;
                 }
-                penaltyPlayer = playData.TypeSpecificData[(int)PassPlayFields.PenaltyPlayer];
-                acceptedPenalty = playData.TypeSpecificData[(int)PassPlayFields.IsPenaltyAccepted] != 0;
             }
             else if (playData.PlayType == (short)PlayType.Run)
             {
@@ -1042,14 +1201,14 @@ namespace DataReader
                 {
                     assignPerformance = true;
                 }
-                penaltyPlayer = playData.TypeSpecificData[(int)RunPlayFields.PenaltyPlayer];
-                acceptedPenalty = playData.TypeSpecificData[(int)RunPlayFields.IsPenaltyAccepted] != 0;
             }
             else if (playData.PlayType == (short)PlayType.Kickoff)
             {
                 ExtractKickoffStatsFromPlay(gameLog, playData);
             }
 
+            short penaltyPlayer = playData.PenaltyPlayer;
+            var acceptedPenalty = (playData.IsPenaltyAccepted != 0);
             if (penaltyPlayer >= 0)
             {
                 if (playData.IsDefensivePenalty != 0)
@@ -1096,6 +1255,138 @@ namespace DataReader
                     }
 
                 }
+            }
+
+            //if (playData.IsOffensivePenalty > 0 || playData.IsDefensivePenalty > 0)
+            //{
+            //    if (playData.PlayType == (short)PlayType.OnsideKick)
+            //    {
+            //        DumpRoster(gameLog, playData);
+            //    }
+            //}
+
+#if DEBUG
+            if (playData.PlayType == (short)PlayType.Punt)
+            {
+                if (playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData3] != 0
+                    || playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData4] != 0
+                    || playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData6] != 2
+                    || playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData7] != 1
+                    || playData.TypeSpecificData[(int)PuntPlayFields.BlockReturnYards] != 0
+                    || playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData16] != 0
+                    || playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData17] != 0
+                    || playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData18] != 0
+                    || playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData19] != 0
+                    || playData.TypeSpecificData[(int)PuntPlayFields.BlockRecoveryPlayer] != 0
+                    || playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData21] != 0
+                    //|| playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData23] != 0
+                    || playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData27] != 0
+                    || playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData28] != 0
+                    || playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData32] != 0
+                    || playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData37] != 0
+                    //|| playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData39] != 0
+                    || playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData40] != 0
+                    || playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData41] != 0
+                    || playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData42] != 0
+                    )
+                {
+                    puntFile.Write(gameLog.Year + " Wk " + gameLog.Week + " " + gameLog.HomeTeam.Abbreviation + " vs " + gameLog.AwayTeam.Abbreviation + ",");
+                    puntFile.Write(playData.Quarter + ",");
+                    puntFile.Write(playData.Minutes + ",");
+                    puntFile.Write(playData.Seconds + ",");
+                    puntFile.Write(playData.TypeSpecificData[(int)PuntPlayFields.KickingTeam] + ",");
+                    puntFile.Write(playData.TypeSpecificData[(int)PuntPlayFields.PostPlayTeamPossession] + ",");
+                    puntFile.Write(playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData3] + ",");
+                    puntFile.Write(playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData4] + ",");
+                    puntFile.Write(playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData6] + ",");
+                    puntFile.Write(playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData7] + ",");
+                    puntFile.Write(playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData10] + ",");
+                    puntFile.Write(playData.TypeSpecificData[(int)PuntPlayFields.BlockReturnYards] + ",");
+                    puntFile.Write(playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData16] + ",");
+                    puntFile.Write(playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData17] + ",");
+                    puntFile.Write(playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData18] + ",");
+                    puntFile.Write(playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData19] + ",");
+                    puntFile.Write(playData.TypeSpecificData[(int)PuntPlayFields.BlockRecoveryPlayer] + ",");
+                    puntFile.Write(playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData21] + ",");
+                    puntFile.Write(playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData23] + ",");
+                    puntFile.Write(playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData27] + ",");
+                    puntFile.Write(playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData28] + ",");
+                    puntFile.Write(playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData32] + ",");
+                    puntFile.Write(playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData37] + ",");
+                    puntFile.Write(playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData39] + ",");
+                    puntFile.Write(playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData40] + ",");
+                    puntFile.Write(playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData41] + ",");
+                    puntFile.Write(playData.TypeSpecificData[(int)PuntPlayFields.PuntPlayData42] + ",");
+                    puntFile.WriteLine("");
+                    //DumpRoster(gameLog, playData);
+                }
+            }
+#endif
+        }
+
+        void DumpRoster(GameLog gameLog, GamePlay playData)
+        {
+            System.Diagnostics.Debug.WriteLine(GetPlayInfo(playData));
+            System.Diagnostics.Debug.Write("Off: ");
+            for (short i = 0; i < playData.OffensivePlayers.Length; ++i)
+            {
+                var offRec = GetOffensivePlayerStatsFromPlay(gameLog, playData, i);
+                System.Diagnostics.Debug.Write(i + "-" + GetPlayerInfo(offRec) + " ");
+            }
+            System.Diagnostics.Debug.Write(System.Environment.NewLine + "Def: ");
+            for (short i = 0; i < playData.DefensivePlayers.Length; ++i)
+            {
+                var defRec = GetDefensivePlayerStatsFromPlay(gameLog, playData, i);
+                System.Diagnostics.Debug.Write(i + "-" + GetPlayerInfo(defRec) + " ");
+            }
+            System.Diagnostics.Debug.WriteLine("");
+        }
+
+        string GetPlayInfo(GamePlay playData)
+        {
+            string info = "Q" + playData.Quarter + " " + playData.Minutes + ":" + playData.Seconds.ToString("D2") + ": ";
+
+            if (playData.PlayType == (short)PlayType.Pass)
+            {
+                info += "Pass: ";
+            }
+            else if (playData.PlayType == (short)PlayType.FG)
+            {
+                info += "FG: ";
+            }
+            else if (playData.PlayType == (short)PlayType.Info)
+            {
+                info += "Info: ";
+            }
+            else if (playData.PlayType == (short)PlayType.Kickoff)
+            {
+                info += "Kickoff: ";
+            }
+            else if (playData.PlayType == (short)PlayType.OnsideKick)
+            {
+                info += "Onside: ";
+            }
+            else if (playData.PlayType == (short)PlayType.Punt)
+            {
+                info += "Punt: ";
+            }
+            else if (playData.PlayType == (short)PlayType.Run)
+            {
+                info += "Run: ";
+            }
+            return info;
+        }
+
+        string GetPlayerInfo(PlayerGameStatsRecord statRec)
+        {
+            try
+            {
+                var histRec = mHistoricalPlayerMap[statRec.PlayerID];
+                return histRec.Position + " " + histRec.FirstName + " " + histRec.LastName + "(" + histRec.PlayerID + ")";
+            }
+            catch (KeyNotFoundException)
+            {
+                return "";
             }
         }
 
@@ -1478,9 +1769,7 @@ namespace DataReader
 
         public enum PassPlayFields
         {
-            Minute = 0,
-            Seconds,
-            IsComplete,
+            IsComplete = 0,
             YardsGained,
             IsTouchdown,
             PassTarget,
@@ -1497,7 +1786,6 @@ namespace DataReader
             IsInterceptedForTD,
             InterceptedTackler,
             InterceptionYardLine,
-            IsPenaltyAccepted,
             IsDefensiveTD,
             IsQBScramble,
             QBScrambleYards,
@@ -1532,15 +1820,12 @@ namespace DataReader
             DefenseFamiliar,
             EvadedRushToAvoidSafety,
             FieldCondition,
-            GameLogMessage4Type,
-            PenaltyPlayer
+            GameLogMessage4Type
         };
 
         public enum RunPlayFields
         {
-            Minute = 0,
-            Seconds,
-            YardsGained,
+            YardsGained = 0,
             IsTouchdown,
             Rusher,
             IsFumble,
@@ -1549,7 +1834,6 @@ namespace DataReader
             FumbleRecoveryYards,
             FumbleRecoveredForTD,
             FumbleRecoveryTackler,
-            IsPenaltyAccepted,
             FumbleRecoverer,
             TrueRushYardLine,
             IsForcedOOB,
@@ -1577,16 +1861,12 @@ namespace DataReader
             IsFinesseRun,
             FieldCondition,
             DefenseFamiliar,
-            GameLogMessage4Type,
-            PenaltyPlayer
+            GameLogMessage4Type
         };
 
         public enum KickoffPlayFields
         {
-            Minute = 0,
-            Second,
-            KickingTeam,
-            PenaltyAccepted,
+            KickingTeam = 0,
             ReturnYardLine,
             ReturnYards,
             FumbleOnReturn,
@@ -1601,6 +1881,103 @@ namespace DataReader
             Touchback,
             Returner,
             FumbleRecoveryYardLine
+        };
+
+        public enum OnsideKickFields
+        {
+            OnsideData3 = 0,
+            OnsideData4,
+            KickingTeam,
+            PenaltyAccepted,
+            OnsideData7,
+            OnsideData8,
+            OnsideData9,
+            RecoveryYardLine,
+            KickoffYardLine,
+            OnsideData12,
+            KickRecoveryPlayer
+        };
+
+        public enum FGPlayFields
+        {
+            Minute = 0,
+            Second,
+            PenaltyPlayer,
+            FGPlayData2,
+            FGPlayData3,
+            KickingTeam,
+            KickNegatedByPenalty,
+            KickingPlayer,
+            KickBlocked,
+            WhoBlockedKick,
+            WhoRecoveredKick,
+            BlockedKickRecoveryYards,
+            FGPlayData11,
+            FGPlayData12,
+            FGPlayData13,
+            FGPlayData14,
+            BlockedKickRecoveryYardLine,
+            FGPlayData16,
+            KickDistance,
+            FGPlayData18,
+            PrePlayDown,
+            PrePlayYardsToGo,
+            PrePlayYardLine,
+            FGPlayType,
+            PenaltyTime,
+            FGPlayData24,
+            FGPlayData25,
+            FGPlayData26,
+            FGPlayData27,
+            KickBlockedDueToBadSnap,
+            FGPlayData29,
+            FGPlayData30,
+        };
+
+        public enum PuntPlayFields
+        {
+            PuntPlayData3 = 0,
+            PuntPlayData4,
+            KickingTeam,
+            PuntPlayData6,
+            PuntPlayData7,
+            Fumble,
+            WhoBlockedKick,
+            PuntPlayData10,
+            BlockReturnYards,
+            PostPlayDown,
+            PostPlayToGo,
+            PostPlayYardLine,
+            PostPlayTeamPossession,
+            PuntPlayData16,
+            PuntPlayData17,
+            PuntPlayData18,
+            PuntPlayData19,
+            BlockRecoveryPlayer,
+            PuntPlayData21,
+            PuntDistance,
+            PuntPlayData23,
+            Returner,
+            Tackler,
+            Touchdown,
+            PuntPlayData27,
+            PuntPlayData28,
+            FumbleRecoverer,
+            ReturnYards,
+            FumbleRecoveryTackler,
+            PuntPlayData32,
+            PrePlayDown,
+            PrePlayYardsToGo,
+            PrePlayYardLine,
+            PenaltyTime,
+            PuntPlayData37,
+            FumbleRecoveryYards,
+            PuntPlayData39,
+            PuntPlayData40,
+            PuntPlayData41,
+            PuntPlayData42,
+            Touchback,
+            ReturnType
         };
 
         public enum PlayType
@@ -1722,6 +2099,23 @@ namespace DataReader
             Count
         }
 
+        public enum PuntReturnType
+        {
+            Normal=0,
+            FairCatch=1,
+            Downed=2,
+            OOB=3,
+            Count
+        };
+
+        public enum PuntPenaltyTime
+        {
+            NoPenalty=0,
+            BeforeKick=1,
+            DuringReturn=2,
+            Count
+        };
+
         public class GamePlay
         {
             // Main Play Data
@@ -1735,6 +2129,8 @@ namespace DataReader
             public short HomeTimeouts;
             public short AwayTimeouts;
             public short PlayType;
+            public short PlayMinutes;
+            public short PlaySeconds;
 
             // Formation Data, mostly valid for playtype 5 or 6
             public short OffensiveFormation;
@@ -1766,6 +2162,8 @@ namespace DataReader
             public short PenaltyType;
             public short IsDefensiveEndOfHalfPenalty;
             public short EffectOnPlay;
+            public short PenaltyPlayer;
+            public short IsPenaltyAccepted;
 
             // Injury?
             public short InjuryType;
@@ -1875,6 +2273,21 @@ namespace DataReader
         private TeamInformationRecord[] mTeamInformationRecords = new TeamInformationRecord[kTeamCount];
         public TeamInformationRecord[] TeamInformationRecords { get { return mTeamInformationRecords; } }
 
-        private int[] mActivePlayerIDs;
+        public class ActivePlayerRecord
+        {
+            public int PlayerID;
+            public int HistoricalPlayerIndex;
+        }
+        private ActivePlayerRecord[] mActivePlayers;
+
+        public class HistoricalPlayerRecord
+        {
+            public int PlayerID;
+            public string LastName;
+            public string FirstName;
+            public string Position;
+        }
+        private HistoricalPlayerRecord[] mHistoricalPlayers;
+        private Dictionary<int, HistoricalPlayerRecord> mHistoricalPlayerMap;
     }
 }

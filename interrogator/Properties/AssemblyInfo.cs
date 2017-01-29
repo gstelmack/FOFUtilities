@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Stelmacksoft")]
 [assembly: AssemblyProduct("FOFUtilitySuite")]
-[assembly: AssemblyCopyright("Copyright © Stelmacksoft 2006-2016")]
+[assembly: AssemblyCopyright("Copyright © Stelmacksoft 2006-2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -28,5 +28,5 @@ using System.Runtime.InteropServices;
 //      Build Number
 //      Revision
 //
-[assembly: AssemblyVersion("8.1.6.0")]
-[assembly: AssemblyFileVersion("8.1.6.0")]
+[assembly: AssemblyVersion("8.1.7.0")]
+[assembly: AssemblyFileVersion("8.1.7.0")]
