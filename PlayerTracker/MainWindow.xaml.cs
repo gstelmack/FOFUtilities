@@ -381,7 +381,9 @@ namespace PlayerTracker
                     rec.Quarterback_Wins = UInt16.Parse(tokens[25]);
                     rec.Quarterback_Losses = UInt16.Parse(tokens[26]);
                     rec.Quarterback_Ties = UInt16.Parse(tokens[27]);
-                    rec.Career_Games_Played = UInt16.Parse(tokens[30]);
+                    // This has been very negative in some leages?
+                    int gamesPlayed = Int32.Parse(tokens[30]);
+                    rec.Career_Games_Played = (UInt16)Math.Max(gamesPlayed, 0);
                     rec.Number_of_Seasons = Byte.Parse(tokens[31]);
                     if (rec.Number_of_Seasons == 0)
                     {

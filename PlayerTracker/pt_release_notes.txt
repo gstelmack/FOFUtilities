@@ -1,4 +1,8 @@
-﻿Version 8.1.3.0
+﻿Version 8.1.4.0
+
+- Fix career games played to handle negative values found in CyFL.
+
+Version 8.1.3.0
 
 - Add player age to display (contributed by Caligari)
 
