@@ -1567,9 +1567,9 @@ namespace DataReader
                 MinusPlays = 0;
                 PenaltiesCommitted = 0;
                 PenaltiesAccepted = 0;
-        }
+            }
 
-        public int PlayerID;
+            public int PlayerID;
             public short Year;
             public short Week;
             public short Team;
@@ -2181,6 +2181,40 @@ namespace DataReader
             public short[] DefensivePlayers = new short[11];
         };
 
+        public enum ScoringPlayType
+        {
+            FG = 0,
+            PassTD,
+            RushTD,
+            IntReturnTD,
+            PuntReturnTD,
+            KickReturnTD,
+            FumbleRecoveryTD,
+            Safety
+        };
+
+        public enum ExtraPointType
+        {
+            None = 0,
+            Kick,
+            Run,
+            Pass
+        }
+
+        public class ScoringPlay
+        {
+            public short Quarter;
+            public short Minutes;
+            public short Seconds;
+            public short Team;
+            public ScoringPlayType ScoreType;
+            public int ScoringPlayerID;
+            public ExtraPointType ExtraPointType;
+            public bool ExtraPointSuccess;
+            public int ExtraPointPlayer1ID;
+            public int ExtraPointPlayer2ID;
+        };
+
         public class GameLog
         {
             public short Year;
@@ -2217,6 +2251,7 @@ namespace DataReader
             public GamePossessionInfo AwayPossessions;
             public short[] HomeQuarterScore = new short[5];
             public short[] AwayQuarterScore = new short[5];
+            public List<ScoringPlay> ScoringPlays;s
             public List<GamePlay> Plays;
         }
 

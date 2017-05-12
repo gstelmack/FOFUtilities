@@ -124,6 +124,94 @@ namespace Interrogator
             statsFile.Write("\"" + tmpItem + "\"");
         }
 
+        private void CreateMappingsDataTable()
+        {
+            string outputDir = System.IO.Path.Combine(mUniverseData.ExportDirectory, mLeagueID);
+            string filename = System.IO.Path.Combine(outputDir, "mappings.csv");
+            AddStatusString("Writing mappings");
+            System.IO.StreamWriter outFile = new System.IO.StreamWriter(filename, false);
+
+            outFile.Write("Index,");
+            outFile.Write("Position,");
+            outFile.Write("PositionGroup,");
+            outFile.Write("TransactionType,");
+            outFile.Write("Precipitation,");
+            outFile.Write("PlayerStatus,");
+            outFile.Write("StaffRole,");
+            outFile.Write("Playoffs,");
+            outFile.Write("Ability,");
+            outFile.Write("StadiumType,");
+            outFile.Write("ConstructionType,");
+            outFile.WriteLine("DriveResult");
+
+            for (int i = 0; i < 101; i++)
+            {
+                outFile.Write(i + ",");
+
+                if (i < mUniverseData.PositionMap.Length)
+                {
+                    WriteString(outFile, mUniverseData.PositionMap[i]);
+                }
+                outFile.Write(",");
+
+                if (i < mUniverseData.PositionGroupMap.Length)
+                {
+                    WriteString(outFile, mUniverseData.PositionGroupMap[i]);
+                }
+                outFile.Write(",");
+
+                if (i < mUniverseData.TransactionTypeMap.Length)
+                {
+                    WriteString(outFile, mUniverseData.TransactionTypeMap[i]);
+                }
+                outFile.Write(",");
+
+                if (i < mUniverseData.PrecipMap.Length)
+                {
+                    WriteString(outFile, mUniverseData.PrecipMap[i]);
+                }
+                outFile.Write(",");
+
+                if (i < mUniverseData.PlayerStatusMap.Length)
+                {
+                    WriteString(outFile, mUniverseData.PlayerStatusMap[i]);
+                }
+                outFile.Write(",");
+
+                if (i < mUniverseData.PlayoffsMap.Length)
+                {
+                    WriteString(outFile, mUniverseData.PlayoffsMap[i]);
+                }
+                outFile.Write(",");
+
+                if (i < mUniverseData.AbilityMap.Length)
+                {
+                    WriteString(outFile, mUniverseData.AbilityMap[i]);
+                }
+                outFile.Write(",");
+
+                if (i < mUniverseData.StadiumTypeMap.Length)
+                {
+                    WriteString(outFile, mUniverseData.StadiumTypeMap[i]);
+                }
+                outFile.Write(",");
+
+                if (i < mUniverseData.ConstructionTypeMap.Length)
+                {
+                    WriteString(outFile, mUniverseData.ConstructionTypeMap[i]);
+                }
+                outFile.Write(",");
+
+                if (i < mUniverseData.DriveResultMap.Length)
+                {
+                    WriteString(outFile, mUniverseData.DriveResultMap[i]);
+                }
+                outFile.WriteLine();
+            }
+
+            outFile.Close();
+        }
+
         private void CreateGameResultsTable()
         {
             string outputDir = System.IO.Path.Combine(mUniverseData.ExportDirectory, mLeagueID);

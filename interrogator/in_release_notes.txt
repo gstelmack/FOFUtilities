@@ -1,4 +1,9 @@
-﻿Version 8.1.7.0
+﻿Version 8.1.8.0
+
+- Scoring plays added.
+- Quarter-by-quarter scores.
+
+Version 8.1.7.0
 
 - PenaltiesCommitted and PenaltiesAccepted (how many of the committed penalties
   were accepted by the other team) written to player_season_extra file.
