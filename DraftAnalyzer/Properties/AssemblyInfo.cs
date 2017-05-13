@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following 
@@ -10,7 +9,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Stelmacksoft")]
 [assembly: AssemblyProduct("FOFUtilitySuite")]
-[assembly: AssemblyCopyright("Copyright © Stelmacksoft 2006-2016")]
+[assembly: AssemblyCopyright("Copyright © Stelmacksoft 2006-2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -29,5 +28,5 @@ using System.Runtime.InteropServices;
 //      Build Number
 //      Revision
 //
-[assembly: AssemblyVersion("8.1.4.0")]
-[assembly: AssemblyFileVersion("8.1.4.0")]
+[assembly: AssemblyVersion("8.1.5.0")]
+[assembly: AssemblyFileVersion("8.1.5.0")]
