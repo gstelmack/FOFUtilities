@@ -968,7 +968,7 @@ namespace DraftAnalyzer
 			posRating.BenchRating = 0.0;
 			posRating.BroadJumpRating = 0.0;
 			posRating.PositionDrillRating = 0.0;
-			PositionGroupCombineData combineData = (PositionGroupCombineData)mPositionGroupCombineMap[mPositionToPositionGroupMap[position]];
+			PositionGroupCombineData combineData = (PositionGroupCombineData)mPositionGroupCombineMap[data.mPositionGroup];
 			if (data.mSolecismic != 0 && data.m40Time != 0.0 && data.mBench != 0 && data.mAgility != 0.0 && data.mBroadJump != 0)
 			{
                 DraftWeights.PositionWeights posWeights = mWeightsForm.GetPositionWeight(position);

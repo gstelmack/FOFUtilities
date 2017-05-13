@@ -1,4 +1,13 @@
-﻿8.1.4.0
+﻿8.1.5.0
+
+- Fix combine score calculation to always use average and standard deviation from
+  the player's base position, not the other positions the player is being evaluated
+  for. This was mis-evaluating offensive linemen.
+- Centers will no longer be considered for moving to Guard or Tackle, and Guards
+  will no longer be considered for moving to Tackle. It's easy to move in, not out
+  along the line.
+
+8.1.4.0
 
 - Allow specifying individual height / weight factors per position.
 
