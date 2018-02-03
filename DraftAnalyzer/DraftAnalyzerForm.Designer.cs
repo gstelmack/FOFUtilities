@@ -126,6 +126,7 @@ namespace DraftAnalyzer
             this.listViewDraftees = new DraftAnalyzer.DraftPoolListView();
             this.columnHeaderName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeaderPosition = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeaderRatedPosition = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeaderGrade = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeaderSolecismic = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader40 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -140,7 +141,7 @@ namespace DraftAnalyzer
             this.columnHeaderDraftOrder = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeaderDraftRound = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.buttonReleaseNotes = new System.Windows.Forms.Button();
-            this.columnHeaderRatedPosition = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.autoOrderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStripMain.SuspendLayout();
             this.contextMenuStripDraftees.SuspendLayout();
             this.tableLayoutPanelAttributes.SuspendLayout();
@@ -287,21 +288,21 @@ namespace DraftAnalyzer
             this.showCombineValuesToolStripMenuItem.Name = "showCombineValuesToolStripMenuItem";
             this.showCombineValuesToolStripMenuItem.Size = new System.Drawing.Size(201, 22);
             this.showCombineValuesToolStripMenuItem.Text = "Show Combine Values";
-            this.showCombineValuesToolStripMenuItem.Click += new System.EventHandler(this.showCombineValuesToolStripMenuItem_Click);
+            this.showCombineValuesToolStripMenuItem.Click += new System.EventHandler(this.ShowCombineValuesToolStripMenuItem_Click);
             // 
             // showStdDevsToolStripMenuItem
             // 
             this.showStdDevsToolStripMenuItem.Name = "showStdDevsToolStripMenuItem";
             this.showStdDevsToolStripMenuItem.Size = new System.Drawing.Size(201, 22);
             this.showStdDevsToolStripMenuItem.Text = "Show StdDevs";
-            this.showStdDevsToolStripMenuItem.Click += new System.EventHandler(this.showStdDevsToolStripMenuItem_Click);
+            this.showStdDevsToolStripMenuItem.Click += new System.EventHandler(this.ShowStdDevsToolStripMenuItem_Click);
             // 
             // showCombineScoresToolStripMenuItem
             // 
             this.showCombineScoresToolStripMenuItem.Name = "showCombineScoresToolStripMenuItem";
             this.showCombineScoresToolStripMenuItem.Size = new System.Drawing.Size(201, 22);
             this.showCombineScoresToolStripMenuItem.Text = "Show Combine Scores";
-            this.showCombineScoresToolStripMenuItem.Click += new System.EventHandler(this.showCombineScoresToolStripMenuItem_Click);
+            this.showCombineScoresToolStripMenuItem.Click += new System.EventHandler(this.ShowCombineScoresToolStripMenuItem_Click);
             // 
             // toolStripSeparator5
             // 
@@ -316,7 +317,7 @@ namespace DraftAnalyzer
             this.colorChemistryGroupsToolStripMenuItem.Name = "colorChemistryGroupsToolStripMenuItem";
             this.colorChemistryGroupsToolStripMenuItem.Size = new System.Drawing.Size(201, 22);
             this.colorChemistryGroupsToolStripMenuItem.Text = "Color Chemistry Groups";
-            this.colorChemistryGroupsToolStripMenuItem.CheckedChanged += new System.EventHandler(this.colorChemistryGroupsToolStripMenuItem_CheckedChanged);
+            this.colorChemistryGroupsToolStripMenuItem.CheckedChanged += new System.EventHandler(this.ColorChemistryGroupsToolStripMenuItem_CheckedChanged);
             // 
             // sortDraftedToBottomToolStripMenuItem
             // 
@@ -324,7 +325,7 @@ namespace DraftAnalyzer
             this.sortDraftedToBottomToolStripMenuItem.Name = "sortDraftedToBottomToolStripMenuItem";
             this.sortDraftedToBottomToolStripMenuItem.Size = new System.Drawing.Size(201, 22);
             this.sortDraftedToBottomToolStripMenuItem.Text = "Sort Drafted To Bottom";
-            this.sortDraftedToBottomToolStripMenuItem.CheckedChanged += new System.EventHandler(this.sortDraftedToBottomToolStripMenuItem_CheckedChanged);
+            this.sortDraftedToBottomToolStripMenuItem.CheckedChanged += new System.EventHandler(this.SortDraftedToBottomToolStripMenuItem_CheckedChanged);
             // 
             // sortByToolStripMenuItem
             // 
@@ -337,7 +338,8 @@ namespace DraftAnalyzer
             this.editToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.editWeightsToolStripMenuItem,
             this.predictChemistryToolStripMenuItem,
-            this.useCurrentSortAsDraftOrderToolStripMenuItem});
+            this.useCurrentSortAsDraftOrderToolStripMenuItem,
+            this.autoOrderToolStripMenuItem});
             this.editToolStripMenuItem.Name = "editToolStripMenuItem";
             this.editToolStripMenuItem.Size = new System.Drawing.Size(39, 20);
             this.editToolStripMenuItem.Text = "Edit";
@@ -347,7 +349,7 @@ namespace DraftAnalyzer
             this.editWeightsToolStripMenuItem.Name = "editWeightsToolStripMenuItem";
             this.editWeightsToolStripMenuItem.Size = new System.Drawing.Size(236, 22);
             this.editWeightsToolStripMenuItem.Text = "Edit Weights";
-            this.editWeightsToolStripMenuItem.Click += new System.EventHandler(this.editWeightsToolStripMenuItem_Click);
+            this.editWeightsToolStripMenuItem.Click += new System.EventHandler(this.EditWeightsToolStripMenuItem_Click);
             // 
             // predictChemistryToolStripMenuItem
             // 
@@ -381,14 +383,14 @@ namespace DraftAnalyzer
             this.moveDownToolStripMenuItem});
             this.contextMenuStripDraftees.Name = "contextMenuStripDraftees";
             this.contextMenuStripDraftees.Size = new System.Drawing.Size(169, 290);
-            this.contextMenuStripDraftees.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStripDraftees_Opening);
+            this.contextMenuStripDraftees.Opening += new System.ComponentModel.CancelEventHandler(this.ContextMenuStripDraftees_Opening);
             // 
             // draftedToolStripMenuItem
             // 
             this.draftedToolStripMenuItem.Name = "draftedToolStripMenuItem";
             this.draftedToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
             this.draftedToolStripMenuItem.Text = "Drafted (D)";
-            this.draftedToolStripMenuItem.Click += new System.EventHandler(this.draftedToolStripMenuItem_Click);
+            this.draftedToolStripMenuItem.Click += new System.EventHandler(this.DraftedToolStripMenuItem_Click);
             // 
             // markToolStripMenuItem
             // 
@@ -411,14 +413,14 @@ namespace DraftAnalyzer
             this.topToolStripMenuItem.Name = "topToolStripMenuItem";
             this.topToolStripMenuItem.Size = new System.Drawing.Size(114, 22);
             this.topToolStripMenuItem.Text = "Top";
-            this.topToolStripMenuItem.Click += new System.EventHandler(this.firstRoundTop_click);
+            this.topToolStripMenuItem.Click += new System.EventHandler(this.FirstRoundTop_click);
             // 
             // bottomToolStripMenuItem
             // 
             this.bottomToolStripMenuItem.Name = "bottomToolStripMenuItem";
             this.bottomToolStripMenuItem.Size = new System.Drawing.Size(114, 22);
             this.bottomToolStripMenuItem.Text = "Bottom";
-            this.bottomToolStripMenuItem.Click += new System.EventHandler(this.firstRoundBottom_click);
+            this.bottomToolStripMenuItem.Click += new System.EventHandler(this.FirstRoundBottom_click);
             // 
             // secondRoundToolStripMenuItem
             // 
@@ -434,14 +436,14 @@ namespace DraftAnalyzer
             this.topToolStripMenuItem1.Name = "topToolStripMenuItem1";
             this.topToolStripMenuItem1.Size = new System.Drawing.Size(114, 22);
             this.topToolStripMenuItem1.Text = "Top";
-            this.topToolStripMenuItem1.Click += new System.EventHandler(this.secondRoundTop_click);
+            this.topToolStripMenuItem1.Click += new System.EventHandler(this.SecondRoundTop_click);
             // 
             // bottomToolStripMenuItem1
             // 
             this.bottomToolStripMenuItem1.Name = "bottomToolStripMenuItem1";
             this.bottomToolStripMenuItem1.Size = new System.Drawing.Size(114, 22);
             this.bottomToolStripMenuItem1.Text = "Bottom";
-            this.bottomToolStripMenuItem1.Click += new System.EventHandler(this.secondRoundBottom_click);
+            this.bottomToolStripMenuItem1.Click += new System.EventHandler(this.SecondRoundBottom_click);
             // 
             // thirdRoundToolStripMenuItem
             // 
@@ -457,14 +459,14 @@ namespace DraftAnalyzer
             this.topToolStripMenuItem2.Name = "topToolStripMenuItem2";
             this.topToolStripMenuItem2.Size = new System.Drawing.Size(114, 22);
             this.topToolStripMenuItem2.Text = "Top";
-            this.topToolStripMenuItem2.Click += new System.EventHandler(this.thirdRoundTop_click);
+            this.topToolStripMenuItem2.Click += new System.EventHandler(this.ThirdRoundTop_click);
             // 
             // bottomToolStripMenuItem2
             // 
             this.bottomToolStripMenuItem2.Name = "bottomToolStripMenuItem2";
             this.bottomToolStripMenuItem2.Size = new System.Drawing.Size(114, 22);
             this.bottomToolStripMenuItem2.Text = "Bottom";
-            this.bottomToolStripMenuItem2.Click += new System.EventHandler(this.thirdRoundBottom_click);
+            this.bottomToolStripMenuItem2.Click += new System.EventHandler(this.ThirdRoundBottom_click);
             // 
             // fourthRoundToolStripMenuItem
             // 
@@ -480,14 +482,14 @@ namespace DraftAnalyzer
             this.topToolStripMenuItem3.Name = "topToolStripMenuItem3";
             this.topToolStripMenuItem3.Size = new System.Drawing.Size(114, 22);
             this.topToolStripMenuItem3.Text = "Top";
-            this.topToolStripMenuItem3.Click += new System.EventHandler(this.fourthRoundTop_click);
+            this.topToolStripMenuItem3.Click += new System.EventHandler(this.FourthRoundTop_click);
             // 
             // bottomToolStripMenuItem3
             // 
             this.bottomToolStripMenuItem3.Name = "bottomToolStripMenuItem3";
             this.bottomToolStripMenuItem3.Size = new System.Drawing.Size(114, 22);
             this.bottomToolStripMenuItem3.Text = "Bottom";
-            this.bottomToolStripMenuItem3.Click += new System.EventHandler(this.fourthRoundBottom_click);
+            this.bottomToolStripMenuItem3.Click += new System.EventHandler(this.FourthRoundBottom_click);
             // 
             // fifthRoundToolStripMenuItem
             // 
@@ -503,14 +505,14 @@ namespace DraftAnalyzer
             this.topToolStripMenuItem4.Name = "topToolStripMenuItem4";
             this.topToolStripMenuItem4.Size = new System.Drawing.Size(114, 22);
             this.topToolStripMenuItem4.Text = "Top";
-            this.topToolStripMenuItem4.Click += new System.EventHandler(this.fifthRoundTop_click);
+            this.topToolStripMenuItem4.Click += new System.EventHandler(this.FifthRoundTop_click);
             // 
             // bottomToolStripMenuItem4
             // 
             this.bottomToolStripMenuItem4.Name = "bottomToolStripMenuItem4";
             this.bottomToolStripMenuItem4.Size = new System.Drawing.Size(114, 22);
             this.bottomToolStripMenuItem4.Text = "Bottom";
-            this.bottomToolStripMenuItem4.Click += new System.EventHandler(this.fifthRoundBottom_click);
+            this.bottomToolStripMenuItem4.Click += new System.EventHandler(this.FifthRoundBottom_click);
             // 
             // sixthRoundToolStripMenuItem
             // 
@@ -526,14 +528,14 @@ namespace DraftAnalyzer
             this.topToolStripMenuItem5.Name = "topToolStripMenuItem5";
             this.topToolStripMenuItem5.Size = new System.Drawing.Size(114, 22);
             this.topToolStripMenuItem5.Text = "Top";
-            this.topToolStripMenuItem5.Click += new System.EventHandler(this.sixthRoundTop_click);
+            this.topToolStripMenuItem5.Click += new System.EventHandler(this.SixthRoundTop_click);
             // 
             // bottomToolStripMenuItem5
             // 
             this.bottomToolStripMenuItem5.Name = "bottomToolStripMenuItem5";
             this.bottomToolStripMenuItem5.Size = new System.Drawing.Size(114, 22);
             this.bottomToolStripMenuItem5.Text = "Bottom";
-            this.bottomToolStripMenuItem5.Click += new System.EventHandler(this.sixthRoundBottom_click);
+            this.bottomToolStripMenuItem5.Click += new System.EventHandler(this.SixthRoundBottom_click);
             // 
             // seventhRoundToolStripMenuItem
             // 
@@ -549,14 +551,14 @@ namespace DraftAnalyzer
             this.topToolStripMenuItem6.Name = "topToolStripMenuItem6";
             this.topToolStripMenuItem6.Size = new System.Drawing.Size(114, 22);
             this.topToolStripMenuItem6.Text = "Top";
-            this.topToolStripMenuItem6.Click += new System.EventHandler(this.seventhRoundTop_click);
+            this.topToolStripMenuItem6.Click += new System.EventHandler(this.SeventhRoundTop_click);
             // 
             // bottomToolStripMenuItem6
             // 
             this.bottomToolStripMenuItem6.Name = "bottomToolStripMenuItem6";
             this.bottomToolStripMenuItem6.Size = new System.Drawing.Size(114, 22);
             this.bottomToolStripMenuItem6.Text = "Bottom";
-            this.bottomToolStripMenuItem6.Click += new System.EventHandler(this.seventhRoundBottom_click);
+            this.bottomToolStripMenuItem6.Click += new System.EventHandler(this.SeventhRoundBottom_click);
             // 
             // undraftedFAToolStripMenuItem
             // 
@@ -572,28 +574,28 @@ namespace DraftAnalyzer
             this.topToolStripMenuItem7.Name = "topToolStripMenuItem7";
             this.topToolStripMenuItem7.Size = new System.Drawing.Size(114, 22);
             this.topToolStripMenuItem7.Text = "Top";
-            this.topToolStripMenuItem7.Click += new System.EventHandler(this.undraftedFATop_click);
+            this.topToolStripMenuItem7.Click += new System.EventHandler(this.UndraftedFATop_click);
             // 
             // bottomToolStripMenuItem7
             // 
             this.bottomToolStripMenuItem7.Name = "bottomToolStripMenuItem7";
             this.bottomToolStripMenuItem7.Size = new System.Drawing.Size(114, 22);
             this.bottomToolStripMenuItem7.Text = "Bottom";
-            this.bottomToolStripMenuItem7.Click += new System.EventHandler(this.undraftedFABottom_click);
+            this.bottomToolStripMenuItem7.Click += new System.EventHandler(this.UndraftedFABottom_click);
             // 
             // dontDraftToolStripMenuItem
             // 
             this.dontDraftToolStripMenuItem.Name = "dontDraftToolStripMenuItem";
             this.dontDraftToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
             this.dontDraftToolStripMenuItem.Text = "Don\'t Draft (X)";
-            this.dontDraftToolStripMenuItem.Click += new System.EventHandler(this.dontDraftToolStripMenuItem_Click);
+            this.dontDraftToolStripMenuItem.Click += new System.EventHandler(this.DontDraftToolStripMenuItem_Click);
             // 
             // moveUpToolStripMenuItem
             // 
             this.moveUpToolStripMenuItem.Name = "moveUpToolStripMenuItem";
             this.moveUpToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
             this.moveUpToolStripMenuItem.Text = "Move Up (+)";
-            this.moveUpToolStripMenuItem.Click += new System.EventHandler(this.moveUpToolStripMenuItem_Click);
+            this.moveUpToolStripMenuItem.Click += new System.EventHandler(this.MoveUpToolStripMenuItem_Click);
             // 
             // moveDownToolStripMenuItem
             // 
@@ -1029,7 +1031,7 @@ namespace DraftAnalyzer
             this.textBoxPasteArea.Name = "textBoxPasteArea";
             this.textBoxPasteArea.Size = new System.Drawing.Size(269, 272);
             this.textBoxPasteArea.TabIndex = 6;
-            this.textBoxPasteArea.Click += new System.EventHandler(this.textBoxPasteArea_Click);
+            this.textBoxPasteArea.Click += new System.EventHandler(this.TextBoxPasteArea_Click);
             // 
             // buttonMarkDrafted
             // 
@@ -1040,7 +1042,7 @@ namespace DraftAnalyzer
             this.buttonMarkDrafted.TabIndex = 7;
             this.buttonMarkDrafted.Text = "Mark Drafted";
             this.buttonMarkDrafted.UseVisualStyleBackColor = true;
-            this.buttonMarkDrafted.Click += new System.EventHandler(this.buttonMarkDrafted_Click);
+            this.buttonMarkDrafted.Click += new System.EventHandler(this.ButtonMarkDrafted_Click);
             // 
             // listViewDraftees
             // 
@@ -1069,9 +1071,9 @@ namespace DraftAnalyzer
             this.listViewDraftees.TabIndex = 1;
             this.listViewDraftees.UseCompatibleStateImageBehavior = false;
             this.listViewDraftees.View = System.Windows.Forms.View.Details;
-            this.listViewDraftees.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.listViewDraftees_ColumnClick);
-            this.listViewDraftees.SelectedIndexChanged += new System.EventHandler(this.listViewDraftees_SelectedIndexChanged);
-            this.listViewDraftees.MouseUp += new System.Windows.Forms.MouseEventHandler(this.listViewDraftees_MouseUp);
+            this.listViewDraftees.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.ListViewDraftees_ColumnClick);
+            this.listViewDraftees.SelectedIndexChanged += new System.EventHandler(this.ListViewDraftees_SelectedIndexChanged);
+            this.listViewDraftees.MouseUp += new System.Windows.Forms.MouseEventHandler(this.ListViewDraftees_MouseUp);
             // 
             // columnHeaderName
             // 
@@ -1082,6 +1084,11 @@ namespace DraftAnalyzer
             // 
             this.columnHeaderPosition.Text = "Pos";
             this.columnHeaderPosition.Width = 40;
+            // 
+            // columnHeaderRatedPosition
+            // 
+            this.columnHeaderRatedPosition.Text = "RPos";
+            this.columnHeaderRatedPosition.Width = 40;
             // 
             // columnHeaderGrade
             // 
@@ -1169,12 +1176,14 @@ namespace DraftAnalyzer
             this.buttonReleaseNotes.TabIndex = 8;
             this.buttonReleaseNotes.Text = "Release Notes";
             this.buttonReleaseNotes.UseVisualStyleBackColor = true;
-            this.buttonReleaseNotes.Click += new System.EventHandler(this.buttonReleaseNotes_Click);
+            this.buttonReleaseNotes.Click += new System.EventHandler(this.ButtonReleaseNotes_Click);
             // 
-            // columnHeaderRatedPosition
+            // autoOrderToolStripMenuItem
             // 
-            this.columnHeaderRatedPosition.Text = "RPos";
-            this.columnHeaderRatedPosition.Width = 40;
+            this.autoOrderToolStripMenuItem.Name = "autoOrderToolStripMenuItem";
+            this.autoOrderToolStripMenuItem.Size = new System.Drawing.Size(236, 22);
+            this.autoOrderToolStripMenuItem.Text = "Auto Order";
+            this.autoOrderToolStripMenuItem.Click += new System.EventHandler(this.AutoOrderToolStripMenuItem_Click);
             // 
             // DraftAnalyzerForm
             // 
@@ -1337,6 +1346,7 @@ namespace DraftAnalyzer
 		private System.Windows.Forms.ToolStripMenuItem colorChemistryGroupsToolStripMenuItem;
         private System.Windows.Forms.Button buttonReleaseNotes;
         private System.Windows.Forms.ColumnHeader columnHeaderRatedPosition;
+        private System.Windows.Forms.ToolStripMenuItem autoOrderToolStripMenuItem;
     }
 }
 

@@ -1,4 +1,9 @@
-﻿8.1.5.0
+﻿8.1.6.0
+
+- Loading exported draftees from FOF will update the existing player list rather
+  than overwriting, if one is loaded.
+
+8.1.5.0
 
 - Fix combine score calculation to always use average and standard deviation from
   the player's base position, not the other positions the player is being evaluated

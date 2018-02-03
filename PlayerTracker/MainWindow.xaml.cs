@@ -990,12 +990,7 @@ namespace PlayerTracker
             }
             else if (combineIndex == 0 || combineIndex == 3)
             {
-                if (m_FOFData.CombineThresholds[positionIndex, combineIndex] != 0 && value > m_FOFData.CombineThresholds[positionIndex, combineIndex])
-                {
-                    label.Foreground = Brushes.Black;
-                    label.Background = Brushes.Red;
-                }
-                else if (value <= m_FOFData.CombineColors[positionIndex, redIndex])
+                if (value <= m_FOFData.CombineColors[positionIndex, redIndex])
                 {
                     label.Foreground = Brushes.Red;
                 }
@@ -1014,12 +1009,7 @@ namespace PlayerTracker
             }
             else
             {
-                if (m_FOFData.CombineThresholds[positionIndex, combineIndex] != 0 && value < m_FOFData.CombineThresholds[positionIndex, combineIndex])
-                {
-                    label.Foreground = Brushes.Black;
-                    label.Background = Brushes.Red;
-                }
-                else if (value >= m_FOFData.CombineColors[positionIndex, redIndex])
+                if (value >= m_FOFData.CombineColors[positionIndex, redIndex])
                 {
                     label.Foreground = Brushes.Red;
                 }

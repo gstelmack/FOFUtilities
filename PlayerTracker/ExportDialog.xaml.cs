@@ -244,6 +244,11 @@ namespace PlayerTracker
 
 			foreach (PlayerListData data in reportPlayers)
 			{
+                if (data.PosGrp == "LS")
+                {
+                    continue;
+                }
+
 				System.IO.StreamWriter outFile;
 				if (data.PlayerRecord.Strength != 0)
 				{

@@ -221,4 +221,4 @@ pip-log.txt
 #Mr Developer
 .mr.developer.cfg
 *.db-shm
-.vs/FOFUtilities/v15/Solution.VC.db-wal
+.vs/
