@@ -3352,10 +3352,10 @@ namespace DraftAnalyzer
 
         private void AutoOrderToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            WindowsUtilities.SortTypeListViewItemSorter.UpdateSortColumn(listViewDraftees, columnHeaderBars.Index, sortDraftedToBottomToolStripMenuItem.Checked);
+            WindowsUtilities.SortTypeListViewItemSorter.UpdateSortSpecific(listViewDraftees, columnHeaderBars.Index, sortDraftedToBottomToolStripMenuItem.Checked, (WindowsUtilities.SortType)columnHeaderBars.Tag, true);
             AutoOrderDraftees();
             var descending = false;
-            WindowsUtilities.SortTypeListViewItemSorter.UpdateSortSpecific(listViewDraftees, columnHeaderDraftOrder.Index, sortDraftedToBottomToolStripMenuItem.Checked, WindowsUtilities.SortType.SortByInteger, descending);
+            WindowsUtilities.SortTypeListViewItemSorter.UpdateSortSpecific(listViewDraftees, columnHeaderDraftOrder.Index, sortDraftedToBottomToolStripMenuItem.Checked, (WindowsUtilities.SortType)columnHeaderDraftOrder.Tag, descending);
             DisplayPlayerData();
         }
 
@@ -3399,13 +3399,16 @@ namespace DraftAnalyzer
 
             var astrologicalSign = mSelectedPlayerData.mAstrologicalSign;
 
-            var conflict = (astrologicalSign == ChemistryUtilities.AstrologicalSign.Aquarius
-                || astrologicalSign == ChemistryUtilities.AstrologicalSign.Virgo
-                || astrologicalSign == ChemistryUtilities.AstrologicalSign.Libra);
+            //var conflict = (astrologicalSign == ChemistryUtilities.AstrologicalSign.Aquarius
+            //    || astrologicalSign == ChemistryUtilities.AstrologicalSign.Virgo
+            //    || astrologicalSign == ChemistryUtilities.AstrologicalSign.Libra);
 
-            var affinity = (astrologicalSign == ChemistryUtilities.AstrologicalSign.Aries
-                || astrologicalSign == ChemistryUtilities.AstrologicalSign.Gemini
-                || astrologicalSign == ChemistryUtilities.AstrologicalSign.Scorpio);
+            //var affinity = (astrologicalSign == ChemistryUtilities.AstrologicalSign.Aries
+            //    || astrologicalSign == ChemistryUtilities.AstrologicalSign.Gemini
+            //    || astrologicalSign == ChemistryUtilities.AstrologicalSign.Scorpio);
+
+            var conflict = false;
+            var affinity = true;
 
             if (conflict)
             {
@@ -3450,12 +3453,15 @@ namespace DraftAnalyzer
 
             var hasKeyBars = false;
 
+            const int goodBarValue = 45;
+            const int okayBarValue = 20;
+
             if (isWideReceiver)
             {
-                if (GetSelectedPlayerAttributeValue("Avoid Drops") > 50)
+                if (GetSelectedPlayerAttributeValue("Avoid Drops") > goodBarValue)
                 {
-                    if (GetSelectedPlayerAttributeValue("Big Play Receiving") > 50
-                        || GetSelectedPlayerAttributeValue("Getting Downfield") > 50)
+                    if (GetSelectedPlayerAttributeValue("Big Play Receiving") > goodBarValue
+                        || GetSelectedPlayerAttributeValue("Getting Downfield") > goodBarValue)
                     {
                         hasKeyBars = true;
                     }
@@ -3464,8 +3470,8 @@ namespace DraftAnalyzer
 
             if (isRunningBack)
             {
-                if (GetSelectedPlayerAttributeValue("Breakaway Speed") > 50
-                    && GetSelectedPlayerAttributeValue("Hole Recognition") > 50)
+                if (GetSelectedPlayerAttributeValue("Breakaway Speed") > goodBarValue
+                    && GetSelectedPlayerAttributeValue("Hole Recognition") > goodBarValue)
                 {
                     hasKeyBars = true;
                 }
@@ -3473,9 +3479,9 @@ namespace DraftAnalyzer
 
             if (isFullback)
             {
-                if (GetSelectedPlayerAttributeValue("Run Blocking") > 50
-                    && GetSelectedPlayerAttributeValue("Power Inside") > 50
-                    && GetSelectedPlayerAttributeValue("Third Down Catching") > 50)
+                if (GetSelectedPlayerAttributeValue("Run Blocking") > goodBarValue
+                    && GetSelectedPlayerAttributeValue("Power Inside") > goodBarValue
+                    && GetSelectedPlayerAttributeValue("Third Down Catching") > goodBarValue)
                 {
                     hasKeyBars = true;
                 }
@@ -3483,9 +3489,9 @@ namespace DraftAnalyzer
 
             if (isTightEnd)
             {
-                if (GetSelectedPlayerAttributeValue("Run Blocking") > 50
-                    && GetSelectedPlayerAttributeValue("Avoid Drops") > 50
-                    && GetSelectedPlayerAttributeValue("Third Down Catching") > 50)
+                if (GetSelectedPlayerAttributeValue("Run Blocking") > goodBarValue
+                    && GetSelectedPlayerAttributeValue("Avoid Drops") > goodBarValue
+                    && GetSelectedPlayerAttributeValue("Third Down Catching") > goodBarValue)
                 {
                     hasKeyBars = true;
                 }
@@ -3493,7 +3499,7 @@ namespace DraftAnalyzer
 
             if (isOLine)
             {
-                if (GetSelectedPlayerAttributeValue("Endurance") > 50)
+                if (GetSelectedPlayerAttributeValue("Endurance") > goodBarValue)
                 {
                     hasKeyBars = true;
                 }
@@ -3501,9 +3507,9 @@ namespace DraftAnalyzer
 
             if (isQuarterback)
             {
-                if (GetSelectedPlayerAttributeValue("Sense Rush") > 50
-                    && GetSelectedPlayerAttributeValue("Read Defense") > 25
-                    && GetSelectedPlayerAttributeValue("Accuracy") > 25)
+                if (GetSelectedPlayerAttributeValue("Sense Rush") > goodBarValue
+                    && GetSelectedPlayerAttributeValue("Read Defense") > okayBarValue
+                    && GetSelectedPlayerAttributeValue("Accuracy") > okayBarValue)
                 {
                     hasKeyBars = true;
                 }
@@ -3511,17 +3517,20 @@ namespace DraftAnalyzer
 
             if (isDLine)
             {
-                if (GetSelectedPlayerAttributeValue("Pass Rush Technique") > 50
-                    || GetSelectedPlayerAttributeValue("Pass Rush Strength") > 50)
+                if (GetSelectedPlayerAttributeValue("Run Defense") > okayBarValue)
                 {
-                    hasKeyBars = true;
+                    if (GetSelectedPlayerAttributeValue("Pass Rush Technique") > goodBarValue
+                    || GetSelectedPlayerAttributeValue("Pass Rush Strength") > goodBarValue)
+                    {
+                        hasKeyBars = true;
+                    }
                 }
             }
 
             if (isLinebacker)
             {
-                if (GetSelectedPlayerAttributeValue("Run Defense") > 50
-                    && GetSelectedPlayerAttributeValue("Man-to-Man Defense") > 50)
+                if (GetSelectedPlayerAttributeValue("Run Defense") > goodBarValue
+                    && GetSelectedPlayerAttributeValue("Man-to-Man Defense") > goodBarValue)
                 {
                     hasKeyBars = true;
                 }
@@ -3529,13 +3538,14 @@ namespace DraftAnalyzer
 
             if (isDB)
             {
-                if (GetSelectedPlayerAttributeValue("Run Defense") > 50
-                    && GetSelectedPlayerAttributeValue("Zone Defense") > 50)
+                if (GetSelectedPlayerAttributeValue("Run Defense") > goodBarValue
+                    && GetSelectedPlayerAttributeValue("Zone Defense") > goodBarValue)
                 {
                     hasKeyBars = true;
                 }
-                else if (GetSelectedPlayerAttributeValue("Man-to-Man Defense") > 50
-                    && GetSelectedPlayerAttributeValue("Interceptions") > 50)
+                else if (GetSelectedPlayerAttributeValue("Man-to-Man Defense") > goodBarValue
+                    && GetSelectedPlayerAttributeValue("Bump and Run Defense") > goodBarValue
+                    && GetSelectedPlayerAttributeValue("Interceptions") > goodBarValue)
                 {
                     hasKeyBars = true;
                 }

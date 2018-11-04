@@ -22,59 +22,182 @@ enum<short> PLAY_TYPE
 
 enum<short> OFFENSIVE_FORMATION 
 {
-    IFormNormal = 0,
-	IFormTEPairs = 1,
-    IFormWRToSlot = 2,
-    ProNormal = 3,
-	ProTEPairs = 4,
-    ProWRToSlot = 5,
-    WeakNormal = 6,
-    WeakTEPairs = 7,
-    WeakThreeWR = 8,
-    StrongNormal = 9,
-    StrongTEPairs = 10,
-    StrongThreeWR = 11,
-    SingleBackNormal = 12,
-    SingleBackTEPairs = 13,
-    SingleBackTripsWR = 14,
-    SingleBackFourWR = 15,
-    FiveWRSpread = 16,
-    GoalLineFormation = 17
+    Pro = 0,
+	Weak = 1,
+    Strong = 2,
+    IForm = 3,
+	Empty = 4
+};
+
+enum<short> OFFENSIVE_PERSONNEL
+{
+    P005 = 0,
+    P014 = 1,
+    P014t = 2,
+    P023 = 3,
+    P104 = 4,
+    P113 = 5,
+    P113t = 6,
+    P122 = 7,
+    P131 = 8,
+    P203 = 9,
+    P212 = 10,
+    P221 = 11,
+    P230 = 12
+};
+
+enum<short> QB_DEPTH
+{
+    Normal = 0,
+    Shotgun = 1,
+    Pistol = 2
+};
+
+enum<short> OFFENSIVE_PLAY_TYPE
+{
+    Pass = 0,
+    PlayAction = 1,
+    Unknown = 2,
+    Run = 3,
+    Counter_Trap = 4,
+    Reverse = 5
+};
+
+enum<short> RECEIVER_ROUTE
+{
+    Dig = 0,
+    Out = 1,
+    Slant = 2,
+    Comeback = 3,
+    Curl = 4,
+    DeepOut = 5,
+    DeepIn = 6,
+    Corner = 7,
+    Post = 8,
+    Fade = 9,
+    DeepFade = 10,
+    Wheel = 11,
+    Screen = 12,
+    Flat = 13
+};
+
+enum<short> RECEIVER_ASSIGNMENT
+{
+    Primary = 0,
+    Secondary = 1,
+    Outlet = 2,
+    Protect = 3
+};
+
+struct RECEIVER_ENTRY
+{
+    RECEIVER_ASSIGNMENT Assignment;
+    RECEIVER_ROUTE Route;
+};
+
+enum<short> RUN_DIRECTION
+{
+    LeftEnd = 0,
+    LeftTackle = 1,
+    LeftGuard = 2,
+    LeftMiddle = 3,
+    RightMiddle = 4,
+    RightGuard = 5,
+    RightTackle = 6,
+    RightEnd = 7
 };
 
 enum<short> DEFENSIVE_ALIGNMENT
 {
-    Eagle34 = 0,
-    True34 = 1
+    True34 = 0,
+    Eagle34 = 1,
+    Under43 = 2,
+    Over43 = 3
 };
 
 enum<short> DEFENSIVE_PERSONNEL
 {
-    Normal = 0,
-    Nickel = 1,
-    Dime = 2,
-    Prevent = 3,
-    GoalLinePersonnel = 4
+    DPer_Normal = 0,
+    DPer_Nickel = 1,
+    DPer_Dime = 2,
+    DPer_Prevent = 3,
+    DPer_GoalLinePersonnel = 4
 };
 
 enum<short> DEFENSIVE_COVERAGE
 {
-    ManToMan = 0,
-    Cover1 = 1,
-    Press1 = 2,
-    Tampa2 = 3,
-    Cover2 = 4,
-    Press2 = 5,
-    Cover3Sky = 6,
-    Cover3Cloud = 7,
-    Cover4 = 8
+    DCov_ManToMan = 0,
+    DCov_Cover1 = 1,
+    DCov_Press1 = 2,
+    DCov_Tampa2 = 3,
+    DCov_Cover2 = 4,
+    DCov_Press2 = 5,
+    DCov_Cover3Sky = 6,
+    DCov_Cover3Cloud = 7,
+    DCov_Cover4 = 8
+};
+
+enum<short> DEFENSIVE_SPECIAL
+{
+    None = 0,
+    DoubleCover = 1,
+    Spy = 2,
+    SpyQB = 3,
+    Cover1Buzz = 10,
+    Press1Buzz34 = 11,
+    Press1Buzz43 = 12
+};
+
+enum<short> DEFENSIVE_BLITZ
+{
+    DBlitz_None = 0,
+    DBlitz_Blitz = 1,
+    DBlitz_Spy = 3
 };
 
 enum<short> DEFENSIVE_RUNPASS
 {
-    Run = 0,
-    Pass = 1
+    DRunPass_Run = 0,
+    DRunPass_Pass = 1
 };
+
+enum<short> DEFENSIVE_ASSIGNMENT
+{
+    DAssign_InBox = 0,
+    DAssign_OutBox = 1,
+    DAssign_SpyRun = 2,
+    DAssign_RushPasser = 3,
+    DAssign_Blitz = 4,  
+    DAssign_SpyQB = 5,
+    DAssign_DBL_RCVR1 = 11,
+    DAssign_M2M_RCVR1 = 12,
+    DAssign_BR_RCVR1 = 13,
+    DAssign_SZone_RCVR1 = 14,
+    DAssign_DZone_RCVR1 = 15,
+    DAssign_DBL_RCVR2 = 21,
+    DAssign_M2M_RCVR2 = 22,
+    DAssign_BR_RCVR2 = 23,
+    DAssign_SZone_RCVR2 = 24,
+    DAssign_DZone_RCVR2 = 25,
+    DAssign_DBL_RCVR3 = 31,
+    DAssign_M2M_RCVR3 = 32,
+    DAssign_BR_RCVR3 = 33,
+    DAssign_SZone_RCVR3 = 34,
+    DAssign_DZone_RCVR3 = 35,
+    DAssign_DBL_RCVR4 = 41,
+    DAssign_M2M_RCVR4 = 42,
+    DAssign_BR_RCVR4 = 43,
+    DAssign_SZone_RCVR4 = 44,
+    DAssign_DZone_RCVR4 = 45,
+    DAssign_DBL_RCVR5 = 51,
+    DAssign_M2M_RCVR5 = 52,
+    DAssign_BR_RCVR5 = 53,
+    DAssign_SZone_RCVR5 = 54,
+    DAssign_DZone_RCVR5 = 55,
+    DAssign_SZone = 64,
+    DAssign_DZone = 65,
+};
+
 
 enum<short> RUNDIRECTION
 {
@@ -217,34 +340,23 @@ enum<short> BADSNAPTYPE
 
 enum<short> PLAYERPERFORMANCE
 {
-    Unknown=0,
-    Plus=1,
-    Minus=2
+    Perf_Unknown=0,
+    Perf_Plus=1,
+    Perf_Minus=2
 };
 
 struct GAMEPLAYFORMATION
 {
 	OFFENSIVE_FORMATION OffensiveFormation;	
-	short OffensiveStrength;
-	DEFENSIVE_ALIGNMENT DefensiveAlignment;
+	OFFENSIVE_PERSONNEL OffensivePersonnel;
+    short UnknownFlag;
 	DEFENSIVE_PERSONNEL DefensivePersonnel;
 	DEFENSIVE_COVERAGE DefensiveCoverage;
-	DEFENSIVE_RUNPASS DefensiveRunPass;
-	short DefensiveRunAggressive;
-	short DefensivePassAggressive;
-	short DefensiveBlitzing;    // 0-3, how many blitzing
-    // This array of 10 are boolean 0/1 flags for is that position blitzing?
-	// 0 = SLB-Outside
-	// 1 = SLB-Inside
-	// 2 = MLB/SILB
-	// 3 = WILB
-	// 4 = WLB-Outside(?) 4-3 Only
-	// 5 = WLB-Inside(?) 4-3 Only
-	// 6 = LCB
-	// 7 = RCB
-	// 8 = SS
- 	// 9 = FS
-	short DefensiveBlitzers[10];
+	DEFENSIVE_ALIGNMENT DefensiveAlignment;
+	DEFENSIVE_SPECIAL DefensiveSpecial;
+	short PossessionChange;
+	short DefensiveBlitzCount;    // 0-3, how many blitzing
+	DEFENSIVE_BLITZ DefensiveBlitzers[10];
 };
 
 struct GAMEPLAYPENALTY {
@@ -620,9 +732,20 @@ struct GAMEPLAYENTRY
         PLAYINFODATA PlayInfoData;
     }
 
-    short Filler[18];
+    short FailedFourthDown;
+    OFFENSIVE_PERSONNEL OffensivePersonnel;
+    OFFENSIVE_FORMATION OffensiveFormation;
+    short AlwaysZero1;
+    QB_DEPTH QBDepth;
+    OFFENSIVE_PLAY_TYPE OffensivePlayType;
+    RUNDIRECTION RunDirection;
+    short BallCarrier;
+    RECEIVER_ENTRY ReceiverEntries[5];
+
     PLAYERPERFORMANCE OffensivePerformance[11];
-    short Filler2[13];
+    short PossessionChange;
+    DEFENSIVE_PERSONNEL DefensivePersonnel;
+    DEFENSIVE_ASSIGNMENT DefensiveAssignment[11];
     PLAYERPERFORMANCE DefensivePerformance[11];
     short Filler3[28];
 
