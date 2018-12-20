@@ -166,7 +166,7 @@ namespace DraftAnalyzer
 		public DraftAnalyzerForm()
 		{
 			InitializeComponent();
-			listViewDraftees.RaiseKeyDataEvent += listViewDraftees_KeyDataEvent;
+			listViewDraftees.RaiseKeyDataEvent += ListViewDraftees_KeyDataEvent;
 			listViewDraftees.MakeDoubleBuffered();
 
 			toolStripStatusLabelAction.Text = "";
@@ -1520,7 +1520,7 @@ namespace DraftAnalyzer
 			DisplayPlayerDetails(mSelectedPlayerData);
 		}
 
-		private void listViewDraftees_SelectedIndexChanged(object sender, EventArgs e)
+		private void ListViewDraftees_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			if (listViewDraftees.SelectedIndices.Count > 0)
 			{
@@ -1532,7 +1532,7 @@ namespace DraftAnalyzer
 			}
 		}
 
-		private void contextMenuStripDraftees_Opening(object sender, CancelEventArgs e)
+		private void ContextMenuStripDraftees_Opening(object sender, CancelEventArgs e)
 		{
 			if (mSelectedPlayerData != null)
 			{
@@ -1570,7 +1570,7 @@ namespace DraftAnalyzer
 			}
 		}
 
-		private void draftedToolStripMenuItem_Click(object sender, EventArgs e)
+		private void DraftedToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			DraftSelectedPlayer();
 		}
@@ -1763,10 +1763,16 @@ namespace DraftAnalyzer
 					draftFile = new System.IO.StreamReader(draftPersonalPath),
 					infoFile = new System.IO.StreamReader(infoPath))
 				{
-					mPlayerData = new System.Collections.ArrayList();
-					mDraftOrderList = new SortedList<int, int>();
+                    var updating = true;
+                    if (mPlayerData == null)
+                    {
+                        mPlayerData = new System.Collections.ArrayList();
+                        mDraftOrderList = new SortedList<int, int>();
+                        updating = false;
+                    }
 
-					System.Globalization.NumberFormatInfo nfi = System.Globalization.NumberFormatInfo.InvariantInfo;
+                    var curIndex = 0;
+                    System.Globalization.NumberFormatInfo nfi = System.Globalization.NumberFormatInfo.InvariantInfo;
 
 					string headerLine = rookieFile.ReadLine();
 					headerLine = draftFile.ReadLine();
@@ -1797,8 +1803,16 @@ namespace DraftAnalyzer
 							}
 							else
 							{
-								PlayerData newData = new PlayerData();
-								newData.mName = rookieFields[2] + " " + rookieFields[1];
+                                var playerName = rookieFields[2] + " " + rookieFields[1];
+
+                                PlayerData newData = new PlayerData();
+                                if (updating)
+                                {
+                                    newData = mPlayerData[curIndex] as PlayerData;
+                                    System.Diagnostics.Debug.Assert(newData.mName == playerName);
+                                    ++curIndex;
+                                }
+								newData.mName = playerName;
 								newData.mPosition = infoFields[5];
 								newData.mPositionGroup = rookieFields[3];
 								newData.mCollege = rookieFields[4];
@@ -1838,15 +1852,18 @@ namespace DraftAnalyzer
 									}
 								}
 
-								newData.mOriginalOrder = mPlayerData.Count;
-								newData.mDesiredOrder = mPlayerData.Count;
-								newData.mDrafted = false;
-								newData.mMarked = false;
-								newData.mOrderDrafted = -1;
-								newData.mDraftPosition = DraftPosition.NotSet;
-								mDraftOrderList.Add(newData.mDesiredOrder, mPlayerData.Count);
-								mPlayerData.Add(newData);
-							}
+                                if (!updating)
+                                {
+                                    newData.mOriginalOrder = mPlayerData.Count;
+                                    newData.mDesiredOrder = mPlayerData.Count;
+                                    newData.mDrafted = false;
+                                    newData.mMarked = false;
+                                    newData.mOrderDrafted = -1;
+                                    newData.mDraftPosition = DraftPosition.NotSet;
+                                    mDraftOrderList.Add(newData.mDesiredOrder, mPlayerData.Count);
+                                    mPlayerData.Add(newData);
+                                }
+                            }
 						}
 						catch (FormatException)
 						{
@@ -1871,12 +1888,12 @@ namespace DraftAnalyzer
 			}
 		}
 
-		private void textBoxPasteArea_Click(object sender, EventArgs e)
+		private void TextBoxPasteArea_Click(object sender, EventArgs e)
 		{
 			textBoxPasteArea.SelectAll();
 		}
 
-		private void showStdDevsToolStripMenuItem_Click(object sender, EventArgs e)
+		private void ShowStdDevsToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			mCombineDisplayType = CombineDisplayType.DisplayStdDevs;
 			showStdDevsToolStripMenuItem.Checked = true;
@@ -1885,7 +1902,7 @@ namespace DraftAnalyzer
 			DisplayPlayerData();
 		}
 
-		private void showCombineValuesToolStripMenuItem_Click(object sender, EventArgs e)
+		private void ShowCombineValuesToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			mCombineDisplayType = CombineDisplayType.DisplayValues;
 			showStdDevsToolStripMenuItem.Checked = false;
@@ -1894,7 +1911,7 @@ namespace DraftAnalyzer
 			DisplayPlayerData();
 		}
 
-		private void showCombineScoresToolStripMenuItem_Click(object sender, EventArgs e)
+		private void ShowCombineScoresToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			mCombineDisplayType = CombineDisplayType.DisplayRatings;
 			showStdDevsToolStripMenuItem.Checked = false;
@@ -1903,7 +1920,7 @@ namespace DraftAnalyzer
 			DisplayPlayerData();
 		}
 
-		private void buttonMarkDrafted_Click(object sender, EventArgs e)
+		private void ButtonMarkDrafted_Click(object sender, EventArgs e)
 		{
 			string[] delims = new string[] { Environment.NewLine };
 			string[] lines = textBoxPasteArea.Text.Split(delims,StringSplitOptions.RemoveEmptyEntries);
@@ -2309,102 +2326,102 @@ namespace DraftAnalyzer
 			}
 		}
 
-		private void firstRoundTop_click(object sender, EventArgs e)
+		private void FirstRoundTop_click(object sender, EventArgs e)
 		{
 			UpdateSelectedPlayerDraftPosition(DraftPosition.FirstRound, true, true);
 		}
 
-		private void firstRoundBottom_click(object sender, EventArgs e)
+		private void FirstRoundBottom_click(object sender, EventArgs e)
 		{
 			UpdateSelectedPlayerDraftPosition(DraftPosition.FirstRound, false, true);
 		}
 
-		private void secondRoundTop_click(object sender, EventArgs e)
+		private void SecondRoundTop_click(object sender, EventArgs e)
 		{
 			UpdateSelectedPlayerDraftPosition(DraftPosition.SecondRound, true, true);
 		}
 
-		private void secondRoundBottom_click(object sender, EventArgs e)
+		private void SecondRoundBottom_click(object sender, EventArgs e)
 		{
 			UpdateSelectedPlayerDraftPosition(DraftPosition.SecondRound, false, true);
 		}
 
-		private void thirdRoundTop_click(object sender, EventArgs e)
+		private void ThirdRoundTop_click(object sender, EventArgs e)
 		{
 			UpdateSelectedPlayerDraftPosition(DraftPosition.ThirdRound, true, true);
 		}
 
-		private void thirdRoundBottom_click(object sender, EventArgs e)
+		private void ThirdRoundBottom_click(object sender, EventArgs e)
 		{
 			UpdateSelectedPlayerDraftPosition(DraftPosition.ThirdRound, false, true);
 		}
 
-		private void fourthRoundTop_click(object sender, EventArgs e)
+		private void FourthRoundTop_click(object sender, EventArgs e)
 		{
 			UpdateSelectedPlayerDraftPosition(DraftPosition.FourthRound, true, true);
 		}
 
-		private void fourthRoundBottom_click(object sender, EventArgs e)
+		private void FourthRoundBottom_click(object sender, EventArgs e)
 		{
 			UpdateSelectedPlayerDraftPosition(DraftPosition.FourthRound, false, true);
 		}
 
-		private void fifthRoundTop_click(object sender, EventArgs e)
+		private void FifthRoundTop_click(object sender, EventArgs e)
 		{
 			UpdateSelectedPlayerDraftPosition(DraftPosition.FifthRound, true, true);
 		}
 
-		private void fifthRoundBottom_click(object sender, EventArgs e)
+		private void FifthRoundBottom_click(object sender, EventArgs e)
 		{
 			UpdateSelectedPlayerDraftPosition(DraftPosition.FifthRound, false, true);
 		}
 
-		private void sixthRoundTop_click(object sender, EventArgs e)
+		private void SixthRoundTop_click(object sender, EventArgs e)
 		{
 			UpdateSelectedPlayerDraftPosition(DraftPosition.SixthRound, true, true);
 		}
 
-		private void sixthRoundBottom_click(object sender, EventArgs e)
+		private void SixthRoundBottom_click(object sender, EventArgs e)
 		{
 			UpdateSelectedPlayerDraftPosition(DraftPosition.SixthRound, false, true);
 		}
 
-		private void seventhRoundTop_click(object sender, EventArgs e)
+		private void SeventhRoundTop_click(object sender, EventArgs e)
 		{
 			UpdateSelectedPlayerDraftPosition(DraftPosition.SeventhRound, true, true);
 		}
 
-		private void seventhRoundBottom_click(object sender, EventArgs e)
+		private void SeventhRoundBottom_click(object sender, EventArgs e)
 		{
 			UpdateSelectedPlayerDraftPosition(DraftPosition.SeventhRound, false, true);
 		}
 
-		private void undraftedFATop_click(object sender, EventArgs e)
+		private void UndraftedFATop_click(object sender, EventArgs e)
 		{
 			UpdateSelectedPlayerDraftPosition(DraftPosition.UndraftedFA, true, true);
 		}
 
-		private void undraftedFABottom_click(object sender, EventArgs e)
+		private void UndraftedFABottom_click(object sender, EventArgs e)
 		{
 			UpdateSelectedPlayerDraftPosition(DraftPosition.UndraftedFA, false, true);
 		}
 
-		private void dontDraftToolStripMenuItem_Click(object sender, EventArgs e)
+		private void DontDraftToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			UpdateSelectedPlayerDraftPosition(DraftPosition.DontDraft, false, true);
 		}
 
-		private void moveUpToolStripMenuItem_Click(object sender, EventArgs e)
+		private void MoveUpToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			MoveSelectedPlayerUp();
 		}
 
-		private void moveDownToolStripMenuItem_Click(object sender, EventArgs e)
+		private void MoveDownToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-
+            MoveSelectedPlayerDown();
 		}
 
-		private void listViewDraftees_KeyDataEvent(object sender, DraftPoolListView.KeyDataEventArgs e)
+		private void ListViewDraftees_KeyDataEvent(object sender, DraftPoolListView.KeyDataEventArgs e)
 		{
 			if (listViewDraftees.Focused)
 			{
@@ -2465,7 +2482,7 @@ namespace DraftAnalyzer
 
 		// Selects and focuses an item when it is clicked anywhere along 
 		// its width. The click must normally be on the parent item text.
-		private void listViewDraftees_MouseUp(object sender, MouseEventArgs e)
+		private void ListViewDraftees_MouseUp(object sender, MouseEventArgs e)
 		{
 			ListViewItem clickedItem = listViewDraftees.GetItemAt(5, e.Y);
 			if (clickedItem != null)
@@ -2475,7 +2492,7 @@ namespace DraftAnalyzer
 			}
 		}
 
-		private void editWeightsToolStripMenuItem_Click(object sender, EventArgs e)
+		private void EditWeightsToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			if (mWeightsForm.ShowDialog() == DialogResult.OK)
 			{
@@ -2511,18 +2528,18 @@ namespace DraftAnalyzer
             columnHeaderRatedPosition.Tag = WindowsUtilities.SortType.SortByIntegerTag;
         }
 
-        private void listViewDraftees_ColumnClick(object sender, ColumnClickEventArgs e)
+        private void ListViewDraftees_ColumnClick(object sender, ColumnClickEventArgs e)
 		{
 			WindowsUtilities.SortTypeListViewItemSorter.UpdateSortColumn(listViewDraftees, e.Column, sortDraftedToBottomToolStripMenuItem.Checked);
 		}
 
-		private void sortDraftedToBottomToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+		private void SortDraftedToBottomToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
 		{
 			WindowsUtilities.SortTypeListViewItemSorter.UpdateSortColumn(listViewDraftees, -1, sortDraftedToBottomToolStripMenuItem.Checked);
 			mSettings.WriteXMLValue(kSettingsRoot, kSortDraftedToBottom, sortDraftedToBottomToolStripMenuItem.Checked);
 		}
 
-		private void colorChemistryGroupsToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+		private void ColorChemistryGroupsToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
 		{
 			mSettings.WriteXMLValue(kSettingsRoot, kColorChemistryGroups, colorChemistryGroupsToolStripMenuItem.Checked);
 			DisplayPlayerData();
@@ -3328,9 +3345,319 @@ namespace DraftAnalyzer
 		}
         #endregion
 
-        private void buttonReleaseNotes_Click(object sender, EventArgs e)
+        private void ButtonReleaseNotes_Click(object sender, EventArgs e)
         {
             System.Diagnostics.Process.Start("da_release_notes.txt");
+        }
+
+        private void AutoOrderToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            WindowsUtilities.SortTypeListViewItemSorter.UpdateSortSpecific(listViewDraftees, columnHeaderBars.Index, sortDraftedToBottomToolStripMenuItem.Checked, (WindowsUtilities.SortType)columnHeaderBars.Tag, true);
+            AutoOrderDraftees();
+            var descending = false;
+            WindowsUtilities.SortTypeListViewItemSorter.UpdateSortSpecific(listViewDraftees, columnHeaderDraftOrder.Index, sortDraftedToBottomToolStripMenuItem.Checked, (WindowsUtilities.SortType)columnHeaderDraftOrder.Tag, descending);
+            DisplayPlayerData();
+        }
+
+        private void AutoOrderDraftees()
+        {
+            for (int listIndex = 0; listIndex < listViewDraftees.Items.Count; ++listIndex)
+            {
+                mSelectedPlayerListIndex = listIndex;
+                mSelectedItem = listViewDraftees.Items[listIndex];
+                mSelectedPlayerData = (PlayerData)mSelectedItem.Tag;
+                var draftPosition = DetermineSelectedPlayerDraftPosition();
+                UpdateSelectedPlayerDraftPosition(draftPosition, false, false);
+            }
+        }
+
+        private int GetSelectedPlayerAttributeValue(string attributeName)
+        {
+            string[] posAttributes = mPositionGroupAttributeNames[mSelectedPlayerData.mPositionGroup];
+            int attributeValue = 0;
+            for (int i = 0; i < posAttributes.Length; ++i)
+            {
+                if (posAttributes[i].StartsWith(attributeName))
+                {
+                    attributeValue = (mSelectedPlayerData.mAttributes[i * 2] + mSelectedPlayerData.mAttributes[(i * 2) + 1]) / 2;
+                    break;
+                }
+            }
+            return attributeValue;
+        }
+        private DraftPosition DetermineSelectedPlayerDraftPosition()
+        {
+            //if (mSelectedPlayerData.mName == "Logan Bradford")
+            //{
+            //    System.Diagnostics.Debugger.Break();
+            //}
+
+            if (mSelectedPlayerData.mPosition == "LS")
+            {
+                return DraftPosition.DontDraft;
+            }
+
+            var astrologicalSign = mSelectedPlayerData.mAstrologicalSign;
+
+            //var conflict = (astrologicalSign == ChemistryUtilities.AstrologicalSign.Aquarius
+            //    || astrologicalSign == ChemistryUtilities.AstrologicalSign.Virgo
+            //    || astrologicalSign == ChemistryUtilities.AstrologicalSign.Libra);
+
+            //var affinity = (astrologicalSign == ChemistryUtilities.AstrologicalSign.Aries
+            //    || astrologicalSign == ChemistryUtilities.AstrologicalSign.Gemini
+            //    || astrologicalSign == ChemistryUtilities.AstrologicalSign.Scorpio);
+
+            var conflict = false;
+            var affinity = true;
+
+            if (conflict)
+            {
+                return DraftPosition.DontDraft;
+            }
+
+            var isQuarterback = (mSelectedPlayerData.mPositionGroup == "QB");
+            var isKicker = (mSelectedPlayerData.mPosition == "P" || mSelectedPlayerData.mPosition == "K");
+            var isOLine = (mSelectedPlayerData.mPositionGroup == "G" || mSelectedPlayerData.mPositionGroup == "T" || mSelectedPlayerData.mPositionGroup == "C");
+            var isRunningBack = (mSelectedPlayerData.mPosition == "RB");
+            var isWideReceiver = (mSelectedPlayerData.mPositionGroup == "WR");
+            var isFullback = (mSelectedPlayerData.mPositionGroup == "FB");
+            var isDLine = (mSelectedPlayerData.mPositionGroup == "DE" || mSelectedPlayerData.mPositionGroup == "DT");
+            var isLinebacker = (mSelectedPlayerData.mPositionGroup == "ILB" || mSelectedPlayerData.mPositionGroup == "OLB");
+            var isDB = (mSelectedPlayerData.mPositionGroup == "S" || mSelectedPlayerData.mPositionGroup == "CB");
+            var isTightEnd = (mSelectedPlayerData.mPositionGroup == "TE");
+
+            if (isDLine || isLinebacker || isDB)
+            {
+                if (mSelectedPlayerData.mWeight < 220)
+                {
+                    isDB = true;
+                }
+                else if (mSelectedPlayerData.mWeight < 256)
+                {
+                    isLinebacker = true;
+                }
+                else
+                {
+                    isDLine = true;
+                }
+            }
+
+            var combineData = (PositionGroupCombineData)mPositionGroupCombineMap[mSelectedPlayerData.mPositionGroup];
+            var diff = mSelectedPlayerData.mSolecismic - combineData.mSolecismicAverage;
+            var stdDevs = diff / combineData.mSolecismicStdDev;
+            var lowSole = stdDevs < 0.1;
+
+            diff = mSelectedPlayerData.mBench - combineData.mBenchAverage;
+            stdDevs = diff / combineData.mBenchStdDev;
+            var highBench = (stdDevs >= 1.0);
+
+            var hasKeyBars = false;
+
+            const int goodBarValue = 45;
+            const int okayBarValue = 20;
+
+            if (isWideReceiver)
+            {
+                if (GetSelectedPlayerAttributeValue("Avoid Drops") > goodBarValue)
+                {
+                    if (GetSelectedPlayerAttributeValue("Big Play Receiving") > goodBarValue
+                        || GetSelectedPlayerAttributeValue("Getting Downfield") > goodBarValue)
+                    {
+                        hasKeyBars = true;
+                    }
+                }
+            }
+
+            if (isRunningBack)
+            {
+                if (GetSelectedPlayerAttributeValue("Breakaway Speed") > goodBarValue
+                    && GetSelectedPlayerAttributeValue("Hole Recognition") > goodBarValue)
+                {
+                    hasKeyBars = true;
+                }
+            }
+
+            if (isFullback)
+            {
+                if (GetSelectedPlayerAttributeValue("Run Blocking") > goodBarValue
+                    && GetSelectedPlayerAttributeValue("Power Inside") > goodBarValue
+                    && GetSelectedPlayerAttributeValue("Third Down Catching") > goodBarValue)
+                {
+                    hasKeyBars = true;
+                }
+            }
+
+            if (isTightEnd)
+            {
+                if (GetSelectedPlayerAttributeValue("Run Blocking") > goodBarValue
+                    && GetSelectedPlayerAttributeValue("Avoid Drops") > goodBarValue
+                    && GetSelectedPlayerAttributeValue("Third Down Catching") > goodBarValue)
+                {
+                    hasKeyBars = true;
+                }
+            }
+
+            if (isOLine)
+            {
+                if (GetSelectedPlayerAttributeValue("Endurance") > goodBarValue)
+                {
+                    hasKeyBars = true;
+                }
+            }
+
+            if (isQuarterback)
+            {
+                if (GetSelectedPlayerAttributeValue("Sense Rush") > goodBarValue
+                    && GetSelectedPlayerAttributeValue("Read Defense") > okayBarValue
+                    && GetSelectedPlayerAttributeValue("Accuracy") > okayBarValue)
+                {
+                    hasKeyBars = true;
+                }
+            }
+
+            if (isDLine)
+            {
+                if (GetSelectedPlayerAttributeValue("Run Defense") > okayBarValue)
+                {
+                    if (GetSelectedPlayerAttributeValue("Pass Rush Technique") > goodBarValue
+                    || GetSelectedPlayerAttributeValue("Pass Rush Strength") > goodBarValue)
+                    {
+                        hasKeyBars = true;
+                    }
+                }
+            }
+
+            if (isLinebacker)
+            {
+                if (GetSelectedPlayerAttributeValue("Run Defense") > goodBarValue
+                    && GetSelectedPlayerAttributeValue("Man-to-Man Defense") > goodBarValue)
+                {
+                    hasKeyBars = true;
+                }
+            }
+
+            if (isDB)
+            {
+                if (GetSelectedPlayerAttributeValue("Run Defense") > goodBarValue
+                    && GetSelectedPlayerAttributeValue("Zone Defense") > goodBarValue)
+                {
+                    hasKeyBars = true;
+                }
+                else if (GetSelectedPlayerAttributeValue("Man-to-Man Defense") > goodBarValue
+                    && GetSelectedPlayerAttributeValue("Bump and Run Defense") > goodBarValue
+                    && GetSelectedPlayerAttributeValue("Interceptions") > goodBarValue)
+                {
+                    hasKeyBars = true;
+                }
+            }
+
+            var barScore = mSelectedPlayerData.mPositionRatings[0].AttributeScore;
+            if (barScore < 50)
+            {
+                if (!affinity)
+                {
+                    return DraftPosition.DontDraft;
+                }
+
+                if (lowSole)
+                {
+                    return DraftPosition.DontDraft;
+                }
+
+                if (mSelectedPlayerData.mCombineSum >= 7.5)
+                {
+                    return DraftPosition.FifthRound;
+                }
+
+                if (hasKeyBars)
+                {
+                    return DraftPosition.FifthRound;
+                }
+
+                if (isOLine)
+                {
+                    if (highBench && GetSelectedPlayerAttributeValue("Blocking Strength") > 60)
+                    {
+                        return DraftPosition.FifthRound;
+                    }
+                }
+
+                if (GetSelectedPlayerAttributeValue("Punt Returns") > 60
+                    || GetSelectedPlayerAttributeValue("Kick Returns") > 60
+                    || GetSelectedPlayerAttributeValue("Special Teams") > 75
+                    )
+                {
+                    return DraftPosition.SeventhRound;
+                }
+
+                return DraftPosition.DontDraft;
+            }
+
+            var draftRound = (barScore > 60 ? 1 : 2);
+            if (!affinity && !isKicker)
+            {
+                if (barScore < 60 || mSelectedPlayerData.mCombineSum < 7.5 || lowSole)
+                {
+                    return DraftPosition.DontDraft;
+                }
+            }
+            if (lowSole)
+            {
+                draftRound += 2;
+            }
+            if (mSelectedPlayerData.mCombineSum < 7.5)
+            {
+                draftRound += 1;
+            }
+            if (mSelectedPlayerData.mCombineSum < 0.0)
+            {
+                draftRound += 2;
+            }
+            if (isKicker)
+            {
+                draftRound += 2;
+            }
+            if (isFullback)
+            {
+                draftRound += 1;
+            }
+            if (!hasKeyBars)
+            {
+                draftRound += 1;
+            }
+
+            if (draftRound <= 1)
+            {
+                return DraftPosition.FirstRound;
+            }
+            else if (draftRound == 2)
+            {
+                return DraftPosition.SecondRound;
+            }
+            else if (draftRound == 3)
+            {
+                return DraftPosition.ThirdRound;
+            }
+            else if (draftRound == 4)
+            {
+                return DraftPosition.FourthRound;
+            }
+            else if (draftRound == 5)
+            {
+                return DraftPosition.FifthRound;
+            }
+            else if (draftRound == 6)
+            {
+                return DraftPosition.SixthRound;
+            }
+            else if (draftRound == 7)
+            {
+                return DraftPosition.SeventhRound;
+            }
+            else
+            {
+                return DraftPosition.UndraftedFA;
+            }
         }
     }
 }

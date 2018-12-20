@@ -59,9 +59,11 @@ namespace DataReader
                 {
                     string inLine = inFile.ReadLine();
                     string[] tokens = inLine.Split(commaDelim);
-                    var activePlayer = new ActivePlayerRecord();
-                    activePlayer.PlayerID = Int32.Parse(tokens[0]);
-                    activePlayer.HistoricalPlayerIndex = Int32.Parse(tokens[235]);
+                    var activePlayer = new ActivePlayerRecord
+                    {
+                        PlayerID = Int32.Parse(tokens[0]),
+                        HistoricalPlayerIndex = Int32.Parse(tokens[235])
+                    };
                     activePlayers.Add(activePlayer);
                 }
 
@@ -86,11 +88,13 @@ namespace DataReader
                 {
                     string inLine = inFile.ReadLine();
                     string[] tokens = inLine.Split(commaDelim);
-                    var historicalPlayer = new HistoricalPlayerRecord();
-                    historicalPlayer.PlayerID = Int32.Parse(tokens[0]);
-                    historicalPlayer.LastName = tokens[1];
-                    historicalPlayer.FirstName = tokens[2];
-                    historicalPlayer.Position = tokens[5];
+                    var historicalPlayer = new HistoricalPlayerRecord
+                    {
+                        PlayerID = Int32.Parse(tokens[0]),
+                        LastName = tokens[1],
+                        FirstName = tokens[2],
+                        Position = tokens[5]
+                    };
                     historicalPlayers.Add(historicalPlayer);
                 }
 
@@ -124,37 +128,41 @@ namespace DataReader
                     string teamLine = teamInformationFile.ReadLine();
                     string[] fields = teamLine.Split(commaDelim);
                     int teamID = Int32.Parse(fields[0]);
-                    mTeamInformationRecords[teamID] = new TeamInformationRecord();
-                    mTeamInformationRecords[teamID].Wins = Int32.Parse(fields[1]);
-                    mTeamInformationRecords[teamID].Losses = Int32.Parse(fields[2]);
-                    mTeamInformationRecords[teamID].Ties = Int32.Parse(fields[3]);
-                    mTeamInformationRecords[teamID].PlayoffAppearances = Int32.Parse(fields[4]);
-                    mTeamInformationRecords[teamID].BowlAppearances = Int32.Parse(fields[5]);
-                    mTeamInformationRecords[teamID].BowlWins = Int32.Parse(fields[6]);
-                    mTeamInformationRecords[teamID].PlayoffWins = Int32.Parse(fields[7]);
-                    mTeamInformationRecords[teamID].PlayoffLosses = Int32.Parse(fields[8]);
-                    mTeamInformationRecords[teamID].TurfType = fields[9];
-                    mTeamInformationRecords[teamID].YearStadiumBuilt = Int32.Parse(fields[10]);
-                    mTeamInformationRecords[teamID].StadiumCapacity = Int32.Parse(fields[11]);
-                    mTeamInformationRecords[teamID].LuxuryBoxes = Int32.Parse(fields[12]);
-                    mTeamInformationRecords[teamID].ClubSeats = Int32.Parse(fields[13]);
-                    mTeamInformationRecords[teamID].CityName = fields[14];
-                    mTeamInformationRecords[teamID].UpperDeckTickets = Int32.Parse(fields[15]);
-                    mTeamInformationRecords[teamID].EndZoneTickets = Int32.Parse(fields[16]);
-                    mTeamInformationRecords[teamID].MezzanineTickets = Int32.Parse(fields[17]);
-                    mTeamInformationRecords[teamID].SidelineTickets = Int32.Parse(fields[18]);
-                    mTeamInformationRecords[teamID].ClubSeatTickets = Int32.Parse(fields[19]);
-                    mTeamInformationRecords[teamID].LuxuryBoxTickets = Int32.Parse(fields[20]);
-                    mTeamInformationRecords[teamID].LostSalaryCapThisSeason = Int32.Parse(fields[21]);
-                    mTeamInformationRecords[teamID].LostSalaryCapNextSeason = Int32.Parse(fields[22]);
+                    mTeamInformationRecords[teamID] = new TeamInformationRecord
+                    {
+                        Wins = Int32.Parse(fields[1]),
+                        Losses = Int32.Parse(fields[2]),
+                        Ties = Int32.Parse(fields[3]),
+                        PlayoffAppearances = Int32.Parse(fields[4]),
+                        BowlAppearances = Int32.Parse(fields[5]),
+                        BowlWins = Int32.Parse(fields[6]),
+                        PlayoffWins = Int32.Parse(fields[7]),
+                        PlayoffLosses = Int32.Parse(fields[8]),
+                        TurfType = fields[9],
+                        YearStadiumBuilt = Int32.Parse(fields[10]),
+                        StadiumCapacity = Int32.Parse(fields[11]),
+                        LuxuryBoxes = Int32.Parse(fields[12]),
+                        ClubSeats = Int32.Parse(fields[13]),
+                        CityName = fields[14],
+                        UpperDeckTickets = Int32.Parse(fields[15]),
+                        EndZoneTickets = Int32.Parse(fields[16]),
+                        MezzanineTickets = Int32.Parse(fields[17]),
+                        SidelineTickets = Int32.Parse(fields[18]),
+                        ClubSeatTickets = Int32.Parse(fields[19]),
+                        LuxuryBoxTickets = Int32.Parse(fields[20]),
+                        LostSalaryCapThisSeason = Int32.Parse(fields[21]),
+                        LostSalaryCapNextSeason = Int32.Parse(fields[22])
+                    };
                 }
             }
         }
 
         private GameTeamEntry LoadGameTeamEntry(System.IO.BinaryReader inFile, int week)
         {
-            GameTeamEntry newEntry = new GameTeamEntry();
-            newEntry.TeamIndex = BinaryHelper.ReadInt16(inFile, "Team Index");
+            GameTeamEntry newEntry = new GameTeamEntry
+            {
+                TeamIndex = BinaryHelper.ReadInt16(inFile, "Team Index")
+            };
             short stringLength = BinaryHelper.ReadInt16(inFile,"City Length");
             newEntry.CityName = BinaryHelper.ExtractString(inFile,stringLength,"City Name");
             stringLength = BinaryHelper.ReadInt16(inFile,"Nickname Length");
@@ -174,10 +182,12 @@ namespace DataReader
                 {
                     newEntry.ActivePlayerIDs[i] = -1;
                 }
-                newEntry.PlayerStats[i] = new PlayerGameStatsRecord();
-                newEntry.PlayerStats[i].PlayerID = newEntry.ActivePlayerIDs[i];
-                newEntry.PlayerStats[i].Week = (short)week;
-                newEntry.PlayerStats[i].Team = newEntry.TeamIndex;
+                newEntry.PlayerStats[i] = new PlayerGameStatsRecord
+                {
+                    PlayerID = newEntry.ActivePlayerIDs[i],
+                    Week = (short)week,
+                    Team = newEntry.TeamIndex
+                };
             }
             BinaryHelper.TracerOutdent();
             newEntry.DepthChartEntries = new short[kNumDepthChartEntries];
@@ -505,39 +515,42 @@ namespace DataReader
             BinaryHelper.TracerOutdent();
         }
 
-        private GamePlay LoadPlayData(System.IO.BinaryReader inFile)
+        private GamePlay LoadPlayData(GameLog gameLog, System.IO.BinaryReader inFile)
         {
             BinaryHelper.TracerWriteLine("Play Data");
             BinaryHelper.TracerIndent();
 
-            GamePlay playData = new GamePlay();
+            GamePlay playData = new GamePlay
+            {
 
-            // Main Play Data
-            playData.Quarter = BinaryHelper.ReadInt16(inFile, "Quarter");
-            playData.Minutes = BinaryHelper.ReadInt16(inFile, "Minutes");
-            playData.Seconds = BinaryHelper.ReadInt16(inFile, "Seconds");
-            playData.Possession = BinaryHelper.ReadInt16(inFile, "Possession");
-            playData.Down = BinaryHelper.ReadInt16(inFile, "Down");
-            playData.YardsToGo = BinaryHelper.ReadInt16(inFile, "YardsToGo");
-            playData.YardLine = BinaryHelper.ReadInt16(inFile, "YardLine");
-            playData.HomeTimeouts = BinaryHelper.ReadInt16(inFile, "Home Timeouts");
-            playData.AwayTimeouts = BinaryHelper.ReadInt16(inFile, "Away Timeouts");
-            playData.PlayType = BinaryHelper.ReadInt16(inFile, "Play Type");
+                // Main Play Data
+                Quarter = BinaryHelper.ReadInt16(inFile, "Quarter"),
+                Minutes = BinaryHelper.ReadInt16(inFile, "Minutes"),
+                Seconds = BinaryHelper.ReadInt16(inFile, "Seconds"),
+                Possession = BinaryHelper.ReadInt16(inFile, "Possession"),
+                Down = BinaryHelper.ReadInt16(inFile, "Down"),
+                YardsToGo = BinaryHelper.ReadInt16(inFile, "YardsToGo"),
+                YardLine = BinaryHelper.ReadInt16(inFile, "YardLine"),
+                HomeTimeouts = BinaryHelper.ReadInt16(inFile, "Home Timeouts"),
+                AwayTimeouts = BinaryHelper.ReadInt16(inFile, "Away Timeouts"),
+                PlayType = BinaryHelper.ReadInt16(inFile, "Play Type")
+            };
 
             // Formation Data, mostly valid for playtype 5 or 6
-            playData.OffensiveFormation = BinaryHelper.ReadInt16(inFile, "Offensive Formation");	
-            playData.OffensiveStrength = BinaryHelper.ReadInt16(inFile, "Offensive Strength");
+            playData.OffensiveFormation = BinaryHelper.ReadInt16(inFile, "Offensive Formation");
+            playData.OffensivePersonnel = BinaryHelper.ReadInt16(inFile, "Offensive Personnel");
             playData.DefensiveAlignment = BinaryHelper.ReadInt16(inFile, "Defensive Alignment");
             playData.DefensivePersonnel = BinaryHelper.ReadInt16(inFile, "Defensive Personnel");
             playData.DefensiveCoverage = BinaryHelper.ReadInt16(inFile, "Defensive Coverage");
-            playData.DefensiveRunPass = BinaryHelper.ReadInt16(inFile, "Defensive RunPass");
-            playData.DefensiveRunAggressive = BinaryHelper.ReadInt16(inFile, "Defensive RunAggressive");
-            playData.DefensivePassAggressive = BinaryHelper.ReadInt16(inFile, "Defensive PassAggressive");
-            playData.DefensiveBlitzCount = BinaryHelper.ReadInt16(inFile, "Defensive Blitzing");    // 0-3, how many blitzing
-            for (int blitzer=0;blitzer<10;++blitzer)
+            playData.DefensiveFront = BinaryHelper.ReadInt16(inFile, "Defensive Front");
+            playData.DefensivePlaycallSpecialty = BinaryHelper.ReadInt16(inFile, "Defensive Playcall Specialty");
+            playData.PossessionChange = BinaryHelper.ReadInt16(inFile, "Possession Change");
+            playData.DefensiveBlitzCount = BinaryHelper.ReadInt16(inFile, "Defensive Blitz Count");    // 0-3, how many blitzing
+            for (int blitzer = 0; blitzer < 10; ++blitzer)
             {
-                playData.DefensiveBlitzers[blitzer] = BinaryHelper.ReadInt16(inFile, "Defensive Blitzer "+blitzer.ToString());
+                playData.DefensiveBlitzers[blitzer] = BinaryHelper.ReadInt16(inFile, "Defensive Blitzer " + blitzer.ToString());
             }
+
 
             // Penalty Data
             playData.IsDefensivePenalty = BinaryHelper.ReadInt16(inFile, "IsDefensivePenalty");
@@ -595,7 +608,22 @@ namespace DataReader
                 LoadInfoPlayData(inFile, playData);
             }
 
-            BinaryHelper.ProbeBytes(inFile, 36);
+            BinaryHelper.ReadInt16(inFile, "Failed4thDown?");
+            BinaryHelper.ReadInt16(inFile, "OffensivePersonnelRepeat");
+            BinaryHelper.ReadInt16(inFile, "FormationRepeat");
+            BinaryHelper.ReadInt16(inFile, "Unknown");
+            playData.QBDepth = BinaryHelper.ReadInt16(inFile, "QBDepth");
+            playData.OffensivePlayType = BinaryHelper.ReadInt16(inFile, "PlayType");
+            playData.RunDirection = BinaryHelper.ReadInt16(inFile, "RunDirection");
+            playData.BallCarrier = BinaryHelper.ReadInt16(inFile, "BallCarrier");
+            for (int receiver = 0; receiver < 5; ++receiver)
+            {
+                playData.ReceiverAssignments[receiver] = new ReceiverAssignment
+                {
+                    Role = BinaryHelper.ReadInt16(inFile, "Role " + receiver.ToString()),
+                    Route = BinaryHelper.ReadInt16(inFile, "Route " + receiver.ToString())
+                };
+            }
 
             // Offensive Grades
             for (int offensivePlayer = 0; offensivePlayer < playData.OffensiveGrade.Length; ++offensivePlayer)
@@ -603,7 +631,12 @@ namespace DataReader
                 playData.OffensiveGrade[offensivePlayer] = BinaryHelper.ReadInt16(inFile, "Offensive Grade " + offensivePlayer.ToString());
             }
 
-            BinaryHelper.ProbeBytes(inFile, 26);
+            BinaryHelper.ReadInt16(inFile, "Possession Change?");
+            BinaryHelper.ReadInt16(inFile, "DefensivePersonnel");
+            for (int i = 0; i < 11; ++i)
+            {
+                playData.DefensiveAssignment[i] = BinaryHelper.ReadInt16(inFile, "DefensiveAssignment " + i.ToString());
+            }
 
             // Defensive Grades
             for (int defensivePlayer = 0; defensivePlayer < playData.DefensiveGrade.Length; ++defensivePlayer)
@@ -611,7 +644,10 @@ namespace DataReader
                 playData.DefensiveGrade[defensivePlayer] = BinaryHelper.ReadInt16(inFile, "Defensive Grade " + defensivePlayer.ToString());
             }
 
-            BinaryHelper.ProbeBytes(inFile, 56);
+            for (int i = 0; i < 28; ++i)
+            {
+                var nextVal = BinaryHelper.ReadInt16(inFile, "Section 3 " + i.ToString());
+            }
 
             // Offensive Lineup
             for (int offensivePlayer = 0; offensivePlayer < playData.OffensivePlayers.Length; ++offensivePlayer)
@@ -799,7 +835,7 @@ namespace DataReader
                 string nextHeader = BinaryHelper.ExtractString(inFile, 4, "Header");
                 if (nextHeader == "PD08")
                 {
-                    GamePlay playData = LoadPlayData(inFile);
+                    GamePlay playData = LoadPlayData(newLog, inFile);
                     ExtractStatsFromPlay(newLog, playData);
                     newLog.Plays.Add(playData);
                     ++CurPlayID;
@@ -827,11 +863,13 @@ namespace DataReader
                 FileReadCallback(System.IO.Path.GetFileName(logPath));
             }
 
-            GameWeekRecord newRec = new GameWeekRecord();
-            newRec.Week = week;
-            newRec.Year = year;
-            newRec.FullPath = logPath;
-            newRec.GameLogs = new List<GameLog>();
+            GameWeekRecord newRec = new GameWeekRecord
+            {
+                Week = week,
+                Year = year,
+                FullPath = logPath,
+                GameLogs = new List<GameLog>()
+            };
 
             System.IO.FileStream inStream = new System.IO.FileStream(logPath, System.IO.FileMode.Open, System.IO.FileAccess.Read);
             Encoding windows1252Encoding = Encoding.GetEncoding(1252);
@@ -1993,24 +2031,57 @@ namespace DataReader
 
         public enum OffensiveFormation
         {
-            IFormNormal = 0,
-            IFormTEPairs = 1,
-            IFormWRToSlot = 2,
-            ProNormal = 3,
-            ProTEPairs = 4,
-            ProWRToSlot = 5,
-            WeakNormal = 6,
-            WeakTEPairs = 7,
-            WeakThreeWR = 8,
-            StrongNormal = 9,
-            StrongTEPairs = 10,
-            StrongThreeWR = 11,
-            SingleBackNormal = 12,
-            SingleBackTEPairs = 13,
-            SingleBackTripsWR = 14,
-            SingleBackFourWR = 15,
-            FiveWRSpread = 16,
-            GoalLineFormation = 17,
+            Pro = 0,
+            Weak = 1,
+            Strong = 2,
+            IForm = 3,
+            Empty = 4,
+            Count
+        };
+
+        public enum OffensivePersonnel
+        {
+            OP005 = 0,
+            OP014 = 1,
+            OP014t = 2,
+            OP023 = 3,
+            OP104 = 4,
+            OP113 = 5,
+            OP113t = 6,
+            OP122 = 7,
+            OP131 = 8,
+            OP203 = 9,
+            OP212 = 10,
+            OP221 = 11,
+            OP230 = 12,
+            Count
+        };
+
+        public enum QBDepth
+        {
+            Normal = 0,
+            Shotgun = 1,
+            Pistol = 2,
+            Count
+        };
+
+        public enum OffensePlayCall
+        {
+            Pass = 0,
+            PlayAction = 1,
+            Unknown = 2,
+            Run = 3,
+            Counter = 4,
+            Reverse = 5,
+            Count
+        };
+
+        public enum DefensiveFront
+        {
+            True34 = 0,
+            Eagle34 = 1,
+            Under43 = 2,
+            Over43 = 3,
             Count
         };
 
@@ -2026,15 +2097,64 @@ namespace DataReader
 
         public enum DefensiveCoverage
         {
-            OneDeepLooseMan = 0,
-            OneDeepBumpAndRun = 1,
-            TwoDeepLooseMan = 2,
-            TwoDeepBumpAndRun = 3,
-            ThreeDeepZone = 4,
-            FourDeepZone = 5,
-            StrongSideMan = 6,
-            WeakSideMan = 7,
+            Man2Man = 0,
+            Cover1 = 1,
+            Press1 = 2,
+            Tampa2 = 3,
+            Cover2 = 4,
+            Press2 = 5,
+            Cover3Sky = 6,
+            Cover3Cloud = 7,
+            Cover4 = 8,
             Count
+        };
+
+        public enum DefensiveCoverageSpecial
+        {
+            None = 0,
+            Double = 1,
+            Spy1 = 2,
+            Spy2 = 3,
+            Cover1Buzz = 10,
+            Press1Buzz34 = 11,
+            Press1Buzz43 = 12,
+        };
+
+        public enum DefensiveCoverageAssignment
+        {
+            InBox = 0,
+            OutBox = 1,
+            SpyRun = 2,
+            RushPasser = 3,
+            Blitz = 4,
+            SpyQB = 5,
+            Receiver1DBL = 11,
+            Receiver1M2M = 12,
+            Receiver1BNR = 13,
+            Receiver1SZN = 14,
+            Receiver1DZN = 15,
+            Receiver2DBL = 21,
+            Receiver2M2M = 22,
+            Receiver2BNR = 23,
+            Receiver2SZN = 24,
+            Receiver2DZN = 25,
+            Receiver3DBL = 31,
+            Receiver3M2M = 32,
+            Receiver3BNR = 33,
+            Receiver3SZN = 34,
+            Receiver3DZN = 35,
+            Receiver4DBL = 41,
+            Receiver4M2M = 42,
+            Receiver4BNR = 43,
+            Receiver4SZN = 44,
+            Receiver4DZN = 45,
+            Receiver5DBL = 51,
+            Receiver5M2M = 52,
+            Receiver5BNR = 53,
+            Receiver5SZN = 54,
+            Receiver5DZN = 55,
+            ShortZone = 64,
+            DeepZone = 65
         };
 
         public enum RunDirection
@@ -2116,6 +2236,40 @@ namespace DataReader
             Count
         };
 
+        public enum ReceiverRole
+        {
+            Primary = 0,
+            Secondary = 1,
+            Outlet = 2,
+            Protect = 3,
+            Count
+        };
+
+        public enum ReceiverRoute
+        {
+            Dig = 0,
+            Out = 1,
+            Slant = 2,
+            Comeback = 3,
+            Curl = 4,
+            DeepOut = 5,
+            DeepIn = 6,
+            Corner = 7,
+            Post = 8,
+            Fade = 9,
+            DeepFade = 10,
+            Wheel = 11,
+            Screen = 12,
+            Flat = 13,
+            Count
+        };
+
+        public struct ReceiverAssignment
+        {
+            public short Role;
+            public short Route;
+        };
+
         public class GamePlay
         {
             // Main Play Data
@@ -2132,17 +2286,23 @@ namespace DataReader
             public short PlayMinutes;
             public short PlaySeconds;
 
-            // Formation Data, mostly valid for playtype 5 or 6
+            // Playcall Data, mostly valid for playtype 5 or 6
             public short OffensiveFormation;
-            public short OffensiveStrength;
+            public short OffensivePersonnel;
             public short DefensiveAlignment;
             public short DefensivePersonnel;
             public short DefensiveCoverage;
-            public short DefensiveRunPass;
-            public short DefensiveRunAggressive;
-            public short DefensivePassAggressive;
+            public short DefensiveFront;
+            public short DefensivePlaycallSpecialty;
+            public short PossessionChange;
             public short DefensiveBlitzCount;
             public short[] DefensiveBlitzers = new short[10];
+            public short QBDepth;
+            public short OffensivePlayType;
+            public short RunDirection;
+            public short BallCarrier;
+            public ReceiverAssignment[] ReceiverAssignments = new ReceiverAssignment[5];
+            public short[] DefensiveAssignment = new short[11];
 
             // Penalty Data
             public short IsDefensivePenalty;

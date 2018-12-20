@@ -221,10 +221,4 @@ pip-log.txt
 #Mr Developer
 .mr.developer.cfg
 *.db-shm
-.vs/FOFUtilities/v15/Solution.VC.db-wal
-.vs/FOFUtilities/v15/Server/sqlite3/db.lock
-.vs/FOFUtilities/v15/Server/sqlite3/storage.ide
-.vs/FOFUtilities/v15/Server/sqlite3/storage.ide-shm
-.vs/FOFUtilities/v15/Server/sqlite3/storage.ide-wal
-.vs/FOFUtilities/v15/sqlite3/db.lock
-.vs/FOFUtilities/v15/sqlite3/storage.ide
+.vs/

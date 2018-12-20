@@ -538,15 +538,15 @@ namespace GamePlanAnalyzer
 			LeagueData.OffensiveFormation offFormation = (LeagueData.OffensiveFormation)gamePlay.OffensiveFormation;
 
 			DefensivePlayCall defPlayCall = DefensivePlayCall.Count;
-			if (gamePlay.DefensiveRunAggressive != 0)
+			if (gamePlay.DefensivePlaycallSpecialty != 0)
 			{
 				defPlayCall = DefensivePlayCall.RunAggressive;
 			}
-			else if (gamePlay.DefensivePassAggressive != 0)
+			else if (gamePlay.PossessionChange != 0)
 			{
 				defPlayCall = DefensivePlayCall.PassAggressive;
 			}
-			else if (gamePlay.DefensiveRunPass == (int)LeagueData.DefensiveRunPass.Run)
+			else if (gamePlay.DefensiveFront == (int)LeagueData.DefensiveRunPass.Run)
 			{
 				defPlayCall = DefensivePlayCall.RunNormal;
 			}
@@ -712,15 +712,15 @@ namespace GamePlanAnalyzer
 			LeagueData.OffensiveFormation offFormation = (LeagueData.OffensiveFormation)gamePlay.OffensiveFormation;
 
 			DefensivePlayCall defPlayCall = DefensivePlayCall.Count;
-			if (gamePlay.DefensiveRunAggressive != 0)
+			if (gamePlay.DefensivePlaycallSpecialty != 0)
 			{
 				defPlayCall = DefensivePlayCall.RunAggressive;
 			}
-			else if (gamePlay.DefensivePassAggressive != 0)
+			else if (gamePlay.PossessionChange != 0)
 			{
 				defPlayCall = DefensivePlayCall.PassAggressive;
 			}
-			else if (gamePlay.DefensiveRunPass == (int)LeagueData.DefensiveRunPass.Run)
+			else if (gamePlay.DefensiveFront == (int)LeagueData.DefensiveRunPass.Run)
 			{
 				defPlayCall = DefensivePlayCall.RunNormal;
 			}

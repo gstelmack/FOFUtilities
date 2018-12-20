@@ -118,7 +118,9 @@ namespace PlayerTracker
 								}
 								break;
 							case ReportType.Position:
-								if (rec.Entries[0].Position_Group == Position && entry.StageIndex == lastStageIndex)
+								if (rec.Entries[0].Position_Group == Position 
+                                    && entry.StageIndex == lastStageIndex
+                                    && rec.Solecismic != Byte.MaxValue)
 								{
 									useEntry = true;
 								}
