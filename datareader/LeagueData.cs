@@ -15,7 +15,6 @@ namespace DataReader
 
 #if DEBUG
         public StreamWriter puntFile = null;
-        public StreamWriter playFile = null;
 #endif
 
         private char[] commaDelim = new char[] { ',' };
@@ -31,8 +30,6 @@ namespace DataReader
 #if DEBUG
             puntFile = new StreamWriter("PuntPlays.csv", false);
             puntFile.WriteLine("Game,Q,M,S,KT,PPT,3,4,6,7,10,11,16,17,18,19,20,21,23,27,28,32,37,39,40,41,42");
-            playFile = new StreamWriter("Playcalls.csv", false);
-            playFile.WriteLine("Game,Q,M,S");
 #endif
             LoadTeamInformation();
             LoadActivePlayerData();
@@ -42,7 +39,6 @@ namespace DataReader
                 LoadGameList();
             }
 #if DEBUG
-            playFile.Close();
             puntFile.Close();
 #endif
         }
@@ -540,10 +536,6 @@ namespace DataReader
                 PlayType = BinaryHelper.ReadInt16(inFile, "Play Type")
             };
 
-#if DEBUG
-            var writePlaycall = (playData.PlayType == 5 || playData.PlayType == 6);
-#endif
-
             // Formation Data, mostly valid for playtype 5 or 6
             playData.OffensiveFormation = BinaryHelper.ReadInt16(inFile, "Offensive Formation");
             playData.OffensivePersonnel = BinaryHelper.ReadInt16(inFile, "Offensive Personnel");
@@ -559,28 +551,6 @@ namespace DataReader
                 playData.DefensiveBlitzers[blitzer] = BinaryHelper.ReadInt16(inFile, "Defensive Blitzer " + blitzer.ToString());
             }
 
-#if DEBUG
-            if (writePlaycall)
-            {
-                playFile.Write(gameLog.Year + " Wk " + gameLog.Week + " " + gameLog.HomeTeam.Abbreviation + " vs " + gameLog.AwayTeam.Abbreviation + ",");
-                playFile.Write(playData.Quarter + ",");
-                playFile.Write(playData.Minutes + ",");
-                playFile.Write(playData.Seconds + ",");
-                playFile.Write(playData.OffensiveFormation + ",");
-                playFile.Write(playData.OffensivePersonnel + ",");
-                playFile.Write(playData.DefensiveAlignment + ",");
-                playFile.Write(playData.DefensivePersonnel + ",");
-                playFile.Write(playData.DefensiveCoverage + ",");
-                playFile.Write(playData.DefensiveFront + ",");
-                playFile.Write(playData.DefensivePlaycallSpecialty + ",");
-                playFile.Write(playData.PossessionChange + ",");
-                playFile.Write(playData.DefensiveBlitzCount + ",");
-                for (int blitzer = 0; blitzer < 10; ++blitzer)
-                {
-                    playFile.Write(playData.DefensiveBlitzers[blitzer] + ",");
-                }
-            }
-#endif
 
             // Penalty Data
             playData.IsDefensivePenalty = BinaryHelper.ReadInt16(inFile, "IsDefensivePenalty");
@@ -650,25 +620,10 @@ namespace DataReader
             {
                 playData.ReceiverAssignments[receiver] = new ReceiverAssignment
                 {
-                    Role = BinaryHelper.ReadInt16(inFile, "Role"),
-                    Route = BinaryHelper.ReadInt16(inFile, "Route")
+                    Role = BinaryHelper.ReadInt16(inFile, "Role " + receiver.ToString()),
+                    Route = BinaryHelper.ReadInt16(inFile, "Route " + receiver.ToString())
                 };
             }
-
-#if DEBUG
-            if (writePlaycall)
-            {
-                playFile.Write(playData.QBDepth + ", ");
-                playFile.Write(playData.OffensivePlayType + ", ");
-                playFile.Write(playData.RunDirection + ", ");
-                playFile.Write(playData.BallCarrier + ", ");
-                for (int receiver = 0; receiver < 5; ++receiver)
-                {
-                    playFile.Write(playData.ReceiverAssignments[receiver].Role + ", ");
-                    playFile.Write(playData.ReceiverAssignments[receiver].Route + ", ");
-                }
-            }
-#endif
 
             // Offensive Grades
             for (int offensivePlayer = 0; offensivePlayer < playData.OffensiveGrade.Length; ++offensivePlayer)
@@ -680,13 +635,7 @@ namespace DataReader
             BinaryHelper.ReadInt16(inFile, "DefensivePersonnel");
             for (int i = 0; i < 11; ++i)
             {
-                playData.DefensiveAssignment[i] = BinaryHelper.ReadInt16(inFile, "DefensiveAssignment" + i.ToString());
-#if DEBUG
-                if (writePlaycall)
-                {
-                    playFile.Write(playData.DefensiveAssignment[i] + ", ");
-                }
-#endif
+                playData.DefensiveAssignment[i] = BinaryHelper.ReadInt16(inFile, "DefensiveAssignment " + i.ToString());
             }
 
             // Defensive Grades
@@ -697,21 +646,8 @@ namespace DataReader
 
             for (int i = 0; i < 28; ++i)
             {
-                var nextVal = BinaryHelper.ReadInt16(inFile, "Section 3" + i.ToString());
-#if DEBUG
-                if (writePlaycall)
-                {
-                    playFile.Write(nextVal + ", ");
-                }
-#endif
+                var nextVal = BinaryHelper.ReadInt16(inFile, "Section 3 " + i.ToString());
             }
-
-#if DEBUG
-            if (writePlaycall)
-            {
-                playFile.WriteLine();
-            }
-#endif
 
             // Offensive Lineup
             for (int offensivePlayer = 0; offensivePlayer < playData.OffensivePlayers.Length; ++offensivePlayer)
